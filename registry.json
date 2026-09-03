@@ -1821,6 +1821,227 @@
           "medplum-asyncautocomplete--slow-async-autocomplete"
         ]
       }
+    },
+    {
+      "name": "value-set-autocomplete",
+      "type": "registry:component",
+      "title": "ValueSetAutocomplete",
+      "description": "Autocomplete options from a FHIR ValueSet expansion, with unavailable-binding notes.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/value-set-autocomplete.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/value-set-autocomplete.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": ["seenhealth/medplum/async-autocomplete", "seenhealth/medplum/unavailable-note"],
+      "categories": ["fhir", "input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ValueSetAutocomplete), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ValueSetAutocomplete",
+        "storyIds": [
+          "medplum-valuesetautocomplete--single",
+          "medplum-valuesetautocomplete--multiple",
+          "medplum-valuesetautocomplete--minimum-input"
+        ]
+      }
+    },
+    {
+      "name": "code-input",
+      "type": "registry:component",
+      "title": "CodeInput",
+      "description": "Single FHIR code string input backed by ValueSetAutocomplete.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/code-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/code-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/value-set-autocomplete"],
+      "categories": ["fhir", "input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CodeInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/CodeInput",
+        "storyIds": ["medplum-codeinput--basic", "medplum-codeinput--default-value"]
+      }
+    },
+    {
+      "name": "coding-input",
+      "type": "registry:component",
+      "title": "CodingInput",
+      "description": "Single FHIR Coding input backed by ValueSetAutocomplete.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/coding-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/coding-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/resource-property-input-utils",
+        "seenhealth/medplum/value-set-autocomplete"
+      ],
+      "categories": ["fhir", "input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CodingInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/CodingInput",
+        "storyIds": [
+          "medplum-codinginput--basic",
+          "medplum-codinginput--with-wrapper-text",
+          "medplum-codinginput--with-error",
+          "medplum-codinginput--multiple-values",
+          "medplum-codinginput--disabled"
+        ]
+      }
+    },
+    {
+      "name": "codeable-concept-input",
+      "type": "registry:component",
+      "title": "CodeableConceptInput",
+      "description": "FHIR CodeableConcept input backed by ValueSetAutocomplete.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/codeable-concept-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/codeable-concept-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/resource-property-input-utils",
+        "seenhealth/medplum/value-set-autocomplete"
+      ],
+      "categories": ["fhir", "input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CodeableConceptInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/CodeableConceptInput",
+        "storyIds": [
+          "medplum-codeableconceptinput--basic",
+          "medplum-codeableconceptinput--default-value",
+          "medplum-codeableconceptinput--disabled"
+        ]
+      }
+    },
+    {
+      "name": "resource-type-input",
+      "type": "registry:component",
+      "title": "ResourceTypeInput",
+      "description": "Autocomplete over FHIR resource types via the resource-types ValueSet.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-type-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-type-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/code-input"],
+      "categories": ["fhir", "input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceTypeInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ResourceTypeInput", "storyIds": [] }
+    },
+    {
+      "name": "resource-input",
+      "type": "registry:component",
+      "title": "ResourceInput",
+      "description": "Single-value FHIR resource search input over AsyncAutocomplete (maxValues=1).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/async-autocomplete", "seenhealth/medplum/multi-resource-input"],
+      "categories": ["fhir", "input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceInput/ResourceInput.tsx), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ResourceInput/ResourceInput.tsx",
+        "storyIds": [
+          "medplum-resourceinput--practitioners",
+          "medplum-resourceinput--patients",
+          "medplum-resourceinput--disabled",
+          "medplum-resourceinput--error",
+          "medplum-resourceinput--label"
+        ]
+      }
+    },
+    {
+      "name": "multi-resource-input",
+      "type": "registry:component",
+      "title": "MultiResourceInput",
+      "description": "Multi-select FHIR resource search input with avatar item rendering and reference resolution.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/multi-resource-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/multi-resource-input.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": ["seenhealth/medplum/async-autocomplete", "seenhealth/medplum/resource-avatar"],
+      "categories": ["fhir", "input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceInput/MultiResourceInput.tsx), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ResourceInput/MultiResourceInput.tsx",
+        "storyIds": [
+          "medplum-multiresourceinput--empty",
+          "medplum-multiresourceinput--with-default-resources",
+          "medplum-multiresourceinput--with-default-references",
+          "medplum-multiresourceinput--many-defaults",
+          "medplum-multiresourceinput--disabled",
+          "medplum-multiresourceinput--with-max-values",
+          "medplum-multiresourceinput--with-label",
+          "medplum-multiresourceinput--with-error",
+          "medplum-multiresourceinput--practitioners"
+        ]
+      }
+    },
+    {
+      "name": "reference-input",
+      "type": "registry:component",
+      "title": "ReferenceInput",
+      "description": "FHIR Reference editor with a target-type selector and resource search.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/reference-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/reference-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": [
+        "native-select",
+        "seenhealth/medplum/resource-input",
+        "seenhealth/medplum/resource-type-input"
+      ],
+      "categories": ["fhir", "input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ReferenceInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ReferenceInput",
+        "storyIds": [
+          "medplum-referenceinput--target-profile",
+          "medplum-referenceinput--free-text",
+          "medplum-referenceinput--patient-profile-and-patient",
+          "medplum-referenceinput--disabled-target-profile",
+          "medplum-referenceinput--disabled-free-text"
+        ]
+      }
     }
   ]
 }
