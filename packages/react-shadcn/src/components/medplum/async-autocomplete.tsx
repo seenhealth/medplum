@@ -109,14 +109,14 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
   const closeDropdown = useCallback((): void => {
     setOpen(false);
     setHighlightedValue('');
-  }, []);
+  }, [setHighlightedValue, setOpen]);
 
   const openDropdown = useCallback((): void => {
     setOpen(true);
     setHighlightedValue(
       options.find((option) => selectedRef.current.some((v) => v.value === option.value))?.value ?? ''
     );
-  }, [options]);
+  }, [options, setHighlightedValue, setOpen]);
 
   const handleValueAdd = useCallback(
     (item: AsyncAutocompleteOption<T>): void => {
@@ -200,7 +200,17 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
           setAbortController(undefined);
         }
       });
-  }, [loadOptions, handleValueAdd, toOption, minInputLength, setTimer, setAbortController]);
+  }, [
+    loadOptions,
+    handleValueAdd,
+    toOption,
+    minInputLength,
+    setTimer,
+    setAbortController,
+    setHighlightedValue,
+    setOpen,
+    setOptions,
+  ]);
 
   const handleSearchChange = useCallback(
     (e: SyntheticEvent): void => {
@@ -223,7 +233,7 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
       const newTimer = window.setTimeout(() => handleTimer(), 100);
       setTimer(newTimer);
     },
-    [options, creatable, handleTimer, openDropdown, setTimer, setSearch, setAbortController]
+    [options, creatable, handleTimer, openDropdown, setTimer, setSearch, setAbortController, setHighlightedValue]
   );
 
   const toggleSelected = useCallback(
@@ -326,6 +336,8 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
       options,
       search,
       selected,
+      setHighlightedValue,
+      setOpen,
       timer,
     ]
   );
