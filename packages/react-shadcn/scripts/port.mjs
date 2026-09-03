@@ -17,7 +17,7 @@ const args = process.argv.slice(2);
 const force = args.includes('--force');
 const toIndex = args.indexOf('--to');
 const target = toIndex >= 0 ? args[toIndex + 1] : 'components/medplum';
-const sources = args.filter((a, i) => !a.startsWith('--') && i !== toIndex + 1);
+const sources = args.filter((a, i) => !a.startsWith('--') && (toIndex < 0 || i !== toIndex + 1));
 
 if (sources.length === 0) {
   console.error('usage: node scripts/port.mjs <UpstreamDir|path/to/file.ts> [...] [--to <dir under src>] [--force]');
