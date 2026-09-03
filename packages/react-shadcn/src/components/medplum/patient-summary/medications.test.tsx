@@ -222,35 +222,27 @@ describe('PatientSummary - Medications', () => {
     );
 
     const activeBadge = screen.getByText('active').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(activeBadge).toBeInTheDocument();
 
     const onHoldBadge = screen.getByText('on hold').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(onHoldBadge).toBeInTheDocument();
 
     const cancelledBadge = screen.getByText('cancelled').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(cancelledBadge).toBeInTheDocument();
 
     const completedBadge = screen.getByText('completed').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(completedBadge).toBeInTheDocument();
 
     const errorBadge = screen.getByText('entered in error').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(errorBadge).toBeInTheDocument();
 
     const draftBadge = screen.getByText('draft').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(draftBadge).toBeInTheDocument();
 
     const stoppedBadge = screen.getByText('stopped').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(stoppedBadge).toBeInTheDocument();
 
     const unknownBadge = screen.getByText('unknown').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(unknownBadge).toBeInTheDocument();
   });
 });

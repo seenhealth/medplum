@@ -145,8 +145,20 @@ function update(selected) {
         )
       )
       .filter(existsSync);
-  const storyFilesOf = (item) =>
-    item.files.map((f) => join(PACKAGE_ROOT, 'src', f.replace(/\.tsx?$/, '.stories.tsx'))).filter(existsSync);
+  // Story files live next to the item's files: <base>.stories.tsx plus <base>-<variant>.stories.tsx.
+  const storyFilesOf = (item) => {
+    const found = new Set();
+    for (const f of item.files) {
+      const abs = join(PACKAGE_ROOT, 'src', f);
+      const base = basename(f).replace(/\.tsx?$/, '');
+      for (const sibling of readdirSync(dirname(abs))) {
+        if (sibling.endsWith('.stories.tsx') && (sibling === `${base}.stories.tsx` || sibling.startsWith(`${base}-`))) {
+          found.add(join(dirname(abs), sibling));
+        }
+      }
+    }
+    return [...found];
+  };
   const unitByFile = runVitest(
     'unit',
     selected.flatMap((item) => testFilesOf(item).map((f) => `/${basename(f)}`))

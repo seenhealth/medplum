@@ -3214,6 +3214,157 @@
       }
     },
     {
+      "name": "timeline",
+      "type": "registry:component",
+      "title": "Timeline",
+      "description": "Vertical FHIR activity list. TimelineItem is a Panel with author, timestamp, and an optional composed menu.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/timeline.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/timeline.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@tabler/icons-react@^3.46.0"],
+      "registryDependencies": [
+        "button",
+        "dropdown-menu",
+        "seenhealth/medplum/container",
+        "seenhealth/medplum/error-boundary",
+        "seenhealth/medplum/medplum-link",
+        "seenhealth/medplum/panel",
+        "seenhealth/medplum/resource-avatar",
+        "seenhealth/medplum/resource-name",
+        "utils"
+      ],
+      "categories": ["fhir", "timeline"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Timeline), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/Timeline", "storyIds": ["medplum-timeline--basic"] }
+    },
+    {
+      "name": "resource-timeline",
+      "type": "registry:component",
+      "title": "ResourceTimeline",
+      "description": "Loads history and related resources for any FHIR resource, with comment/media composers and getMenu customization.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-timeline.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-timeline.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": [
+        "button",
+        "input",
+        "scroll-area",
+        "seenhealth/medplum/attachment-button",
+        "seenhealth/medplum/attachment-display",
+        "seenhealth/medplum/date",
+        "seenhealth/medplum/diagnostic-report-display",
+        "seenhealth/medplum/form",
+        "seenhealth/medplum/notify",
+        "seenhealth/medplum/panel",
+        "seenhealth/medplum/resource-avatar",
+        "seenhealth/medplum/resource-diff-table",
+        "seenhealth/medplum/resource-table",
+        "seenhealth/medplum/timeline",
+        "spinner"
+      ],
+      "categories": ["fhir", "timeline"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceTimeline), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ResourceTimeline",
+        "storyIds": ["medplum-resourcetimeline--basic", "medplum-resourcetimeline--with-comments"]
+      }
+    },
+    {
+      "name": "default-resource-timeline",
+      "type": "registry:component",
+      "title": "DefaultResourceTimeline",
+      "description": "ResourceTimeline wrapper that loads history and related Tasks.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/default-resource-timeline.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/default-resource-timeline.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/resource-timeline"],
+      "categories": ["fhir", "timeline"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/DefaultResourceTimeline), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/DefaultResourceTimeline",
+        "storyIds": ["medplum-defaultresourcetimeline--basic"]
+      }
+    },
+    {
+      "name": "patient-timeline",
+      "type": "registry:component",
+      "title": "PatientTimeline",
+      "description": "ResourceTimeline for a Patient: history, clinical resources, comments, and media uploads.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-timeline.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-timeline.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/resource-timeline"],
+      "categories": ["fhir", "timeline"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/PatientTimeline), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/PatientTimeline", "storyIds": ["medplum-patienttimeline--patient"] }
+    },
+    {
+      "name": "encounter-timeline",
+      "type": "registry:component",
+      "title": "EncounterTimeline",
+      "description": "ResourceTimeline for an Encounter: history, Communications, and Media.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/encounter-timeline.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/encounter-timeline.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/resource-timeline"],
+      "categories": ["fhir", "timeline"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/EncounterTimeline), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/EncounterTimeline",
+        "storyIds": ["medplum-encountertimeline--encounter"]
+      }
+    },
+    {
+      "name": "service-request-timeline",
+      "type": "registry:component",
+      "title": "ServiceRequestTimeline",
+      "description": "ResourceTimeline for a ServiceRequest: history, Communications, DiagnosticReports, Media, documents, and Tasks.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/service-request-timeline.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/service-request-timeline.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/resource-timeline"],
+      "categories": ["fhir", "timeline"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ServiceRequestTimeline), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ServiceRequestTimeline",
+        "storyIds": ["medplum-servicerequesttimeline--basic"]
+      }
+    },
+    {
       "name": "diagnostic-report-display",
       "type": "registry:component",
       "title": "DiagnosticReportDisplay",

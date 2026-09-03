@@ -163,11 +163,9 @@ describe('PatientSummary - Immunizations', () => {
     );
 
     const completedBadge = screen.getByText('completed').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(completedBadge).toBeInTheDocument();
 
     const notDoneBadge = screen.getByText('not done').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(notDoneBadge).toBeInTheDocument();
   });
 

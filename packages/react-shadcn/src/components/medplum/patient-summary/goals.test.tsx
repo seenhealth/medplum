@@ -214,15 +214,12 @@ describe('PatientSummary - Goals', () => {
     );
 
     const activeBadge = screen.getByText('active').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(activeBadge).toBeInTheDocument();
 
     const onHoldBadge = screen.getByText('on hold').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(onHoldBadge).toBeInTheDocument();
 
     const cancelledBadge = screen.getByText('cancelled').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(cancelledBadge).toBeInTheDocument();
   });
 });

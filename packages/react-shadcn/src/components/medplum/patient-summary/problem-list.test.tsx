@@ -288,19 +288,15 @@ describe('PatientSummary - ProblemList', () => {
     );
 
     const activeBadge = screen.getByText('active').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(activeBadge).toBeInTheDocument();
 
     const inactiveBadge = screen.getByText('inactive').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(inactiveBadge).toBeInTheDocument();
 
     const remissionBadge = screen.getByText('remission').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(remissionBadge).toBeInTheDocument();
 
     const resolvedBadge = screen.getByText('resolved').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(resolvedBadge).toBeInTheDocument();
   });
 });

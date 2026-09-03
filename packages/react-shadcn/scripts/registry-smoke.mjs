@@ -28,7 +28,13 @@ if (!selected.length) {
 const scratch = mkdtempSync(join(tmpdir(), 'medplum-shadcn-smoke-'));
 const app = join(scratch, 'app');
 const run = (cmd, cmdArgs, cwd = app) => {
-  const r = spawnSync(cmd, cmdArgs, { cwd, stdio: 'pipe', encoding: 'utf8', env: { ...process.env, CI: '1' } });
+  const r = spawnSync(cmd, cmdArgs, {
+    cwd,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    encoding: 'utf8',
+    env: { ...process.env, CI: '1' },
+    timeout: 600_000,
+  });
   if (r.status !== 0) {
     console.error(`${cmd} ${cmdArgs.join(' ')} failed in ${cwd}\n${r.stdout}\n${r.stderr}`);
     process.exit(1);
@@ -110,7 +116,7 @@ writeFileSync(join(app, 'src/index.css'), '@import "tailwindcss";\n');
 writeFileSync(join(app, 'src/main.tsx'), 'export {};\n');
 console.log(`installing scratch app in ${app}`);
 run('npm', ['install', '--no-audit', '--no-fund', '--ignore-scripts']);
-run('npx', ['-y', 'shadcn@latest', 'init', '-d', '--base', 'radix']);
+run('npx', ['-y', 'shadcn@latest', 'init', '-d', '-f', '--base', 'radix']);
 
 // 3. Add the items and type-check.
 for (const item of selected) {

@@ -165,19 +165,15 @@ describe('PatientSummary - Allergies', () => {
     );
 
     const activeBadge = screen.getByText('active').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(activeBadge).toBeInTheDocument();
 
     const inactiveBadge = screen.getByText('inactive').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(inactiveBadge).toBeInTheDocument();
 
     const resolvedBadge = screen.getByText('resolved').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(resolvedBadge).toBeInTheDocument();
 
     const unknownBadge = screen.getByText('unknown').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(unknownBadge).toBeInTheDocument();
   });
 });

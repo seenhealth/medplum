@@ -241,19 +241,15 @@ describe('PatientSummary - Labs', () => {
     await setup(<Labs patient={HomerSimpson} serviceRequests={requests} diagnosticReports={reports} />);
 
     const activeBadge = screen.getByText('active').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(activeBadge).toBeInTheDocument();
 
     const cancelledBadge = screen.getByText('cancelled').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(cancelledBadge).toBeInTheDocument();
 
     const preliminaryBadge = screen.getByText('preliminary').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(preliminaryBadge).toBeInTheDocument();
 
     const finalBadge = screen.getByText('final').closest('[data-slot="badge"]');
-    // @ts-expect-error Mantine CSS custom property
     expect(finalBadge).toBeInTheDocument();
   });
 });
