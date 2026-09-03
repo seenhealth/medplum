@@ -1,0 +1,5 @@
+src/components/ui/
+src/hooks/use-mobile.ts
+public/r/
+storybook-static/
+artifacts/

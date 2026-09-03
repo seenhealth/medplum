@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "types": ["node", "vitest/globals", "vite/client"],
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "registry/**/*.ts", ".storybook/**/*.ts", ".storybook/**/*.tsx", "*.ts"]
+}
