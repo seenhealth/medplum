@@ -215,10 +215,13 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
   const handleSearchChange = useCallback(
     (e: SyntheticEvent): void => {
       if ((options && options.length > 0) || creatable) {
-        openDropdown();
+        if (open) {
+          setHighlightedValue('');
+        } else {
+          openDropdown();
+        }
       }
 
-      setHighlightedValue('');
       setSearch((e.currentTarget as HTMLInputElement).value);
 
       if (abortControllerRef.current) {
@@ -233,7 +236,7 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
       const newTimer = window.setTimeout(() => handleTimer(), 100);
       setTimer(newTimer);
     },
-    [options, creatable, handleTimer, openDropdown, setTimer, setSearch, setAbortController, setHighlightedValue]
+    [options, creatable, open, handleTimer, openDropdown, setTimer, setSearch, setAbortController, setHighlightedValue]
   );
 
   const toggleSelected = useCallback(
