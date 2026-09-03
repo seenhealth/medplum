@@ -2106,6 +2106,222 @@
           "medplum-resourceboard--custom-load-items"
         ]
       }
+    },
+    {
+      "name": "diagnostic-report-display",
+      "type": "registry:component",
+      "title": "DiagnosticReportDisplay",
+      "description": "Display a FHIR DiagnosticReport with specimen info, grouped observations, and performing labs.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/diagnostic-report-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/diagnostic-report-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/address-display",
+        "seenhealth/medplum/codeable-concept-display",
+        "seenhealth/medplum/contact-point-display",
+        "seenhealth/medplum/medplum-link",
+        "seenhealth/medplum/note-display",
+        "seenhealth/medplum/range-display",
+        "seenhealth/medplum/reference-display",
+        "seenhealth/medplum/resource-badge",
+        "seenhealth/medplum/status-badge",
+        "separator",
+        "table",
+        "utils"
+      ],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/DiagnosticReportDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/DiagnosticReportDisplay",
+        "storyIds": [
+          "medplum-diagnosticreportdisplay--simple",
+          "medplum-diagnosticreportdisplay--with-categories",
+          "medplum-diagnosticreportdisplay--multiple-specimens",
+          "medplum-diagnosticreportdisplay--hide-specimen-info",
+          "medplum-diagnosticreportdisplay--hide-notes",
+          "medplum-diagnosticreportdisplay--kitchen-sink",
+          "medplum-diagnosticreportdisplay--lab-panel-with-corrections",
+          "medplum-diagnosticreportdisplay--observation-groups",
+          "medplum-diagnosticreportdisplay--observation-group-hierarchy",
+          "medplum-diagnosticreportdisplay--hide-subject"
+        ]
+      }
+    },
+    {
+      "name": "measure-report-display",
+      "type": "registry:block",
+      "title": "MeasureReportDisplay",
+      "description": "Display a FHIR MeasureReport with group scores as ring progress or quantity values.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/measure-report-display/measure-report-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/measure-report-display/measure-report-display.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/measure-report-display/measure-report-group-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/measure-report-display/measure-report-group-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/quantity-display", "seenhealth/medplum/ring-progress"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/MeasureReportDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/MeasureReportDisplay",
+        "storyIds": [
+          "medplum-measurereportdisplay--basic",
+          "medplum-measurereportdisplay--multiple",
+          "medplum-measurereportdisplay--with-population"
+        ]
+      }
+    },
+    {
+      "name": "patient-header",
+      "type": "registry:block",
+      "title": "PatientHeader",
+      "description": "Info bar header for a FHIR Patient: name, age, gender, identifiers.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-header.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-header.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-header-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/patient-header-utils.ts"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/human-name-display",
+        "seenhealth/medplum/info-bar",
+        "seenhealth/medplum/medplum-link",
+        "seenhealth/medplum/resource-avatar"
+      ],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/PatientHeader), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/PatientHeader", "storyIds": [] }
+    },
+    {
+      "name": "smart-app-launch-link",
+      "type": "registry:component",
+      "title": "SmartAppLaunchLink",
+      "description": "Anchor that creates a SMART App Launch context and opens the client launch URI.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/smart-app-launch-link.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/smart-app-launch-link.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/notify", "utils"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/SmartAppLaunchLink), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/SmartAppLaunchLink", "storyIds": ["medplum-smartapplaunchlink--basic"] }
+    },
+    {
+      "name": "scheduler",
+      "type": "registry:component",
+      "title": "Scheduler",
+      "description": "Calendar plus time-slot picker over one or more FHIR Schedules.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/scheduler.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/scheduler.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": [
+        "button",
+        "seenhealth/medplum/calendar-date-input",
+        "seenhealth/medplum/notify",
+        "seenhealth/medplum/resource-avatar",
+        "seenhealth/medplum/resource-name",
+        "spinner"
+      ],
+      "categories": ["scheduling"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Scheduler), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/Scheduler",
+        "storyIds": [
+          "medplum-scheduler--basic",
+          "medplum-scheduler--multiple-schedules",
+          "medplum-scheduler--custom-slot-search"
+        ]
+      }
+    },
+    {
+      "name": "patient-export-form",
+      "type": "registry:component",
+      "title": "PatientExportForm",
+      "description": "Export a Patient as FHIR Everything, summary, or C-CDA.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-export-form.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-export-form.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": [
+        "checkbox",
+        "field",
+        "seenhealth/medplum/date-time-input",
+        "seenhealth/medplum/form",
+        "seenhealth/medplum/form-section",
+        "seenhealth/medplum/notify",
+        "seenhealth/medplum/reference-input",
+        "toggle-group"
+      ],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/PatientExportForm), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/PatientExportForm", "storyIds": ["medplum-patientexportform--example"] }
+    },
+    {
+      "name": "patient-accounts-form",
+      "type": "registry:component",
+      "title": "PatientAccountsForm",
+      "description": "Admin form to add and remove Patient meta.accounts with optional compartment propagation.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-accounts-form.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-accounts-form.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": [
+        "alert",
+        "badge",
+        "button",
+        "checkbox",
+        "field",
+        "seenhealth/medplum/modal",
+        "seenhealth/medplum/notify",
+        "seenhealth/medplum/reference-input",
+        "seenhealth/medplum/resource-badge",
+        "separator",
+        "spinner",
+        "table"
+      ],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/PatientAccountsForm), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/PatientAccountsForm", "storyIds": [] }
     }
   ]
 }

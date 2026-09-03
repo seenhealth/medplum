@@ -12,7 +12,7 @@ You are porting one work unit (a set of `packages/react/src/<Dir>` directories) 
 
 ## Steps per upstream directory
 
-1. `node scripts/port.mjs <Dir>` copies component, tests and stories into `src/components/medplum/` (kebab-case) with rewritten imports. Multi-file directories: `node scripts/port.mjs <Dir> --to components/medplum/<kebab-dir>`.
+1. `node scripts/port.mjs <Dir>` copies component, tests and stories into `src/components/medplum/` (kebab-case) with rewritten imports. Multi-file directories: `node scripts/port.mjs <Dir> --to components/medplum/<kebab-dir>`. Never add `index.ts` barrels: consumers install the listed files only, so every import names the file (`@/components/medplum/form/form`, not `@/components/medplum/form`).
 2. Run the ported test file first: `npx vitest run --project unit /<kebab>.test.` — it must fail because of Mantine imports, then pass.
 3. Port the component: keep all logic (state, effects, callbacks, helpers) byte-for-byte; replace Mantine JSX with the recipes in the translation guide; delete CSS modules and express them with Tailwind; apply the composition rule to presentational props.
 4. Tests: allowed edits are the render import (done), replacing Mantine-DOM queries with helpers in `src/test/`, `vi.mock` paths, and rewriting a _render call_ to a composed API. Assertions never change. If an assertion is Mantine-DOM-only, `test.skip('<name> (Mantine-specific: <reason>)', ...)`.
