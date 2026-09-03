@@ -6,26 +6,29 @@ Date: 2026-09-03. Companion to `01-research-medplum-react-shadcn-migration.md` (
 
 **Goal.** A shadcn registry whose items are behavior-for-behavior ports of `@medplum/react@5.1.36` components, styled with shadcn/ui + Tailwind, installable per component (`shadcn add <owner>/<repo>/human-name-input`), owned and customizable as source by the consumer. Every ported component is verified by (1) the upstream test suite running green against the port, (2) the upstream stories rendering under identical Storybook IDs so they can be compared 1:1 with `storybook.medplum.com`, (3) a registry install smoke test, and (4) an API parity report.
 
-**Non-goals for v1.** `@medplum/react-scheduling`, `packages/app`, pixel parity with Mantine, a compiled npm package (registry-only), Base UI *and* Radix variants (one base), new features, upstreaming.
+**Scope of v1 (decided 2026-09-03).** Phases 0–7: every component directory except the shell/auth/chat group — 120 of 125 dirs, 1,097 of 1,359 upstream test cases, 283 of 330 stories. Phase 8 (`AppShell`, `NotificationIcon`, `auth/*`, `GoogleButton`, `chat/*`) is deferred to v2; nothing in Phases 0–7 depends on it.
+
+**Non-goals for v1.** Phase 8 components, `@medplum/react-scheduling`, `packages/app`, pixel parity with Mantine, a compiled npm package (registry-only), Base UI *and* Radix variants (one base), new features, upstreaming.
 
 ## 2. Decisions
 
-Each decision has a recommendation the plan assumes. D0 and D1 need the user's confirmation before Phase 0 starts; the rest are architect calls.
+All decisions below are resolved (user confirmation 2026-09-03, log in §12). Executors treat them as fixed.
 
 | # | Decision | Recommendation | Why |
 |---|---|---|---|
-| **D0** | Where the code lives | **New repo `seenhealth/medplum-shadcn`** (pnpm, Vite, Vitest, Storybook 10, Tailwind v4). Upstream source is fetched read-only into `upstream/` (gitignored) at a pinned SHA by `scripts/upstream-fetch.mjs` (sparse clone of `packages/react/src`, `packages/storybook/.storybook`). | GitHub-registry mode requires `registry.json` at the repo root; a standalone repo keeps `shadcn` CLI conventions intact, installs in ~1 min for cloud executors (the medplum monorepo is npm + server deps), and uses the team's pnpm/Biome conventions. Fallback: `packages/react-shadcn` in the `seenhealth/medplum` fork with `registry.json` at fork root — same internal layout, npm workspaces, heavier CI. |
+| **D0** | Where the code lives | **New repo `seenhealth/medplum-shadcn`, private now, open-sourced later** (pnpm, Vite, Vitest, Storybook 10, Tailwind v4; Apache-2.0 from the first commit so open-sourcing needs no relicensing). Upstream source is fetched read-only into `upstream/` (gitignored) at a pinned SHA by `scripts/upstream-fetch.mjs` (sparse clone of `packages/react/src`, `packages/storybook/.storybook`). | GitHub-registry mode requires `registry.json` at the repo root; a standalone repo keeps `shadcn` CLI conventions intact, installs in ~1 min for cloud executors (the medplum monorepo is npm + server deps), and uses the team's pnpm/Biome conventions. |
 | **D1** | Primitive base | **Radix** (`shadcn init -d --base radix`, style `new-york`/`radix-nova`) for v1. | seen-ehr (first consumer) is Radix; executor models are far more reliable with the `asChild` API; every official item still ships for Radix; the only Base-UI-only item we need (`combobox`) ships as `@base-ui/react` in Radix styles too. Base UI variant later via the `{style}` URL placeholder if demand appears (delta ≈ 15–18 dirs with trigger sites). |
 | **D2** | Tailwind | **v4 only.** | shadcn CLI v4 items (`cssVars.theme`, `data-slot`, `size-*`) assume v4. seen-ehr's v3.4 → v4 upgrade is an adoption prerequisite (mechanical `@tailwindcss/upgrade`), tracked in §11, not a registry constraint. |
 | **D3** | Distribution | **GitHub registry first** (`pnpm dlx shadcn@latest add seenhealth/medplum-shadcn/<item>`; private repo works via `gh auth`/`GH_TOKEN`). `shadcn build` output + Vercel static hosting gives a hosted namespace (`@medplum-shadcn`) when the repo goes public. npm package deferred. | Zero infrastructure for internal use; cross-item `registryDependencies` use the `seenhealth/medplum-shadcn/<item>` form, which stays valid when served over HTTP. |
 | **D4** | Item taxonomy | FHIR components = `registry:component` → `components/medplum/<kebab>.tsx`; multi-file features = `registry:block` → `components/medplum/<feature>/*.tsx`; pure TS = `registry:lib` → `lib/medplum/*.ts`; hooks = `registry:hook` → `hooks/medplum/*.ts`; the few primitives shadcn lacks (`stepper`, `ring-progress`, `notify`) = `registry:ui` → `components/ui/*.tsx`. shadcn primitives are bare `registryDependencies` (`"field"`, `"native-select"`, …), never vendored into our items. | Mirrors Vercel AI Elements exactly (`registry:component`, `target: components/ai-elements/<name>.tsx`), which seen-ehr already consumes. |
-| **D5** | Public API | Keep every exported symbol name and every prop that is not Mantine-typed. Replace Mantine-typed props (`PaperProps`, `TextProps`, `AnchorProps`, `BadgeProps`, `ButtonProps`, `ModalProps`, `TextareaProps`, `AvatarProps`, `AlertProps`, `TabsProps`, `ComboboxProps`, `ContainerProps`, `PasswordInputProps`, `ElementProps`) with `className` + `React.ComponentProps<'div'|'a'|'button'|…>` and record the change in `docs/migration/<item>.md`. `AppShell` gets a redesigned API (sidebar-based). | Consumers can codemod imports 1:1; deviations are enumerated, not discovered. |
+| **D5** | Public API | **Behavior props stay, presentation becomes composition.** Keep every exported symbol name and every *data/behavior* prop unchanged: FHIR values (`value`, `defaultValue`, `resource`, `questionnaire`, `search`…), schema plumbing (`path`, `valuePath`, `outcome`, `property`, `name`, `disabled`, `required`), callbacks (`onChange(value, propName?)`, `onSubmit`, `onClick`, `loadOptions`, `toOption`…), and behavior switches (`checkboxesEnabled`, `hideToolbar`, `maxValues`, `creatable`, `disablePagination`…). Rewrite *presentational* API the shadcn way: chrome and slots become composed sub-components with `data-slot` and `className` (`Panel`→`Card`-style `Panel/PanelHeader/PanelContent`; `Modal title/actions`→`Modal/ModalHeader/ModalTitle/ModalBody/ModalFooter`; `FormSection title/description`→`FormSection/FormSectionLabel/FormSectionDescription/FormSectionError`; `TimelineItem popupMenuItems`→`TimelineItemMenu` child; `AsyncAutocomplete label/description/error/leftSection`→wrapped in `Field` by the caller), Mantine-typed prop bags (`PaperProps`, `TextProps`, `AnchorProps`, `BadgeProps`, `ButtonProps`, `ModalProps`, `TextareaProps`, `AvatarProps`, `AlertProps`, `TabsProps`, `ComboboxProps`, `ContainerProps`, `PasswordInputProps`, `ElementProps`) become `React.ComponentProps<'div'|'a'|'button'|…>` + cva `variant`/`size`, color-name props (`StatusBadge` colors, `AppShellAnnouncement.color`) become cva variants. Render-props that render *one item of a generic collection* (`itemComponent`, `pillComponent`, `emptyComponent`, `renderCell`, `getMenu`) stay as render-props — that is also shadcn's idiom (`ComboboxList` render function). Every change is recorded in `docs/migration/<item>.md`. | The user asked for idiomatic shadcn over Mantine-shaped prop bags; composition keeps consumer ownership meaningful (they restyle a slot by editing one sub-component). Behavior props are what the upstream tests exercise, so parity stays measurable. |
 | **D6** | Evidence | Six verification layers (§7) with a machine-readable ledger; a component is "done" only when all six are green or each red is documented. | The user's requirement: behavior verifiable per component. |
 | **D7** | Icons | Keep `@tabler/icons-react` in our items (lucide stays inside shadcn primitives). | Upstream and seen-ehr both use tabler; zero churn. |
 | **D8** | Theme | shadcn semantic tokens only (`bg-background`, `text-muted-foreground`, `border-border`, …); dark mode by `.dark` class; one optional `registry:theme` item `medplum-theme` approximating Medplum's palette for demos. | Consumers own the look; components must not carry palette. |
 | **D9** | Hooks/data | Depend on published `@medplum/core`, `@medplum/react-hooks`, `@medplum/fhirtypes` (pinned, bumped with upstream sync); never vendor them. `@medplum/mock` + `@medplum/definitions` are dev-only. | They are Mantine-free by upstream policy. |
 | **D10** | Repo tooling | pnpm 10, Node 22, TypeScript (stable), Biome configured to Medplum's Prettier shape (single quotes, semicolons, 120 cols) so ported files diff cleanly against upstream, Vitest (jsdom project for ported tests + browser project for stories), Storybook 10 `react-vite`, `@tailwindcss/vite`, Playwright. | Minimizes diff noise against upstream, matches Seen conventions. |
 | **D11** | Licensing | Apache-2.0; every ported file keeps the upstream SPDX header and adds the Apache §4(b) modification notice line; repo carries `NOTICE`. | Legal requirement for derived work. |
+| **D12** | Fork branching | The `seenhealth/medplum` fork keeps `main` untouched. A sync branch `cursor/upstream-main-5-1-36-a44b` sits at upstream `main` (`0e501215d`, pushed 2026-09-03); any work that must live in the fork (these docs, future upstream patches) branches off it. Nothing is stacked or rebased until the very end, when the branches are assembled into one Graphite stack `main ← upstream-sync ← docs ← …`. The registry itself lives in the new repo (D0), which pins the same SHA in `upstream.lock`. | User instruction 2026-09-03: pull latest on a branch, branch off it, stack at the very end. |
 
 ## 3. Target architecture
 
@@ -36,7 +39,7 @@ medplum-shadcn/
 ├─ registry.json                 generated by scripts/build-registry.ts from registry/items.ts; root = GitHub-registry mode
 ├─ components.json               this repo's shadcn config: style new-york, base radix, rsc false, tsx true,
 │                                aliases { components "@/components", ui "@/components/ui", lib "@/lib", hooks "@/hooks", utils "@/lib/utils" }
-├─ upstream.lock                 { "repo": "medplum/medplum", "sha": "8d589869f…", "version": "5.1.36" }
+├─ upstream.lock                 { "repo": "medplum/medplum", "sha": "0e501215d…", "version": "5.1.36" }  (= fork sync branch cursor/upstream-main-5-1-36-a44b)
 ├─ upstream/                     gitignored sparse checkout at upstream.lock sha (packages/react/src, packages/storybook/.storybook)
 ├─ src/
 │  ├─ components/ui/             shadcn primitives installed by the CLI (never hand-edited) + our custom registry:ui items
@@ -106,11 +109,11 @@ sidebar+command ─► app-shell ─► notification-icon, link-tabs            
 ## 4. Behavior-preservation rules (binding for every executor)
 
 1. **Logic is copied, not rewritten.** State, effects, memoization, callbacks, helper functions, constants, and control flow come from `upstream/packages/react/src/<Dir>` unchanged. Only imports, JSX, and CSS change. If a Mantine primitive supplied behavior (Combobox keyboard handling, Stepper paging, Menu focus), the shadcn primitive supplies it; do not hand-roll unless no primitive exists (then write it once as a `registry:ui` item).
-2. **Preserve the DOM contract the tests and stories rely on**: exported names; prop names and semantics (D5 exceptions only); `data-testid`; `name`; `placeholder`; label text and `htmlFor` association; `title`; `aria-label`; text content; ARIA roles (`dialog`, `menuitem`, `option`, `tab`, `checkbox`, `button`, `link`); uncontrolled `defaultValue` semantics; `||` vs `??`; callback signatures (`onChange(value, propName?)`); read-only tooltips ("Read Only").
-3. **Tests first.** Copy `<Dir>/*.test.tsx` from `upstream/` before writing the component; they must fail for the right reason, then pass. Allowed edits: the `render` import path, replacing Mantine-DOM-specific queries with the new autocomplete helpers, `vi.mock` paths. Every other edit or `test.skip` is recorded in `ledger.json` with a reason. Target ≥ 95% of upstream cases passing per component; the remaining ≤ 5% must be justified as Mantine-DOM-only assertions.
+2. **Preserve the DOM contract the tests and stories rely on**: exported names; data/behavior prop names and semantics (D5); `data-testid`; `name`; `placeholder`; label text and `htmlFor` association; `title`; `aria-label`; text content; ARIA roles (`dialog`, `menuitem`, `option`, `tab`, `checkbox`, `button`, `link`); uncontrolled `defaultValue` semantics; `||` vs `??`; callback signatures (`onChange(value, propName?)`); read-only tooltips ("Read Only"). Presentational API follows D5 composition; the rendered text, roles and test ids those props produced must still appear.
+3. **Tests first.** Copy `<Dir>/*.test.tsx` from `upstream/` before writing the component; they must fail for the right reason, then pass. Allowed edits: the `render` import path; replacing Mantine-DOM-specific queries with the new autocomplete helpers; `vi.mock` paths; rewriting the *render call* (never the assertions) to the item's composition API when D5 changed it, e.g. `<Modal title="X">` → `<Modal><ModalHeader><ModalTitle>X</ModalTitle></ModalHeader>…`. Every other edit or `test.skip` is recorded in `ledger.json` with a reason. Target ≥ 95% of upstream cases passing per component; the remaining ≤ 5% must be justified as Mantine-DOM-only assertions.
 4. **Stories second.** Copy `<Dir>/*.stories.tsx`; keep `title` and export names identical; swap `Document` import; keep `withMockedDate`/fixtures. New states are not added.
 5. **No Mantine leftovers**: CI fails on any `@mantine` import, `*.module.css`, or `--mantine-` string under `src/`. CSS-module classes become Tailwind utilities; `--mantine-color-dimmed` → `text-muted-foreground`, `--mantine-spacing-md` → `p-4`/`gap-4`, `light-dark()` → `dark:` variants, breakpoints → `md:`. Appendix C §C.5 suggests a `--mantine-*` variable shim for the 36 small CSS modules; we do not take it, because a shim leaks Mantine variable names into files consumers own. The eight large modules (Navbar 253 LOC, AIRealTimeQuestionnaireForm 191, ListWithDetailPane 123, HeaderDropdown 107, BaseChat 104, Spotlight 90, CalendarDateInput 86, QuestionnaireBuilder 76) get deliberate translations reviewed by the architect.
-6. **No additions**: no new props, features, refactors, abstractions, or comments beyond upstream's. `docs/migration/<item>.md` is the only place for commentary.
+6. **No additions**: no new features, behaviors, refactors of logic, abstractions, or comments beyond upstream's. Composition sub-components required by D5 are not "additions"; a new *behavior* prop is. `docs/migration/<item>.md` is the only place for commentary.
 7. **Provenance**: keep the two upstream SPDX lines; add one line `// Modified from @medplum/react 5.1.36 <path> for medplum-shadcn (Apache-2.0 §4(b) notice)`.
 8. **Icons** stay `@tabler/icons-react`; **notifications** go through `notify()` from `lib/medplum/notify.ts` (sonner); **links** go through `MedplumLink` where upstream did.
 9. **Executors never read the `seenhealth/medplum` fork checkout** — only `upstream/` at `upstream.lock`.
@@ -118,6 +121,28 @@ sidebar+command ─► app-shell ─► notification-icon, link-tabs            
 ## 5. Translation guide (Mantine 8 → shadcn/ui, Radix base)
 
 Executors apply these recipes mechanically; the architect extends the guide when a new pattern appears (the guide is a living file, `docs/translation-guide.md`).
+
+**Composition rule (D5).** When an upstream component takes presentational props, expose the same parts as sub-components instead, following the shadcn pattern (`Card/CardHeader/CardTitle/CardContent`): each part is a `function Xyz({ className, ...props }: React.ComponentProps<'div'>)` with `data-slot="xyz"` and `cn()`; the root keeps the upstream component name. The reference implementations land in WU-03:
+
+```tsx
+// upstream                                         // medplum-shadcn
+<Panel width={600} fill>…</Panel>                    <Panel className="max-w-[600px]"><PanelContent className="p-0">…</PanelContent></Panel>
+<Modal opened onClose title="Edit" size="lg">        <Modal open onOpenChange size="lg">
+  <Stack>…</Stack>                                     <ModalHeader><ModalTitle>Edit</ModalTitle></ModalHeader>
+  <Group justify="flex-end"><Button/></Group>          <ModalBody>…</ModalBody>
+</Modal>                                               <ModalFooter><Button/></ModalFooter>
+                                                     </Modal>
+<FormSection title description withAsterisk           <FormSection outcome={outcome} errorExpression={…}>
+  outcome errorExpression htmlFor>                     <FormSectionLabel htmlFor required>title</FormSectionLabel>
+  {children}                                           <FormSectionDescription>description</FormSectionDescription>
+</FormSection>                                         {children}
+                                                       <FormSectionError />
+                                                     </FormSection>
+<TimelineItem popupMenuItems={<Menu.Item/>}>          <TimelineItem resource profile dateTime>
+                                                       <TimelineItemMenu><DropdownMenuItem/></TimelineItemMenu>…
+```
+
+Behavior props (`outcome`, `errorExpression`, `resource`, `open`/`onOpenChange`) stay on the root; the engine's internal call sites (`ElementsInput`, dialogs) are updated to the composed form as part of the same WU. Render-props over generic collections stay render-props.
 
 | Mantine | shadcn / Tailwind | Notes |
 |---|---|---|
@@ -210,7 +235,7 @@ Model routing: mechanical leaf WUs → Grok 4.6 fast; WUs touching dialogs/menus
 | L5 API parity | `pnpm parity <item>` (ts-morph: exported symbols + interface members, upstream vs port) → `parity/<item>.md` | `api.removed[]`, `api.changed[]`, each cross-referenced in `docs/migration/<item>.md` |
 | L6 Hygiene gates | `pnpm typecheck`, `pnpm lint`, `pnpm check:no-mantine` (`rg "@mantine" src` must be empty), `pnpm check:no-css-modules` | booleans |
 
-`MIGRATION_STATUS.md` is regenerated from `ledger.json` and shows one row per upstream dir (125 rows: 124 component/feature dirs + `utils/`) with phase, WU, executor, PR, and the six layer states. Program-level counters: components done / 125, test cases passing / 1,360, stories passing / 330. Baselines come from appendix A and B (regenerate with `scripts/inventory.mjs`, `scripts/stories.mjs`).
+`MIGRATION_STATUS.md` is regenerated from `ledger.json` and shows one row per upstream dir (125 rows: 124 component/feature dirs + `utils/`; the 5 Phase 8 dirs are marked `deferred-v2`) with phase, WU, executor, PR, and the six layer states. Program-level counters for v1: components done / 120, test cases passing / 1,097 (floor 1,042 = 95%), stories passing / 283. Baselines come from appendix A and B (regenerate with `scripts/inventory.mjs`, `scripts/stories.mjs`, `scripts/wu-sizes.mjs`).
 
 ## 8. Phases and work units
 
@@ -223,7 +248,7 @@ Sizes are upstream numbers from appendix A (source LOC / test cases / stories). 
 | WU-00 | Repo scaffold: pnpm, Vite, TS, Biome (Medplum Prettier shape), `components.json` (Radix, new-york, Tailwind v4), `shadcn add` the primitive set (`button input textarea label field native-select checkbox radio-group switch badge alert card table tabs dialog alert-dialog dropdown-menu popover tooltip command combobox scroll-area skeleton spinner kbd separator pagination avatar collapsible toggle toggle-group sonner sidebar sheet item empty input-group progress`), `src/lib/utils.ts`, CI skeleton, `upstream.lock` + `scripts/upstream-fetch.mjs`, `NOTICE` | `pnpm typecheck && pnpm lint` green; `pnpm upstream:fetch` populates `upstream/` |
 | WU-01 | Test + story infra: `src/test/setup.ts` (port of `test.setup.ts`), `src/test/render.tsx` (`TooltipProvider` + `Toaster`, re-exports), Vitest projects (jsdom + storybook browser), Storybook 10 `.storybook/` with `MedplumProvider(MockClient)` decorator, frozen clock (`sinon` fake timers as upstream), `BrowserRouter`, dark toggle, `@source` for `src/`; port `stories/decorators.tsx`, `MockDateWrapper*`, fixtures | `pnpm test` runs 0 tests green; `pnpm storybook` boots; `pnpm test:stories` runs |
 | WU-02 | Pure libs + custom primitives: `lib/medplum/{outcomes,date,dom,pagination,app,script,recaptcha}.ts` with their upstream tests (`utils/`: 626 src LOC, 527 test LOC, 23 cases); `lib/medplum/notify.ts`; `hooks/medplum/use-{debounced-callback,local-storage,resize-observer,clipboard}.ts`; `components/ui/{stepper,ring-progress}.tsx` with tests + stories | all L1/L6 green; items registered |
-| WU-03 | Layout + form seams: `container`, `panel`, `document` (Card-based; `PanelProps` → `React.ComponentProps<'div'> & { width?, fill? }`), `form-section` (Field-based, keeps `READ_ONLY_TOOLTIP_TEXT` tooltip), `elements-input` + `elements-context` (`ElementsInput/*`, `constants.ts`), `resource-property-input-utils` (`BaseInputProps` etc.), `checkbox-form-section` (6 dirs: 330 src LOC, 131 test LOC, 2 cases, 8 stories), and `modal` (Dialog-based; 103 src LOC, 165 test LOC, 14 cases, 7 stories) because nine later dialogs depend on its exact chrome (appendix C §3.5); `ModalProps` becomes an explicit interface (`opened`, `onClose`, `title`, `size`, `closeOnClickOutside`, `withCloseButton`, `centered`, `fullScreen`, `zIndex`) instead of `Omit<MantineModalProps, …>` (appendix C §C.7) | L1–L6 green; these are `registryDependencies` of everything else |
+| WU-03 | Layout + form seams — **the reference implementations of the D5 composition rule**: `container`, `panel`, `document` (Card-based composition `Panel/PanelHeader/PanelContent`), `form-section` (`FormSection/FormSectionLabel/FormSectionDescription/FormSectionError` on shadcn `Field`, keeps `READ_ONLY_TOOLTIP_TEXT` tooltip), `elements-input` + `elements-context` (`ElementsInput/*`, `constants.ts`), `resource-property-input-utils` (`BaseInputProps` etc.), `checkbox-form-section` (6 dirs: 330 src LOC, 131 test LOC, 2 cases, 8 stories), and `modal` (Dialog-based; 103 src LOC, 165 test LOC, 14 cases, 7 stories) because nine later dialogs depend on its exact chrome (appendix C §3.5); `ModalProps` becomes an explicit interface (`opened`, `onClose`, `title`, `size`, `closeOnClickOutside`, `withCloseButton`, `centered`, `fullScreen`, `zIndex`) instead of `Omit<MantineModalProps, …>` (appendix C §C.7) | L1–L6 green; these are `registryDependencies` of everything else |
 | WU-04 | **Golden example**: `human-name-display` and `human-name-input` (134 src LOC, 171 test LOC, 6 cases, 4 stories) end-to-end through all six layers; write `docs/translation-guide.md`, `docs/porting-rules.md`, the WU prompt template, `scripts/{build-registry,registry-smoke,parity-report,story-matrix,compare-stories,ledger,wu-sizes}` | `MIGRATION_STATUS.md` shows 2/125 done with all six layers green; artifacts for `medplum-humannameinput--basic|disabled|partially-disabled` and `medplum-humannamedisplay--basic` reviewed |
 
 Sizes below are exact upstream measurements (src LOC / test LOC / test cases / stories) summed per WU by `scripts/wu-sizes.mjs`; the 23 WUs cover all 125 component dirs (1,359 test cases, 330 stories).
@@ -280,7 +305,9 @@ Sizes below are exact upstream measurements (src LOC / test LOC / test cases / s
 | WU-27 | DiagnosticReportDisplay, MeasureReportDisplay (`ring-progress`), PatientHeader, PatientExportForm, PatientAccountsForm, SmartAppLaunchLink, Scheduler | 1,749 | 1,985 | 73 | 18 | |
 | WU-28 | PatientSummary (27 files: section registry, `usePatientSummaryData` wiring, 10 edit dialogs, Pharmacies) | 3,511 | 4,469 | 185 | 1 | difficulty 2/5 (appendix C §5): repetitive dialogs on `modal`; split into 28a sections/registry and 28b dialogs; `PharmacyDialog` needs individual attention |
 
-### Phase 8 — Shell, auth, chat (3 executors)
+### Phase 8 — Shell, auth, chat — **deferred to v2** (decision 2026-09-03)
+
+Kept here so the sizing and design notes are not lost; not part of v1's ledger targets. Seen has its own shell and auth; these matter for generic adopters and upstream optionality only.
 
 | WU | Dirs | src LOC | test LOC | tests | stories | Notes |
 |---|---|---|---|---|---|---|
@@ -292,7 +319,8 @@ Sizes below are exact upstream measurements (src LOC / test LOC / test cases / s
 
 | WU | Scope |
 |---|---|
-| WU-40 | `registry.json` final, `shadcn build` → `public/r`, Vercel static deploy, `medplum-theme` item, README with `shadcn add` instructions for GitHub and namespace modes, tag `v0.1.0+medplum.5.1.36` |
+| WU-40 | `registry.json` final, `shadcn build` → `public/r` (kept in-repo so the hosted namespace is a static deploy away when the repo goes public), `medplum-theme` item, README with `shadcn add seenhealth/medplum-shadcn/<item>` instructions (private: `gh auth login` or `GH_TOKEN`), tag `v0.1.0+medplum.5.1.36` |
+| WU-42 | Fork stack assembly (D12): rebase `cursor/mantine-shadcn-migration-plan-a44b` and any other fork branches onto `cursor/upstream-main-5-1-36-a44b`, submit as one Graphite stack into `main` (`gt s --stack --no-edit --no-interactive`). Done last, on the user's go. |
 | WU-41 | seen-ehr adoption spike (§11): `components.json` in `packages/react`, Tailwind v4 upgrade PR, replace the 20 `@medplum/react` component imports listed in research §3 with registry items, `no-restricted-imports` rule for `@medplum/react` components |
 
 ## 9. Architect review checklist (per WU PR)
@@ -318,9 +346,18 @@ Sizes below are exact upstream measurements (src LOC / test LOC / test cases / s
 - Install order follows research §3: `codeable-concept-display`, `human-name-display`, `reference-display`, `resource-avatar`, `reference-input`, `async-autocomplete` (or keep Seen's `Combobox`), `backbone-element-display/input`, `resource-table`, questionnaire item widgets, `form-section`, `checkbox-form-section`, then `questionnaire-form`; keep `MedplumProvider`/hooks from `@medplum/react-hooks`.
 - Extend `frontendRestrictedImportsPaths` with `@medplum/react` component names as they are replaced; remove `MantineProvider` per seen-ehr's own plan Phase 5.
 
-## 12. Open questions for the user
+## 12. Decision log (user, 2026-09-03)
 
-1. D0: create `seenhealth/medplum-shadcn` (private) now? Or build inside the fork?
-2. D1: Radix for v1 (recommended) or Base UI?
-3. Registry namespace/repo name: `medplum-shadcn` (recommended) vs `fhir-ui` / `orbit-ui`.
-4. Is `AppShell`/`auth`/`chat` (Phase 8) wanted at all for Seen, or should v1 stop at Phase 7? (Seen has its own shell/auth; including them helps generic adopters and upstream optionality.)
+| Question | Answer |
+|---|---|
+| Where the code lives | New repo `seenhealth/medplum-shadcn`, private now, open-source later (D0). |
+| Primitive base | Radix (D1). |
+| Name | `medplum-shadcn` everywhere: repo, registry name, future `@medplum-shadcn` namespace. |
+| v1 scope | Phases 0–7. Phase 8 deferred to v2. |
+| Fork `main` | Do not push to `main`. Sync branch `cursor/upstream-main-5-1-36-a44b` at upstream `main`; fork work branches off it; assemble one stack at the very end (D12). |
+| Tailwind | v4 only (D2). |
+| Distribution | GitHub registry `seenhealth/medplum-shadcn/<item>` (D3). |
+| Public API | Idiomatic shadcn: composition over presentational props; behavior props preserved (D5 rewritten). |
+| Icons, theme, hooks, tooling | As recommended (D7–D10). |
+
+**Still blocked on the user:** creating the empty private repository `seenhealth/medplum-shadcn` (Apache-2.0, no template) and granting the Cursor GitHub app / cloud-agent environment access to it. Everything in Phase 0 waits on that; the fork sync branch and these docs do not.
