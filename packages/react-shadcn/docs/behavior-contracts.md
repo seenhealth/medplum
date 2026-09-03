@@ -40,6 +40,7 @@ Everything else is `cva` + `cn()` restyling of components whose logic is already
 ---
 
 <a name="group-1"></a>
+
 ## Group 1 — Schema-driven form engine
 
 `ResourceForm/` · `BackboneElementInput/` · `ElementsInput/` · `ResourcePropertyInput/` ·
@@ -109,6 +110,7 @@ then `applyDefaultValuesToResource(defaultValue, profile)`. Without a profile it
 in `ResourceArrayInput`.
 
 **disabled / readonly semantics.** Three distinct mechanisms:
+
 - `ExtendedInternalSchemaElement.readonly` — computed by `buildElementsContext` from
   `accessPolicyResource.readonlyFields`. Read in `ResourcePropertyInput` at lines 69 (`disabled=`),
   108 and 162 (`readOnly=`), and in `ResourceArrayInput` at lines 76, 118, 132 (suppresses
@@ -122,23 +124,23 @@ in `ResourceArrayInput`.
 
 ### 1.1 Public props
 
-| Interface | File:line |
-|---|---|
-| `BaseInputProps` | `ResourcePropertyInput/ResourcePropertyInput.utils.ts:5` |
+| Interface                          | File:line                                                 |
+| ---------------------------------- | --------------------------------------------------------- |
+| `BaseInputProps`                   | `ResourcePropertyInput/ResourcePropertyInput.utils.ts:5`  |
 | `ComplexTypeInputProps<ValueType>` | `ResourcePropertyInput/ResourcePropertyInput.utils.ts:14` |
-| `PrimitiveTypeInputProps` | `ResourcePropertyInput/ResourcePropertyInput.utils.ts:21` |
-| `ResourcePropertyInputProps` | `ResourcePropertyInput/ResourcePropertyInput.tsx:45` |
-| `ElementDefinitionSelectorProps` | `ResourcePropertyInput/ResourcePropertyInput.tsx:114` |
-| `ElementDefinitionTypeInputProps` | `ResourcePropertyInput/ResourcePropertyInput.tsx:169` |
-| `ResourcePropertyDisplayProps` | `ResourcePropertyDisplay/ResourcePropertyDisplay.tsx:37` |
-| `ElementsInputProps` | `ElementsInput/ElementsInput.tsx:16` |
-| `BackboneElementInputProps` | `BackboneElementInput/BackboneElementInput.tsx:16` |
-| `ResourceArrayInputProps` | `ResourceArrayInput/ResourceArrayInput.tsx:20` |
-| `SliceInputProps` | `SliceInput/SliceInput.tsx:18` |
-| `ResourceFormProps` | `ResourceForm/ResourceForm.tsx:22` |
-| `FormProps` | `Form/Form.tsx:8` |
-| `FormSectionProps` | `FormSection/FormSection.tsx:13` |
-| `CheckboxFormSectionProps` | `CheckboxFormSection/CheckboxFormSection.tsx:10` |
+| `PrimitiveTypeInputProps`          | `ResourcePropertyInput/ResourcePropertyInput.utils.ts:21` |
+| `ResourcePropertyInputProps`       | `ResourcePropertyInput/ResourcePropertyInput.tsx:45`      |
+| `ElementDefinitionSelectorProps`   | `ResourcePropertyInput/ResourcePropertyInput.tsx:114`     |
+| `ElementDefinitionTypeInputProps`  | `ResourcePropertyInput/ResourcePropertyInput.tsx:169`     |
+| `ResourcePropertyDisplayProps`     | `ResourcePropertyDisplay/ResourcePropertyDisplay.tsx:37`  |
+| `ElementsInputProps`               | `ElementsInput/ElementsInput.tsx:16`                      |
+| `BackboneElementInputProps`        | `BackboneElementInput/BackboneElementInput.tsx:16`        |
+| `ResourceArrayInputProps`          | `ResourceArrayInput/ResourceArrayInput.tsx:20`            |
+| `SliceInputProps`                  | `SliceInput/SliceInput.tsx:18`                            |
+| `ResourceFormProps`                | `ResourceForm/ResourceForm.tsx:22`                        |
+| `FormProps`                        | `Form/Form.tsx:8`                                         |
+| `FormSectionProps`                 | `FormSection/FormSection.tsx:13`                          |
+| `CheckboxFormSectionProps`         | `CheckboxFormSection/CheckboxFormSection.tsx:10`          |
 
 ```ts
 // ResourcePropertyInput/ResourcePropertyInput.utils.ts:5
@@ -161,7 +163,7 @@ export interface ResourceFormProps {
   readonly onSubmit: (resource: Resource) => void;
   readonly onPatch?: (resource: Resource) => void;
   readonly onDelete?: (resource: Resource) => void;
-  readonly profileUrl?: string;   // takes priority over schemaName
+  readonly profileUrl?: string; // takes priority over schemaName
 }
 ```
 
@@ -213,16 +215,16 @@ preserved byte-for-byte — it is the seam that keeps the port to leaf-by-leaf r
 
 ### 1.3 Mantine: load-bearing vs cosmetic
 
-| Usage | Verdict |
-|---|---|
-| `Stack` (`ElementsInput`), `Group` (`ResourceArrayInput`, selector), `Box` (`BackboneElementInput`) | Cosmetic — `flex flex-col gap-*` / `flex items-center gap-*` |
-| `Input.Wrapper` (`FormSection`, `CheckboxFormSection`) | Cosmetic structure, but it wires `label`↔`id`↔`aria-describedby`↔`error`. Replace with shadcn `Field`/`FormItem`+`FormLabel`+`FormDescription`+`FormMessage` and keep the id wiring |
-| `NativeSelect` (type selector) | Cosmetic; a native `<select>` styled by `cva` is fine and keeps `fireEvent.change` tests working |
-| `TextInput`/`Checkbox`/`Textarea` leaves | Cosmetic |
-| `Menu` in `ResourceForm` split button | Load-bearing focus/roving-tabindex → Radix `DropdownMenu` |
-| `Tooltip.Floating` in `maybeWrapWithTooltip` | Semi — floating follows the cursor; Radix `Tooltip` anchors to the trigger. Accept the visual difference |
-| `useMantineTheme()` for `theme.primaryColor` (`ResourceForm.tsx:40`) | Cosmetic — drop, use `variant="default"` |
-| `Alert` (permission denied) | Cosmetic → shadcn `Alert` |
+| Usage                                                                                               | Verdict                                                                                                                                                                             |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stack` (`ElementsInput`), `Group` (`ResourceArrayInput`, selector), `Box` (`BackboneElementInput`) | Cosmetic — `flex flex-col gap-*` / `flex items-center gap-*`                                                                                                                        |
+| `Input.Wrapper` (`FormSection`, `CheckboxFormSection`)                                              | Cosmetic structure, but it wires `label`↔`id`↔`aria-describedby`↔`error`. Replace with shadcn `Field`/`FormItem`+`FormLabel`+`FormDescription`+`FormMessage` and keep the id wiring |
+| `NativeSelect` (type selector)                                                                      | Cosmetic; a native `<select>` styled by `cva` is fine and keeps `fireEvent.change` tests working                                                                                    |
+| `TextInput`/`Checkbox`/`Textarea` leaves                                                            | Cosmetic                                                                                                                                                                            |
+| `Menu` in `ResourceForm` split button                                                               | Load-bearing focus/roving-tabindex → Radix `DropdownMenu`                                                                                                                           |
+| `Tooltip.Floating` in `maybeWrapWithTooltip`                                                        | Semi — floating follows the cursor; Radix `Tooltip` anchors to the trigger. Accept the visual difference                                                                            |
+| `useMantineTheme()` for `theme.primaryColor` (`ResourceForm.tsx:40`)                                | Cosmetic — drop, use `variant="default"`                                                                                                                                            |
+| `Alert` (permission denied)                                                                         | Cosmetic → shadcn `Alert`                                                                                                                                                           |
 
 ### 1.4 shadcn targets
 
@@ -246,6 +248,7 @@ churn. Budget another ~500 LOC of test-selector updates.
 ---
 
 <a name="group-2"></a>
+
 ## Group 2 — Questionnaire engine
 
 `QuestionnaireForm/` (8 files, 1,668 LOC) · `QuestionnaireBuilder/` (679) ·
@@ -336,21 +339,21 @@ shadcn: there is no `Stepper`. Build one: an `<ol>` of steps with `aria-current=
 `QuestionnaireForm/QuestionnaireFormItem.tsx` (787 LOC) — one `switch` on
 `QuestionnaireItemType` at lines 130-290:
 
-| `item.type` | line | rendered input |
-|---|---|---|
-| `display` | 130 | `<p>{item.text}</p>` |
-| `boolean` | 133 | `Checkbox` |
-| `decimal` | 146 | `TextInput type=number` (step) |
-| `integer` | 161 | `TextInput type=number` |
-| `date` | 176 | `TextInput type=date` |
-| `dateTime` | 188 | `DateTimeInput` |
-| `time` | 198 | `TextInput type=time` |
-| `string`, `url` | 210-211 | `TextInput` |
-| `text` | 225 | `Textarea` |
-| `attachment` | 239 | `AttachmentInput` |
-| `reference` | 251 | `ReferenceInput` (target types + filter from extensions) |
-| `quantity` | 263 | `QuantityInput` |
-| `choice`, `openChoice` | 275-276 | via `resolveChoiceControl(item)` (line 735) |
+| `item.type`            | line    | rendered input                                           |
+| ---------------------- | ------- | -------------------------------------------------------- |
+| `display`              | 130     | `<p>{item.text}</p>`                                     |
+| `boolean`              | 133     | `Checkbox`                                               |
+| `decimal`              | 146     | `TextInput type=number` (step)                           |
+| `integer`              | 161     | `TextInput type=number`                                  |
+| `date`                 | 176     | `TextInput type=date`                                    |
+| `dateTime`             | 188     | `DateTimeInput`                                          |
+| `time`                 | 198     | `TextInput type=time`                                    |
+| `string`, `url`        | 210-211 | `TextInput`                                              |
+| `text`                 | 225     | `Textarea`                                               |
+| `attachment`           | 239     | `AttachmentInput`                                        |
+| `reference`            | 251     | `ReferenceInput` (target types + filter from extensions) |
+| `quantity`             | 263     | `QuantityInput`                                          |
+| `choice`, `openChoice` | 275-276 | via `resolveChoiceControl(item)` (line 735)              |
 
 `resolveChoiceControl` reads the `QUESTIONNAIRE_ITEM_CONTROL_URL` extension and returns
 `{ widget, multiselect }`, routing to `QuestionnaireChoiceDropDownInput` /
@@ -440,6 +443,7 @@ already framework-free), response display **1/5**.
 ---
 
 <a name="group-3"></a>
+
 ## Group 3 — Search table
 
 `SearchControl/` (647 + 146 + 620) · `SearchPopupMenu/` (368) · `SearchFieldEditor/` (157) ·
@@ -451,10 +455,16 @@ already framework-free), response display **1/5**.
 
 ```ts
 // SearchControl/SearchControl.tsx:51,60,69 — DOM Event subclasses, not plain objects
-export class SearchChangeEvent extends Event { readonly definition: SearchRequest }
-export class SearchLoadEvent  extends Event { readonly response: Bundle }
-export class SearchClickEvent extends Event { readonly resource: Resource;
-                                              readonly browserEvent: MouseEvent }
+export class SearchChangeEvent extends Event {
+  readonly definition: SearchRequest;
+}
+export class SearchLoadEvent extends Event {
+  readonly response: Bundle;
+}
+export class SearchClickEvent extends Event {
+  readonly resource: Resource;
+  readonly browserEvent: MouseEvent;
+}
 
 // :89
 export interface SearchControlAdditionalColumn {
@@ -516,7 +526,7 @@ elementDefinition?, searchParams? }`, built by `getFieldDefinitions(search)` at 
   `toggleSort`, `getSortField`, `isSortDescending`), pagination (`setOffset`, `setPage`),
   `renderValue(resource, field)`, and `getSearchOperators(searchParam)`. All pure, 497 test LOC.
 - **Loading**: `medplum.search(...)` into `state.searchResponse`, `props.onLoad(new
-  SearchLoadEvent(response))`; errors set `outcome` and the component returns
+SearchLoadEvent(response))`; errors set `outcome` and the component returns
   `<OperationOutcomeAlert>` (line 281). Before the datatype is loaded it renders a centered
   `Loader` (lines 285-291).
 - **Row click** (`handleRowClick`, lines 252-274): returns early if
@@ -589,6 +599,7 @@ exact chrome, so port `Modal` first and the dialogs become mechanical.
 ---
 
 <a name="group-4"></a>
+
 ## Group 4 — AppShell and layout leaves
 
 `AppShell/` (7 files, 1,640 LOC, 7 CSS modules totalling 522 LOC) · `LinkTabs/` (71) ·
@@ -622,12 +633,10 @@ export interface NavbarLink {
   readonly icon?: JSX.Element;
   readonly label?: string;
   readonly href: string;
-  readonly count?: number;      // ignored when notificationCount is set
-  readonly alert?: boolean;     // red dot collapsed / red count expanded
-  readonly notificationCount?: { resourceType: ResourceType;
-                                 countCriteria: string;
-                                 subscriptionCriteria: string };
-  readonly onDismiss?: () => void;   // renders an X on hover when present
+  readonly count?: number; // ignored when notificationCount is set
+  readonly alert?: boolean; // red dot collapsed / red count expanded
+  readonly notificationCount?: { resourceType: ResourceType; countCriteria: string; subscriptionCriteria: string };
+  readonly onDismiss?: () => void; // renders an X on hover when present
 }
 // :49 NavbarMenu { title?, links? }
 // :54 NavbarProps { pathname?, searchParams?, logo?, menus?, navbarToggle, closeNavbar,
@@ -639,7 +648,7 @@ export interface NavbarLink {
 export interface AppShellAnnouncement {
   readonly id?: string;
   readonly message: ReactNode;
-  readonly color?: MantineColor;      // ← Mantine-typed public API
+  readonly color?: MantineColor; // ← Mantine-typed public API
   readonly icon?: ReactNode;
   readonly dismissible?: boolean;
   readonly onDismiss?: (announcement: AppShellAnnouncement) => void;
@@ -647,7 +656,9 @@ export interface AppShellAnnouncement {
 }
 
 // AppShell/Spotlight.tsx:26
-export interface SpotlightLinkAction extends SpotlightActionData { readonly href?: string }
+export interface SpotlightLinkAction extends SpotlightActionData {
+  readonly href?: string;
+}
 // :35 SpotlightProps { patientsOnly?, staticActions? }
 ```
 
@@ -661,8 +672,8 @@ AnchorProps>` — `to?: Resource | Reference | string`, `suffix?`, `label?`, `on
 ### 4.2 Behavior contract
 
 - **Two layouts.** `AppShell.tsx:44-47`: `navbarOpen` seeded from `localStorage['navbarOpen'] ===
-  'true'`; `layoutVersion` from `props.layoutVersion ?? localStorage['appShellLayoutVersion'] ??
-  'v1'`, captured once in `useState` (so toggling requires reload). v1 = 60px header +
+'true'`; `layoutVersion` from `props.layoutVersion ?? localStorage['appShellLayoutVersion'] ??
+'v1'`, captured once in `useState` (so toggling requires reload). v1 = 60px header +
   announcements, 250px navbar with `breakpoint='sm'`. v2 = no top header (header height is just the
   announcement strip), navbar 250px open / 59px icon rail closed, no breakpoint.
 - **Announcements**: dismissed ids persisted to `localStorage` as JSON (lines 50+); each banner is a
@@ -741,6 +752,7 @@ AnchorProps>` — `to?: Resource | Reference | string`, `suffix?`, `label?`, `on
 ---
 
 <a name="group-5"></a>
+
 ## Group 5 — PatientSummary
 
 27 non-test files, ~2,700 source LOC, 4 CSS modules.
@@ -749,20 +761,20 @@ AnchorProps>` — `to?: Resource | Reference | string`, `suffix?`, `label?`, `on
 
 ```ts
 // PatientSummary/PatientSummary.types.ts (whole file, 31 LOC)
-export type { FhirSearchDescriptor, SectionResults };   // re-exported from @medplum/react-hooks
+export type { FhirSearchDescriptor, SectionResults }; // re-exported from @medplum/react-hooks
 
 export interface SectionRenderContext {
   readonly patient: Patient;
   readonly onClickResource?: (resource: Resource) => void;
-  readonly results: SectionResults;   // keyed by FhirSearchDescriptor.key
+  readonly results: SectionResults; // keyed by FhirSearchDescriptor.key
 }
 
 export interface PatientSummarySectionConfig {
   readonly key: string;
   readonly title: string;
   readonly searches?: FhirSearchDescriptor[];
-  readonly component: ComponentType<SectionRenderContext>;  // ComponentType, not a render prop,
-}                                                           // so hooks work inside custom sections
+  readonly component: ComponentType<SectionRenderContext>; // ComponentType, not a render prop,
+} // so hooks work inside custom sections
 
 // PatientSummary/PatientSummary.tsx:15
 export interface PatientSummaryProps {
@@ -776,15 +788,17 @@ export interface PatientSummaryProps {
 export interface SummaryResourceListOptions {
   readonly key: string;
   readonly title: string;
-  readonly search: { readonly resourceType: ResourceType;
-                     readonly patientParam?: string;   // defaults to 'subject'
-                     readonly query?: Record<string, string|number|boolean|undefined> };
+  readonly search: {
+    readonly resourceType: ResourceType;
+    readonly patientParam?: string; // defaults to 'subject'
+    readonly query?: Record<string, string | number | boolean | undefined>;
+  };
   readonly getDisplayString?: (resource: Resource) => string;
   readonly getStatus?: (resource: Resource) => { label: string; color: string } | undefined;
   readonly getSecondaryText?: (resource: Resource) => string | undefined;
   // + filter?, sort?, onAdd?
 }
-export function summaryResourceListSection(options): PatientSummarySectionConfig  // :47
+export function summaryResourceListSection(options): PatientSummarySectionConfig; // :47
 ```
 
 Also `CollapsibleSectionProps` (`CollapsibleSection.tsx:10` — `{ title, children, onAdd? }`),
@@ -795,23 +809,23 @@ sibling per section.
 
 `sectionConfigs.tsx` (300 LOC) exports twelve entries, each either a const config or a factory:
 
-| Export | line | searches |
-|---|---|---|
-| `DemographicsSection` | 51 | none (reads the patient) |
-| `InsuranceSection` | 112 | Coverage |
-| `AllergiesSection` | 122 | AllergyIntolerance |
-| `ProblemListSection` | 136 | Condition |
-| `MedicationsSection` | 150 | MedicationRequest + MedicationStatement |
-| `ImmunizationsSection` | 168 | Immunization |
-| `GoalsSection` | 178 | Goal |
-| `createLabsSection(onRequestLabs?)` | 193 | ServiceRequest + DiagnosticReport |
-| `LabsSection` | 214 | `= createLabsSection()` |
-| `SexualOrientationSection` | 217 | Observation LOINC 76690-7 |
-| `SmokingStatusSection` | 230 | Observation LOINC 72166-2 |
-| `VitalsSection` | 241 | Observation (vitals panel) |
-| `createPharmaciesSection(dialog?)` | 260 | patient pharmacy extensions |
-| `PharmaciesSection` | 277 | `= createPharmaciesSection()` |
-| `getDefaultSections(onRequestLabs?)` | 285 | assembles the default order |
+| Export                               | line | searches                                |
+| ------------------------------------ | ---- | --------------------------------------- |
+| `DemographicsSection`                | 51   | none (reads the patient)                |
+| `InsuranceSection`                   | 112  | Coverage                                |
+| `AllergiesSection`                   | 122  | AllergyIntolerance                      |
+| `ProblemListSection`                 | 136  | Condition                               |
+| `MedicationsSection`                 | 150  | MedicationRequest + MedicationStatement |
+| `ImmunizationsSection`               | 168  | Immunization                            |
+| `GoalsSection`                       | 178  | Goal                                    |
+| `createLabsSection(onRequestLabs?)`  | 193  | ServiceRequest + DiagnosticReport       |
+| `LabsSection`                        | 214  | `= createLabsSection()`                 |
+| `SexualOrientationSection`           | 217  | Observation LOINC 76690-7               |
+| `SmokingStatusSection`               | 230  | Observation LOINC 72166-2               |
+| `VitalsSection`                      | 241  | Observation (vitals panel)              |
+| `createPharmaciesSection(dialog?)`   | 260  | patient pharmacy extensions             |
+| `PharmaciesSection`                  | 277  | `= createPharmaciesSection()`           |
+| `getDefaultSections(onRequestLabs?)` | 285  | assembles the default order             |
 
 This registry is a **clean extension point that is entirely Mantine-free** and should be lifted
 unchanged. Consumers already pass custom `sections` (e.g. `ThreadInbox` takes
@@ -872,6 +886,7 @@ individual attention.
 ---
 
 <a name="group-6"></a>
+
 ## Group 6 — Chat
 
 `chat/` — 11 non-test files, 2,045 LOC, 6 CSS modules.
@@ -880,7 +895,8 @@ individual attention.
 
 ```ts
 // chat/BaseChat/BaseChat.tsx:109
-export interface BaseChatProps extends PaperProps {      // ← Mantine-typed public API
+export interface BaseChatProps extends PaperProps {
+  // ← Mantine-typed public API
   readonly title: string;
   readonly communications: Communication[];
   readonly setCommunications: (communications: Communication[]) => void;
@@ -955,13 +971,14 @@ AI-elements-style message primitives, `BaseChat`'s bubble list is the natural co
 ### 6.5 Difficulty and effort
 
 **3/5.** The websocket/subscription logic is framework-free; risk sits in the scroll-anchoring
-behavior and the toast lifecycle (a *replaceable* toast id is needed for the
+behavior and the toast lifecycle (a _replaceable_ toast id is needed for the
 disconnect→reconnect pair — `sonner`'s `toast.success(msg, { id })` covers it).
 **~1,300 LOC touched, ~400 real.**
 
 ---
 
 <a name="group-7"></a>
+
 ## Group 7 — Timelines
 
 `ResourceTimeline/` (421) · `Timeline/` (87) · `PatientTimeline/` (57) · `EncounterTimeline/` (48) ·
@@ -973,8 +990,11 @@ disconnect→reconnect pair — `sonner`'s `toast.success(msg, { id })` covers i
 // ResourceTimeline/ResourceTimeline.tsx:42
 export interface ResourceTimelineProps<T extends Resource> {
   readonly value: T | Reference<T>;
-  readonly loadTimelineResources: (medplum: MedplumClient, resourceType: ResourceType, id: string)
-    => Promise<PromiseSettledResult<Bundle>[]>;
+  readonly loadTimelineResources: (
+    medplum: MedplumClient,
+    resourceType: ResourceType,
+    id: string
+  ) => Promise<PromiseSettledResult<Bundle>[]>;
   readonly createCommunication?: (resource: T, sender: ProfileResource, text: string) => Communication;
   readonly createMedia?: (resource: T, operator: ProfileResource, attachment: Attachment) => Media;
   readonly getMenu?: (context: ResourceTimelineMenuItemContext) => ReactNode;
@@ -982,7 +1002,8 @@ export interface ResourceTimelineProps<T extends Resource> {
 
 // Timeline/Timeline.tsx:18  TimelineProps { children? }
 // Timeline/Timeline.tsx:26
-export interface TimelineItemProps<T extends Resource = Resource> extends PanelProps {  // ← PaperProps
+export interface TimelineItemProps<T extends Resource = Resource> extends PanelProps {
+  // ← PaperProps
   readonly resource: T;
   readonly profile?: Reference;
   readonly dateTime?: string;
@@ -1038,6 +1059,7 @@ break. **~700 LOC touched, ~150 real.**
 ---
 
 <a name="group-8"></a>
+
 ## Group 8 — Autocomplete family
 
 `AsyncAutocomplete/` (400) · `ValueSetAutocomplete/` (188) · `ReferenceInput/` (283) ·
@@ -1052,14 +1074,17 @@ Mantine behavior — not styling — is the product. Ten-plus components sit on 
 
 ```ts
 // AsyncAutocomplete/AsyncAutocomplete.tsx:13
-export interface AsyncAutocompleteOption<T> extends ComboboxItem {   // ← Mantine ComboboxItem
+export interface AsyncAutocompleteOption<T> extends ComboboxItem {
+  // ← Mantine ComboboxItem
   readonly active?: boolean;
   readonly resource: T;
 }
 
 // :18
-export interface AsyncAutocompleteProps<T> extends Omit<ComboboxProps,   // ← Mantine ComboboxProps
-  'data' | 'defaultValue' | 'loadOptions' | 'onChange' | 'onCreate' | 'searchable'> {
+export interface AsyncAutocompleteProps<T> extends Omit<
+  ComboboxProps, // ← Mantine ComboboxProps
+  'data' | 'defaultValue' | 'loadOptions' | 'onChange' | 'onCreate' | 'searchable'
+> {
   readonly name?: string;
   readonly label?: ReactNode;
   readonly description?: ReactNode;
@@ -1068,8 +1093,11 @@ export interface AsyncAutocompleteProps<T> extends Omit<ComboboxProps,   // ← 
   readonly toOption: (item: T) => AsyncAutocompleteOption<T>;
   readonly loadOptions: (input: string, signal: AbortSignal) => Promise<T[]>;
   readonly itemComponent?: (props: AsyncAutocompleteOption<T>) => JSX.Element | ReactNode;
-  readonly pillComponent?: (props: { item: AsyncAutocompleteOption<T>;
-                                     disabled?: boolean; onRemove: () => void }) => JSX.Element;
+  readonly pillComponent?: (props: {
+    item: AsyncAutocompleteOption<T>;
+    disabled?: boolean;
+    onRemove: () => void;
+  }) => JSX.Element;
   readonly emptyComponent?: (props: { search: string }) => JSX.Element | ReactNode;
   readonly onChange: (item: T[]) => void;
   readonly onCreate?: (input: string) => T;
@@ -1080,8 +1108,8 @@ export interface AsyncAutocompleteProps<T> extends Omit<ComboboxProps,   // ← 
   readonly placeholder?: string;
   readonly leftSection?: ReactNode;
   readonly maxValues?: number;
-  readonly optionsDropdownMaxHeight?: number;   // default 320
-  readonly minInputLength?: number;             // default 0
+  readonly optionsDropdownMaxHeight?: number; // default 320
+  readonly minInputLength?: number; // default 0
 }
 ```
 
@@ -1115,6 +1143,7 @@ keystroke: open the dropdown if there are already options or `creatable`; call
 previous timer; schedule `handleTimer`.
 
 **Fetch** (`handleTimer`, lines 139-180):
+
 - Skip entirely if `search === lastValueRef.current && loadOptions === lastLoadOptionsRef.current`
   (identity of the `loadOptions` function participates in cache invalidation — consumers must
   memoize it).
@@ -1128,6 +1157,7 @@ previous timer; schedule `handleTimer`.
 - Unmount cleanup aborts the in-flight controller (lines 270-276).
 
 **Selection** (`handleValueAdd`, lines 100-137):
+
 - Deduplicate by `option.value`.
 - `maxValues === 0` is special: fire `onChange([item.resource])` and **clear** `selected` (a
   fire-and-forget search box, used by the header/navbar search).
@@ -1146,6 +1176,7 @@ Otherwise find the option; if missing and `creatable !== false && onCreate`, cal
 
 **Keyboard** (`handleKeyDown`, lines 254-268) — only two keys are handled here; everything else is
 Mantine's:
+
 - `Enter` while `timer || abortController` (results not in yet) sets `autoSubmitRef = true`, so the
   first result auto-selects when it lands. **This is the behavior most likely to be dropped in a
   naive port**, and `selectAutocompleteOption` in the test helpers exercises it.
@@ -1184,7 +1215,7 @@ use everywhere. `onFocus={handleSearchChange}` means focusing triggers a load wi
 ### 8.3 Descendant behavior
 
 - **`ValueSetAutocomplete`** (188 LOC): `loadOptions` → `medplum.valueSetExpand({ url: binding,
-  filter: input, count, ...expandParams })`. `toKey` returns `element.code` or
+filter: input, count, ...expandParams })`. `toKey` returns `element.code` or
   `JSON.stringify(element)` (lines 26-31); `getDisplay` falls back to the key (lines 33-37).
   `withHelpText` appends the system/code as secondary text.
 - **`CodeableConceptInput`** (67 LOC): `valueSetElementToCodeableConcept(newValues)`; deliberately
@@ -1214,6 +1245,7 @@ Nearest primitives: `Command` (`CommandInput`/`CommandList`/`CommandItem`/`Comma
 `Badge`-as-pill.
 
 Known gaps to close by hand:
+
 1. **`cmdk` owns filtering.** Options here are server-filtered; set `shouldFilter={false}` on
    `Command` or every keystroke double-filters.
 2. **No pills input.** `PillsInput` must be rebuilt: a bordered flex container of `Badge`s with
@@ -1240,6 +1272,7 @@ the descendants).
 ---
 
 <a name="group-9"></a>
+
 ## Group 9 — Date/time
 
 `CalendarDateInput/` (285 + 81 utils + 76 hook) · `CalendarInput/` (26) · `DateTimeInput/` (61) ·
@@ -1252,9 +1285,9 @@ the descendants).
 export interface CalendarDateInputProps {
   readonly availableDates: Date[];
   readonly onChangeMonth: (date: Date) => void;
-  readonly onClick: (date: Date) => void;          // the day picked
+  readonly onClick: (date: Date) => void; // the day picked
   readonly month?: Date;
-  readonly selected?: Date;                        // ignored while dragging
+  readonly selected?: Date; // ignored while dragging
   readonly allowUnavailableDates?: boolean;
   readonly earliestDate?: Date;
   readonly range?: { readonly start: Date; readonly end: Date };
@@ -1318,6 +1351,7 @@ modal).
 ---
 
 <a name="group-10"></a>
+
 ## Group 10 — Auth and the long tail
 
 ### `auth/` — 14 files, 1,625 LOC, 1 CSS module (`ProjectLoginOption.module.css`, 40)
@@ -1373,27 +1407,27 @@ modal).
 
 ### Display-only components
 
-| Component | LOC | Notes | Rating |
-|---|---|---|---|
-| `CcdaDisplay/` | 157 | renders CDA in an iframe via `sendCommand()` (`utils/dom.ts`) postMessage; one `Button` | 2/5 |
-| `DiagnosticReportDisplay/` | 595 | biggest display component; `Divider`/`Group`/`List`/`Stack`/`Text`/`Title` + 43 LOC CSS module for the results table; all cosmetic | 2/5 |
-| `MeasureReportDisplay/` | 31 | trivial | 1/5 |
-| `ResourceTable/` | 90 | `ResourcePropertyDisplay` rows; cosmetic | 1/5 |
-| `ResourceHistoryTable/` | 86 | version list | 1/5 |
-| `ResourceDiff/` (52) + `ResourceDiffTable/` (181) + `ResourceDiffRow/` (66) | 299 | driven by pure `utils/diff.ts` (156 LOC, 69 test LOC); three small CSS modules (8/27/8) | 2/5 |
-| `ResourceBlame/` | 75 | driven by pure `utils/blame.ts` (90 LOC, 169 test LOC); 63 LOC CSS module doing the gutter/heat colors | 2/5 |
-| `FhirPathTable/` | 199 | evaluates FHIRPath columns; `Button`/`Loader`/`Table` | 2/5 |
-| `StatusBadge/` | ~85 | `statusToColor: Record<string, DefaultMantineColor>` at line 30 and `StatusBadgeProps extends Omit<BadgeProps,'children'>` at line 71 — **the color map must be re-expressed as `cva` variants**; renders `status.replaceAll('-', ' ')` | 2/5 |
-| `OperationOutcomeAlert/` | ~40 | `extends AlertProps` | 1/5 |
+| Component                                                                   | LOC | Notes                                                                                                                                                                                                                                   | Rating |
+| --------------------------------------------------------------------------- | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `CcdaDisplay/`                                                              | 157 | renders CDA in an iframe via `sendCommand()` (`utils/dom.ts`) postMessage; one `Button`                                                                                                                                                 | 2/5    |
+| `DiagnosticReportDisplay/`                                                  | 595 | biggest display component; `Divider`/`Group`/`List`/`Stack`/`Text`/`Title` + 43 LOC CSS module for the results table; all cosmetic                                                                                                      | 2/5    |
+| `MeasureReportDisplay/`                                                     | 31  | trivial                                                                                                                                                                                                                                 | 1/5    |
+| `ResourceTable/`                                                            | 90  | `ResourcePropertyDisplay` rows; cosmetic                                                                                                                                                                                                | 1/5    |
+| `ResourceHistoryTable/`                                                     | 86  | version list                                                                                                                                                                                                                            | 1/5    |
+| `ResourceDiff/` (52) + `ResourceDiffTable/` (181) + `ResourceDiffRow/` (66) | 299 | driven by pure `utils/diff.ts` (156 LOC, 69 test LOC); three small CSS modules (8/27/8)                                                                                                                                                 | 2/5    |
+| `ResourceBlame/`                                                            | 75  | driven by pure `utils/blame.ts` (90 LOC, 169 test LOC); 63 LOC CSS module doing the gutter/heat colors                                                                                                                                  | 2/5    |
+| `FhirPathTable/`                                                            | 199 | evaluates FHIRPath columns; `Button`/`Loader`/`Table`                                                                                                                                                                                   | 2/5    |
+| `StatusBadge/`                                                              | ~85 | `statusToColor: Record<string, DefaultMantineColor>` at line 30 and `StatusBadgeProps extends Omit<BadgeProps,'children'>` at line 71 — **the color map must be re-expressed as `cva` variants**; renders `status.replaceAll('-', ' ')` | 2/5    |
+| `OperationOutcomeAlert/`                                                    | ~40 | `extends AlertProps`                                                                                                                                                                                                                    | 1/5    |
 
 ### Editors / builders
 
-| Component | LOC | Notes | Rating |
-|---|---|---|---|
-| `ReferenceRangeEditor/` | 454 | nested add/remove of reference-range groups; 8 LOC CSS module | 3/5 |
-| `PlanDefinitionBuilder/` | 410 | same selected/hover key pattern as `QuestionnaireBuilder`; 14 LOC CSS module | 3/5 |
-| `ResourceBoard/` | 161 | kanban columns via `useResourceBoard`; column layout is Mantine flex | 2/5 |
-| `ListWithDetailPane/` | 246 + 36 skeleton | master/detail with `Pagination`, `Tabs`, `ScrollArea`, `Skeleton`; **123 LOC CSS module** — the second-largest styling asset | 3/5 |
+| Component                | LOC               | Notes                                                                                                                        | Rating |
+| ------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `ReferenceRangeEditor/`  | 454               | nested add/remove of reference-range groups; 8 LOC CSS module                                                                | 3/5    |
+| `PlanDefinitionBuilder/` | 410               | same selected/hover key pattern as `QuestionnaireBuilder`; 14 LOC CSS module                                                 | 3/5    |
+| `ResourceBoard/`         | 161               | kanban columns via `useResourceBoard`; column layout is Mantine flex                                                         | 2/5    |
+| `ListWithDetailPane/`    | 246 + 36 skeleton | master/detail with `Pagination`, `Tabs`, `ScrollArea`, `Skeleton`; **123 LOC CSS module** — the second-largest styling asset | 3/5    |
 
 ### Misc leaves worth naming
 
@@ -1409,28 +1443,31 @@ set `visibilityToggleButtonProps` tab-order, lines 14-22), `SensitiveTextarea/`
 ---
 
 <a name="cross-cutting"></a>
+
 ## Cross-cutting concerns
 
 ### C.1 `src/stories/` — shared story infrastructure
 
 7 files, ~2,420 LOC, of which **~2,350 is FHIR fixture data, not infrastructure**:
 
-| File | LOC | Contents |
-|---|---|---|
-| `covid19.ts` | 973 | COVID-19 questionnaire/observation fixtures |
-| `referenceLab.ts` | 757 | reference-lab report fixtures |
-| `healthgorilla.ts` | 473 | Health Gorilla integration fixtures |
-| `labPanel.ts` | 144 | lab panel fixtures |
-| `decorators.tsx` | 12 | `withMockedDate` |
-| `MockDateWrapper.tsx` | 38 | the fake-clock provider |
-| `MockDateWrapper.utils.ts` | 23 | `MockDateContext`, `DEFAULT_MOCKED_DATE`, `createGlobalTimer` |
+| File                       | LOC | Contents                                                      |
+| -------------------------- | --- | ------------------------------------------------------------- |
+| `covid19.ts`               | 973 | COVID-19 questionnaire/observation fixtures                   |
+| `referenceLab.ts`          | 757 | reference-lab report fixtures                                 |
+| `healthgorilla.ts`         | 473 | Health Gorilla integration fixtures                           |
+| `labPanel.ts`              | 144 | lab panel fixtures                                            |
+| `decorators.tsx`           | 12  | `withMockedDate`                                              |
+| `MockDateWrapper.tsx`      | 38  | the fake-clock provider                                       |
+| `MockDateWrapper.utils.ts` | 23  | `MockDateContext`, `DEFAULT_MOCKED_DATE`, `createGlobalTimer` |
 
 The only real infrastructure:
 
 ```tsx
 // stories/decorators.tsx (entire file)
 export const withMockedDate: Decorator = (Story) => (
-  <MockDateWrapper><Story /></MockDateWrapper>
+  <MockDateWrapper>
+    <Story />
+  </MockDateWrapper>
 );
 ```
 
@@ -1467,6 +1504,7 @@ either nothing at all or a small `ThemeProvider`, and 154 test files keep import
 same place. `MedplumProvider`/`MockClient` are passed per-test as the optional `wrapper`.
 
 `test-utils/asyncAutocomplete.ts` (60 LOC) is the one place the group-8 timing is encoded:
+
 - `AUTOCOMPLETE_DEBOUNCE_MS = 1000` — "the 100 ms debounce plus buffer".
 - `typeInAutocomplete(input, text)`: `fireEvent.change` then
   `vi.advanceTimersByTimeAsync(1000)`, both inside `act`.
@@ -1486,20 +1524,20 @@ Mantine but are equally needed by Radix — keep all three.
 
 ### C.3 `src/utils/` — purity audit
 
-| File | LOC | Exports | Mantine? |
-|---|---|---|---|
-| `app.ts` | 10 | `getAppName()` — reads `import.meta.env.MEDPLUM_APP_NAME` | pure |
-| `date.ts` | 93 | `compareByLastUpdatedDescending` (:12), `sortByDateAndPriority` (:36) | pure (86 test LOC) |
-| `dom.ts` | 103 | `killEvent` (:12), `isAuxClick` (:22), `isCheckboxCell` (:32), `sendCommand`, `exportJsonFile` (:88) | pure (81 test LOC) |
-| `outcomes.ts` | 48 | `getErrorsForInput` (:5), `getIssuesForExpression` (:15) | pure (59 test LOC) |
-| `pagination.ts` | 25 | `getPaginationControlProps` (:11) | **Mantine-shaped** — returns `{ 'aria-label': … }` for Mantine `Pagination`'s `getControlProps`; the doc comment even links Mantine v7 docs. Keep the strings, change the consumer |
-| `recaptcha.ts` | 36 | `initRecaptcha` (:15), `getRecaptcha` (:26) | pure |
-| `script.ts` | 16 | `createScriptTag` (:9) | pure |
-| `loadState.ts` | 12 | `LoadState` type | pure |
-| `blame.ts` | 90 | blame computation | pure (169 test LOC) |
-| `diff.ts` | 156 | resource diffing | pure (69 test LOC) |
-| `maybeWrapWithContext.tsx` | 15 | `maybeWrapWithContext(Provider, value, contents)` | pure |
-| `maybeWrapWithTooltip.tsx` | 10 | `READ_ONLY_TOOLTIP_TEXT`, `maybeWrapWithTooltip` | **imports `Tooltip` from `@mantine/core`** and uses `Tooltip.Floating` |
+| File                       | LOC | Exports                                                                                              | Mantine?                                                                                                                                                                           |
+| -------------------------- | --- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app.ts`                   | 10  | `getAppName()` — reads `import.meta.env.MEDPLUM_APP_NAME`                                            | pure                                                                                                                                                                               |
+| `date.ts`                  | 93  | `compareByLastUpdatedDescending` (:12), `sortByDateAndPriority` (:36)                                | pure (86 test LOC)                                                                                                                                                                 |
+| `dom.ts`                   | 103 | `killEvent` (:12), `isAuxClick` (:22), `isCheckboxCell` (:32), `sendCommand`, `exportJsonFile` (:88) | pure (81 test LOC)                                                                                                                                                                 |
+| `outcomes.ts`              | 48  | `getErrorsForInput` (:5), `getIssuesForExpression` (:15)                                             | pure (59 test LOC)                                                                                                                                                                 |
+| `pagination.ts`            | 25  | `getPaginationControlProps` (:11)                                                                    | **Mantine-shaped** — returns `{ 'aria-label': … }` for Mantine `Pagination`'s `getControlProps`; the doc comment even links Mantine v7 docs. Keep the strings, change the consumer |
+| `recaptcha.ts`             | 36  | `initRecaptcha` (:15), `getRecaptcha` (:26)                                                          | pure                                                                                                                                                                               |
+| `script.ts`                | 16  | `createScriptTag` (:9)                                                                               | pure                                                                                                                                                                               |
+| `loadState.ts`             | 12  | `LoadState` type                                                                                     | pure                                                                                                                                                                               |
+| `blame.ts`                 | 90  | blame computation                                                                                    | pure (169 test LOC)                                                                                                                                                                |
+| `diff.ts`                  | 156 | resource diffing                                                                                     | pure (69 test LOC)                                                                                                                                                                 |
+| `maybeWrapWithContext.tsx` | 15  | `maybeWrapWithContext(Provider, value, contents)`                                                    | pure                                                                                                                                                                               |
+| `maybeWrapWithTooltip.tsx` | 10  | `READ_ONLY_TOOLTIP_TEXT`, `maybeWrapWithTooltip`                                                     | **imports `Tooltip` from `@mantine/core`** and uses `Tooltip.Floating`                                                                                                             |
 
 So: **exactly one util imports Mantine** (`maybeWrapWithTooltip.tsx`, 10 LOC) and one is
 Mantine-shaped without importing it (`pagination.ts`). Everything else — 630 LOC with 464 LOC of
@@ -1511,26 +1549,27 @@ tests — moves untouched.
 
 **A. Fire-and-forget `showNotification({ color, message })`** — the common case:
 
-| File:line | Note |
-|---|---|
-| `AsyncAutocomplete/AsyncAutocomplete.tsx:173` | red, `loadOptions` failure |
-| `BookmarkDialog/BookmarkDialog.tsx:37, 41` | green `'Success'` / red error |
-| `SensitiveTextarea/SensitiveTextarea.tsx:50` | green `'Copied'` |
-| `Scheduler/Scheduler.tsx:209` | booking failure |
-| `auth/SignInForm.tsx:80, 141, 161` | red login errors |
-| `auth/MfaVerificationForm.tsx:45` | red |
-| `chat/BaseChat/BaseChat.tsx:58, 185, 211, 215, 220` | includes the disconnect (red, :211) / reconnect (green, :215) pair |
-| `chat/ThreadInbox/ThreadInbox.tsx:145, 154, 183, 268` | red |
-| `chat/ThreadInbox/NewTopicDialog.tsx:68` | red |
-| `chat/ThreadInbox/EditThreadDialog.tsx:81` | red |
-| `chat/ThreadInbox/ParticipantFilter.tsx:82` | red |
-| `PatientSummary/PharmacyDialog.tsx:289, 303, 310, 336, 344, 351` | 6 sites, add/update/delete outcomes |
-| `QuestionnaireForm/AIRealTimeQuestionnaireForm.tsx:186, 236, 270` | transcript/bot failures |
+| File:line                                                         | Note                                                               |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `AsyncAutocomplete/AsyncAutocomplete.tsx:173`                     | red, `loadOptions` failure                                         |
+| `BookmarkDialog/BookmarkDialog.tsx:37, 41`                        | green `'Success'` / red error                                      |
+| `SensitiveTextarea/SensitiveTextarea.tsx:50`                      | green `'Copied'`                                                   |
+| `Scheduler/Scheduler.tsx:209`                                     | booking failure                                                    |
+| `auth/SignInForm.tsx:80, 141, 161`                                | red login errors                                                   |
+| `auth/MfaVerificationForm.tsx:45`                                 | red                                                                |
+| `chat/BaseChat/BaseChat.tsx:58, 185, 211, 215, 220`               | includes the disconnect (red, :211) / reconnect (green, :215) pair |
+| `chat/ThreadInbox/ThreadInbox.tsx:145, 154, 183, 268`             | red                                                                |
+| `chat/ThreadInbox/NewTopicDialog.tsx:68`                          | red                                                                |
+| `chat/ThreadInbox/EditThreadDialog.tsx:81`                        | red                                                                |
+| `chat/ThreadInbox/ParticipantFilter.tsx:82`                       | red                                                                |
+| `PatientSummary/PharmacyDialog.tsx:289, 303, 310, 336, 344, 351`  | 6 sites, add/update/delete outcomes                                |
+| `QuestionnaireForm/AIRealTimeQuestionnaireForm.tsx:186, 236, 270` | transcript/bot failures                                            |
 
 **B. Persistent (no auto-close)** — `SmartAppLaunchLink/SmartAppLaunchLink.tsx:74`
 (`autoClose: false`). Needs `toast.error(msg, { duration: Infinity })`.
 
 **C. Show-then-update by id** — a single notification mutated through a lifecycle:
+
 - `ResourceTimeline/ResourceTimeline.tsx` — `showNotification` at 200,
   `updateNotification` at 178, 188, 211, 222 (upload start/progress/success/error).
 - `PatientAccountsForm/PatientAccountsForm.tsx` — `notifications.show` at 97, 125;
@@ -1542,10 +1581,8 @@ tests — moves untouched.
 
 ```ts
 // e.g. src/toast.ts
-export function notify(opts: { color?: 'red'|'green'; message: string;
-                               id?: string; autoClose?: false }): string
-export function updateNotify(id: string, opts: { color?: 'red'|'green'; message: string;
-                                                 loading?: boolean }): void
+export function notify(opts: { color?: 'red' | 'green'; message: string; id?: string; autoClose?: false }): string;
+export function updateNotify(id: string, opts: { color?: 'red' | 'green'; message: string; loading?: boolean }): void;
 ```
 
 mapped onto `sonner`'s `toast.error` / `toast.success` / `toast.loading` with a stable `id`.
@@ -1555,49 +1592,49 @@ Mantine's `color: 'red' | 'green'` is the only variant axis in use, so the mappi
 
 Layout/structure (must be reproduced):
 
-| File | LOC | Styles |
-|---|---|---|
-| `AppShell/Navbar.module.css` | 253 | link rows, icon rail, alert dot, dismiss button, user link, toggle, menu titles |
-| `QuestionnaireForm/AIRealTimeQuestionnaireForm.module.css` | 191 | voice banner, transcript viewport, layout |
-| `ListWithDetailPane/ListWithDetailPane.module.css` | 123 | split-pane grid |
-| `AppShell/HeaderDropdown.module.css` | 107 | account section, project options, settings rows, segmented controls |
-| `chat/BaseChat/BaseChat.module.css` | 104 | message bubbles, alignment, input row |
-| `AppShell/Spotlight.module.css` | 90 | dialog body, actions list, group labels, shortcut hints, footer |
-| `CalendarDateInput/CalendarDateInput.module.css` | 86 | month grid + day-cell states |
-| `QuestionnaireBuilder/QuestionnaireBuilder.module.css` | 76 | selected/hovered item highlight |
-| `PatientSummary/SummaryItem.module.css` | 73 | item card, gradient, hover chevron |
-| `ResourceBlame/ResourceBlame.module.css` | 63 | blame gutter + heat colors |
-| `Modal/Modal.module.css` | 54 | the flex chain for the pinned footer |
-| `PatientSummary/PatientSummary.module.css` | 44 | panel + list item |
-| `AppShell/Header.module.css` | 42 | logo button, user info |
-| `DescriptionList/DescriptionList.module.css` | 40 | dl grid |
-| `auth/ProjectLoginOption.module.css` | 40 | login option rows |
-| `SearchControl/SearchControl.module.css` | 35 | row hover, control hover, icon sizes |
-| `PatientSummary/CollapsibleSection.module.css` | 35 | header, chevron, add button |
-| `chat/ChatModal/ChatModal.module.css` | 28 | fixed positioning |
-| `ResourceDiffTable/ResourceDiffTable.module.css` | 27 | diff cells |
-| `InfoBar/InfoBar.module.css` | 25 | bar entries |
-| `Panel/Panel.module.css` | 22 | paper frame, fill |
-| `AppShell/AppShell.stories.module.css` | 20 | story-only |
-| `AppShell/HeaderSearchInput.module.css` | 19 | search box |
-| `PatientSummary/PharmacyDialog.module.css` | 18 | dialog form layout |
-| `Scheduler/Scheduler.module.css` | 15 | slot list |
-| `LinkTabs/LinkTabs.module.css` | 14 | tab links |
-| `PlanDefinitionBuilder/PlanDefinitionBuilder.module.css` | 14 | builder items |
-| `NoteDisplay/NoteDisplay.module.css` | 12 | note text |
-| `ResourceForm/ResourceForm.module.css` | 11 | split button radii |
-| `AppShell/AppShell.module.css` | 11 | `.main`, `.announcement` |
-| `chat/ThreadInbox/*.module.css` | 8+7+6+3 | filter, inbox, list item, detail |
-| `ReferenceRangeEditor/ReferenceRangeEditor.module.css` | 8 | row spacing |
-| `ResourceDiff/ResourceDiff.module.css` | 8 | wrapper |
-| `ResourceDiffRow/ResourceDiffRow.module.css` | 8 | row |
-| `FormSection/FormSection.module.css` | 7 | `.dimmed`, `.preserveBreaks` |
-| `Timeline/Timeline.module.css` | 7 | spacing |
-| `Container/Container.module.css` | 6 | max width |
-| `BackboneElementInput/BackboneElementInput.module.css` | 5 | `.nested` indent |
-| `ResourceArrayInput/ResourceArrayInput.module.css` | 5 | `.indented` border |
-| `ResourceTimeline/ResourceTimeline.module.css` | 3 | spacing |
-| `DiagnosticReportDisplay/DiagnosticReportDisplay.module.css` | 43 | results table |
+| File                                                         | LOC     | Styles                                                                          |
+| ------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------- |
+| `AppShell/Navbar.module.css`                                 | 253     | link rows, icon rail, alert dot, dismiss button, user link, toggle, menu titles |
+| `QuestionnaireForm/AIRealTimeQuestionnaireForm.module.css`   | 191     | voice banner, transcript viewport, layout                                       |
+| `ListWithDetailPane/ListWithDetailPane.module.css`           | 123     | split-pane grid                                                                 |
+| `AppShell/HeaderDropdown.module.css`                         | 107     | account section, project options, settings rows, segmented controls             |
+| `chat/BaseChat/BaseChat.module.css`                          | 104     | message bubbles, alignment, input row                                           |
+| `AppShell/Spotlight.module.css`                              | 90      | dialog body, actions list, group labels, shortcut hints, footer                 |
+| `CalendarDateInput/CalendarDateInput.module.css`             | 86      | month grid + day-cell states                                                    |
+| `QuestionnaireBuilder/QuestionnaireBuilder.module.css`       | 76      | selected/hovered item highlight                                                 |
+| `PatientSummary/SummaryItem.module.css`                      | 73      | item card, gradient, hover chevron                                              |
+| `ResourceBlame/ResourceBlame.module.css`                     | 63      | blame gutter + heat colors                                                      |
+| `Modal/Modal.module.css`                                     | 54      | the flex chain for the pinned footer                                            |
+| `PatientSummary/PatientSummary.module.css`                   | 44      | panel + list item                                                               |
+| `AppShell/Header.module.css`                                 | 42      | logo button, user info                                                          |
+| `DescriptionList/DescriptionList.module.css`                 | 40      | dl grid                                                                         |
+| `auth/ProjectLoginOption.module.css`                         | 40      | login option rows                                                               |
+| `SearchControl/SearchControl.module.css`                     | 35      | row hover, control hover, icon sizes                                            |
+| `PatientSummary/CollapsibleSection.module.css`               | 35      | header, chevron, add button                                                     |
+| `chat/ChatModal/ChatModal.module.css`                        | 28      | fixed positioning                                                               |
+| `ResourceDiffTable/ResourceDiffTable.module.css`             | 27      | diff cells                                                                      |
+| `InfoBar/InfoBar.module.css`                                 | 25      | bar entries                                                                     |
+| `Panel/Panel.module.css`                                     | 22      | paper frame, fill                                                               |
+| `AppShell/AppShell.stories.module.css`                       | 20      | story-only                                                                      |
+| `AppShell/HeaderSearchInput.module.css`                      | 19      | search box                                                                      |
+| `PatientSummary/PharmacyDialog.module.css`                   | 18      | dialog form layout                                                              |
+| `Scheduler/Scheduler.module.css`                             | 15      | slot list                                                                       |
+| `LinkTabs/LinkTabs.module.css`                               | 14      | tab links                                                                       |
+| `PlanDefinitionBuilder/PlanDefinitionBuilder.module.css`     | 14      | builder items                                                                   |
+| `NoteDisplay/NoteDisplay.module.css`                         | 12      | note text                                                                       |
+| `ResourceForm/ResourceForm.module.css`                       | 11      | split button radii                                                              |
+| `AppShell/AppShell.module.css`                               | 11      | `.main`, `.announcement`                                                        |
+| `chat/ThreadInbox/*.module.css`                              | 8+7+6+3 | filter, inbox, list item, detail                                                |
+| `ReferenceRangeEditor/ReferenceRangeEditor.module.css`       | 8       | row spacing                                                                     |
+| `ResourceDiff/ResourceDiff.module.css`                       | 8       | wrapper                                                                         |
+| `ResourceDiffRow/ResourceDiffRow.module.css`                 | 8       | row                                                                             |
+| `FormSection/FormSection.module.css`                         | 7       | `.dimmed`, `.preserveBreaks`                                                    |
+| `Timeline/Timeline.module.css`                               | 7       | spacing                                                                         |
+| `Container/Container.module.css`                             | 6       | max width                                                                       |
+| `BackboneElementInput/BackboneElementInput.module.css`       | 5       | `.nested` indent                                                                |
+| `ResourceArrayInput/ResourceArrayInput.module.css`           | 5       | `.indented` border                                                              |
+| `ResourceTimeline/ResourceTimeline.module.css`               | 3       | spacing                                                                         |
+| `DiagnosticReportDisplay/DiagnosticReportDisplay.module.css` | 43      | results table                                                                   |
 
 Practical read: **eight files (Navbar 253, AIRealTime 191, ListWithDetailPane 123, HeaderDropdown
 107, BaseChat 104, Spotlight 90, CalendarDateInput 86, QuestionnaireBuilder 76 = 1,030 LOC) carry
@@ -1611,12 +1648,12 @@ them (slower, correct). Recommend the shim for the 36 small ones and rewrites fo
 
 Only four call sites in the whole library:
 
-| Site | API | Why | Replacement |
-|---|---|---|---|
-| `ResourceForm/ResourceForm.tsx:3, 40` | `useMantineTheme()` | `theme.primaryColor` for the split-button `ActionIcon` | drop; use the default button variant |
-| `AppShell/HeaderDropdown.tsx:3, 4, 76, 141` | `useMantineColorScheme()`, `MantineColorScheme` | light/auto/dark `SegmentedControl` | a `useTheme()` from a `ThemeProvider` (next-themes-shaped) + `ToggleGroup` |
-| `AppShell/AnnouncementBanners.tsx:3, 11, 31-32` | `MantineColor` in the **public** `AppShellAnnouncement.color` | inline `var(--mantine-color-${color}-light)` | a closed union (`'yellow'\|'red'\|'blue'\|…`) or a semantic set (`'warning'\|'error'\|'info'`) mapped through `cva` — **public-API break** |
-| `StatusBadge/StatusBadge.tsx:3, 30` | `DefaultMantineColor` in `statusToColor: Record<string, DefaultMantineColor>` | status→color map | `cva` variants; **public-API break** (`StatusBadgeProps extends Omit<BadgeProps,'children'>`) |
+| Site                                            | API                                                                           | Why                                                    | Replacement                                                                                                                                |
+| ----------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ResourceForm/ResourceForm.tsx:3, 40`           | `useMantineTheme()`                                                           | `theme.primaryColor` for the split-button `ActionIcon` | drop; use the default button variant                                                                                                       |
+| `AppShell/HeaderDropdown.tsx:3, 4, 76, 141`     | `useMantineColorScheme()`, `MantineColorScheme`                               | light/auto/dark `SegmentedControl`                     | a `useTheme()` from a `ThemeProvider` (next-themes-shaped) + `ToggleGroup`                                                                 |
+| `AppShell/AnnouncementBanners.tsx:3, 11, 31-32` | `MantineColor` in the **public** `AppShellAnnouncement.color`                 | inline `var(--mantine-color-${color}-light)`           | a closed union (`'yellow'\|'red'\|'blue'\|…`) or a semantic set (`'warning'\|'error'\|'info'`) mapped through `cva` — **public-API break** |
+| `StatusBadge/StatusBadge.tsx:3, 30`             | `DefaultMantineColor` in `statusToColor: Record<string, DefaultMantineColor>` | status→color map                                       | `cva` variants; **public-API break** (`StatusBadgeProps extends Omit<BadgeProps,'children'>`)                                              |
 
 Beyond these, theme coupling is entirely through `var(--mantine-*)` in the CSS modules (§C.5) and
 `size`/`radius`/`c`/`gap` shorthand props on layout components.
@@ -1626,31 +1663,32 @@ Beyond these, theme coupling is entirely through `var(--mantine-*)` in the CSS m
 Every one of these is exported from `src/index.ts` (166 LOC of re-exports) and therefore a breaking
 change for consumers. Full list from a repo-wide `extends`/import scan:
 
-| Component | File:line | Mantine type |
-|---|---|---|
-| `MedplumLinkProps` | `MedplumLink/MedplumLink.tsx:11` | `AnchorProps`, `ElementProps<'a', keyof AnchorProps>` |
-| `ResourceNameProps` | `ResourceName/ResourceName.tsx:12` | `TextProps` |
-| `ResourceAvatarProps` | `ResourceAvatar/ResourceAvatar.tsx:12` | `AvatarProps` |
-| `PanelProps` | `Panel/Panel.tsx:9` | `PaperProps` |
-| `TimelineItemProps` | `Timeline/Timeline.tsx:26` | `PanelProps` → `PaperProps` |
-| `BaseChatProps` | `chat/BaseChat/BaseChat.tsx:109` | `PaperProps` |
-| `SignatureInputProps` | `SignatureInput/SignatureInput.tsx:14` | `PaperProps` |
-| `StatusBadgeProps` | `StatusBadge/StatusBadge.tsx:71` | `Omit<BadgeProps,'children'>` + `DefaultMantineColor` map |
-| `OperationOutcomeAlertProps` | `OperationOutcomeAlert/OperationOutcomeAlert.tsx:10` | `AlertProps` |
-| `LinkTabsProps` | `LinkTabs/LinkTabs.tsx:18` | `Omit<TabsProps,'value'\|'onChange'>` |
-| `SensitiveTextareaProps` | `SensitiveTextarea/SensitiveTextarea.tsx:11` | `TextareaProps` |
-| `SmartAppLaunchLinkProps` | `SmartAppLaunchLink/SmartAppLaunchLink.tsx:11` | `AnchorProps` |
-| `AsyncAutocompleteProps<T>` | `AsyncAutocomplete/AsyncAutocomplete.tsx:18` | `Omit<ComboboxProps, …>` |
-| `AsyncAutocompleteOption<T>` | `AsyncAutocomplete/AsyncAutocomplete.tsx:13` | `ComboboxItem` |
-| `ModalProps` | `Modal/Modal.tsx:35` | `Omit<MantineModalProps, 'children'\|'onSubmit'\|'scrollAreaComponent'>` |
-| `SubmitButtonProps` | `Form/SubmitButton.tsx:9` | `Omit<ButtonProps,'type'\|'loading'>` |
-| `PasswordInput` | `PasswordInput/PasswordInput.tsx:14` | takes `PasswordInputProps` directly |
-| `ContainerProps` | `Container/Container.tsx` | re-exports Mantine `ContainerProps` |
-| `AppShellAnnouncement.color` | `AppShell/AnnouncementBanners.tsx:11` | `MantineColor` |
-| `SpotlightLinkAction` | `AppShell/Spotlight.tsx:26` | `SpotlightActionData` (`@mantine/spotlight`) |
+| Component                    | File:line                                            | Mantine type                                                             |
+| ---------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------ |
+| `MedplumLinkProps`           | `MedplumLink/MedplumLink.tsx:11`                     | `AnchorProps`, `ElementProps<'a', keyof AnchorProps>`                    |
+| `ResourceNameProps`          | `ResourceName/ResourceName.tsx:12`                   | `TextProps`                                                              |
+| `ResourceAvatarProps`        | `ResourceAvatar/ResourceAvatar.tsx:12`               | `AvatarProps`                                                            |
+| `PanelProps`                 | `Panel/Panel.tsx:9`                                  | `PaperProps`                                                             |
+| `TimelineItemProps`          | `Timeline/Timeline.tsx:26`                           | `PanelProps` → `PaperProps`                                              |
+| `BaseChatProps`              | `chat/BaseChat/BaseChat.tsx:109`                     | `PaperProps`                                                             |
+| `SignatureInputProps`        | `SignatureInput/SignatureInput.tsx:14`               | `PaperProps`                                                             |
+| `StatusBadgeProps`           | `StatusBadge/StatusBadge.tsx:71`                     | `Omit<BadgeProps,'children'>` + `DefaultMantineColor` map                |
+| `OperationOutcomeAlertProps` | `OperationOutcomeAlert/OperationOutcomeAlert.tsx:10` | `AlertProps`                                                             |
+| `LinkTabsProps`              | `LinkTabs/LinkTabs.tsx:18`                           | `Omit<TabsProps,'value'\|'onChange'>`                                    |
+| `SensitiveTextareaProps`     | `SensitiveTextarea/SensitiveTextarea.tsx:11`         | `TextareaProps`                                                          |
+| `SmartAppLaunchLinkProps`    | `SmartAppLaunchLink/SmartAppLaunchLink.tsx:11`       | `AnchorProps`                                                            |
+| `AsyncAutocompleteProps<T>`  | `AsyncAutocomplete/AsyncAutocomplete.tsx:18`         | `Omit<ComboboxProps, …>`                                                 |
+| `AsyncAutocompleteOption<T>` | `AsyncAutocomplete/AsyncAutocomplete.tsx:13`         | `ComboboxItem`                                                           |
+| `ModalProps`                 | `Modal/Modal.tsx:35`                                 | `Omit<MantineModalProps, 'children'\|'onSubmit'\|'scrollAreaComponent'>` |
+| `SubmitButtonProps`          | `Form/SubmitButton.tsx:9`                            | `Omit<ButtonProps,'type'\|'loading'>`                                    |
+| `PasswordInput`              | `PasswordInput/PasswordInput.tsx:14`                 | takes `PasswordInputProps` directly                                      |
+| `ContainerProps`             | `Container/Container.tsx`                            | re-exports Mantine `ContainerProps`                                      |
+| `AppShellAnnouncement.color` | `AppShell/AnnouncementBanners.tsx:11`                | `MantineColor`                                                           |
+| `SpotlightLinkAction`        | `AppShell/Spotlight.tsx:26`                          | `SpotlightActionData` (`@mantine/spotlight`)                             |
 
 **Redesign guidance.** Three of these are unusually load-bearing and deserve a decision before any
 code is written:
+
 - `AsyncAutocompleteOption<T> extends ComboboxItem` — `ComboboxItem` is just
   `{ value: string; label: string; disabled?: boolean }`. Inline that shape and the whole
   autocomplete family sheds its Mantine type dependency for free. **Do this first.**
@@ -1659,29 +1697,29 @@ code is written:
   `fullScreen`, `centered`) instead of `Omit<…>` on a foreign type.
 - `SpotlightActionData` — `{ id, label, description?, onClick?, leftSection?, … }`. Define
   `SpotlightLinkAction` standalone.
-The `PaperProps`/`TextProps`/`AnchorProps`/`AvatarProps`/`BadgeProps`/`TabsProps` cases are all
-"pass style-ish props through to the underlying element"; the shadcn idiom is
-`React.ComponentProps<'div'>` (or `'a'`, `'span'`) plus a `variant`/`size` from `cva`. That is a
-strictly smaller surface, so document it as a breaking change rather than trying to emulate
-Mantine's `c`/`fw`/`size`/`radius`/`m*`/`p*` shorthands.
+  The `PaperProps`/`TextProps`/`AnchorProps`/`AvatarProps`/`BadgeProps`/`TabsProps` cases are all
+  "pass style-ish props through to the underlying element"; the shadcn idiom is
+  `React.ComponentProps<'div'>` (or `'a'`, `'span'`) plus a `variant`/`size` from `cva`. That is a
+  strictly smaller surface, so document it as a breaking change rather than trying to emulate
+  Mantine's `c`/`fw`/`size`/`radius`/`m*`/`p*` shorthands.
 
 ---
 
 ## Summary matrix
 
-| # | Group | Difficulty | LOC touched | LOC genuinely new | Gating risk |
-|---|---|---|---|---|---|
-| 1 | Schema-driven form engine | 4/5 | ~1,900 | ~400 | error-expression matching; frozen-defaultValue semantics |
-| 2 | Questionnaire engine | 4/5 | ~1,900 | ~250 | new `Stepper`; `reportValidity` page gate; remount-key contract |
-| 3 | Search table | 3/5 | ~1,300 | ~350 | `Modal` chrome; column `Menu` submenus; pagination `aria-label`s |
-| 4 | AppShell + leaves | 4/5 | ~1,900 | ~600 | no shadcn Spotlight; responsive shell config; `MantineColor` in public API |
-| 5 | PatientSummary | 2/5 | ~2,700 | ~500 | breadth only; registry and hook port free |
-| 6 | Chat | 3/5 | ~1,300 | ~400 | scroll anchoring; replaceable connect/disconnect toasts |
-| 7 | Timelines | 2/5 | ~700 | ~150 | `updateNotification` upload lifecycle; `PaperProps` break |
-| 8 | Autocomplete family | **5/5** | ~1,400 | ~600 | debounce/abort/auto-submit/pills; `role="searchbox"`; `$create` |
-| 9 | Date/time | 2/5 | ~740 | ~150 | keep the hand-rolled calendar grid; don't adopt react-day-picker |
-| 10 | Auth + long tail | 1-3/5 | ~5,500 | ~800 | `StatusBadge` color map; notification lifecycles; canvas sizing |
-| — | Cross-cutting | 2/5 | ~750 | ~150 | `render.tsx` (1 file), toast module (~40 LOC), CSS var shim |
+| #   | Group                     | Difficulty | LOC touched | LOC genuinely new | Gating risk                                                                |
+| --- | ------------------------- | ---------- | ----------- | ----------------- | -------------------------------------------------------------------------- |
+| 1   | Schema-driven form engine | 4/5        | ~1,900      | ~400              | error-expression matching; frozen-defaultValue semantics                   |
+| 2   | Questionnaire engine      | 4/5        | ~1,900      | ~250              | new `Stepper`; `reportValidity` page gate; remount-key contract            |
+| 3   | Search table              | 3/5        | ~1,300      | ~350              | `Modal` chrome; column `Menu` submenus; pagination `aria-label`s           |
+| 4   | AppShell + leaves         | 4/5        | ~1,900      | ~600              | no shadcn Spotlight; responsive shell config; `MantineColor` in public API |
+| 5   | PatientSummary            | 2/5        | ~2,700      | ~500              | breadth only; registry and hook port free                                  |
+| 6   | Chat                      | 3/5        | ~1,300      | ~400              | scroll anchoring; replaceable connect/disconnect toasts                    |
+| 7   | Timelines                 | 2/5        | ~700        | ~150              | `updateNotification` upload lifecycle; `PaperProps` break                  |
+| 8   | Autocomplete family       | **5/5**    | ~1,400      | ~600              | debounce/abort/auto-submit/pills; `role="searchbox"`; `$create`            |
+| 9   | Date/time                 | 2/5        | ~740        | ~150              | keep the hand-rolled calendar grid; don't adopt react-day-picker           |
+| 10  | Auth + long tail          | 1-3/5      | ~5,500      | ~800              | `StatusBadge` color map; notification lifecycles; canvas sizing            |
+| —   | Cross-cutting             | 2/5        | ~750        | ~150              | `render.tsx` (1 file), toast module (~40 LOC), CSS var shim                |
 
 **Total: roughly 20,000 LOC touched, of which ~4,400 are genuine rewrites.** Against 29,318 source
 LOC that tracks: about 15% of the library is real work and the rest is imports, classNames and

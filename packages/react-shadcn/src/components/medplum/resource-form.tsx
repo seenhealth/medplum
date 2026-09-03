@@ -1,6 +1,17 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
 // Modified from @medplum/react 5.1.36 packages/react/src/ResourceForm/ResourceForm.tsx for @medplum/react-shadcn (Apache-2.0 §4(b) notice)
+import { BackboneElementInput } from '@/components/medplum/backbone-element-input';
+import { FormSection, FormSectionError, FormSectionLabel } from '@/components/medplum/form-section';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   AccessPolicyInteraction,
   applyDefaultValuesToResource,
@@ -15,21 +26,6 @@ import { IconAlertCircle, IconChevronDown, IconEdit, IconTrash } from '@tabler/i
 import cx from 'clsx';
 import type { FormEvent, JSX } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { BackboneElementInput } from '@/components/medplum/backbone-element-input';
-import {
-  FormSection,
-  FormSectionError,
-  FormSectionLabel,
-} from '@/components/medplum/form-section';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 
 export interface ResourceFormProps {
   readonly defaultValue: Partial<Resource> | Reference;
