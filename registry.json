@@ -2921,6 +2921,299 @@
       }
     },
     {
+      "name": "questionnaire-form",
+      "type": "registry:block",
+      "title": "QuestionnaireForm",
+      "description": "Render and submit FHIR Questionnaires, including paginated, repeating, and AI voice-assisted forms.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-form/questionnaire-form.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-form/questionnaire-form.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-form/ai-real-time-questionnaire-form.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-form/ai-real-time-questionnaire-form.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-form/questionnaire-form-group.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-form/questionnaire-form-group.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-form/questionnaire-form-item.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-form/questionnaire-form-item.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-form/questionnaire-form-item-array.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-form/questionnaire-form-item-array.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-form/questionnaire-form-repeatable-group.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-form/questionnaire-form-repeatable-group.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-form/questionnaire-form-repeatable-item.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-form/questionnaire-form-repeatable-item.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-form/questionnaire-form-stepper.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-form/questionnaire-form-stepper.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": [
+        "button",
+        "checkbox",
+        "collapsible",
+        "input",
+        "label",
+        "native-select",
+        "radio-group",
+        "seenhealth/medplum/async-autocomplete",
+        "seenhealth/medplum/attachment-input",
+        "seenhealth/medplum/checkbox-form-section",
+        "seenhealth/medplum/date-time-input",
+        "seenhealth/medplum/form",
+        "seenhealth/medplum/form-section",
+        "seenhealth/medplum/notify",
+        "seenhealth/medplum/quantity-input",
+        "seenhealth/medplum/reference-input",
+        "seenhealth/medplum/resource-property-display",
+        "seenhealth/medplum/signature-input",
+        "seenhealth/medplum/stepper",
+        "seenhealth/medplum/unavailable-note",
+        "seenhealth/medplum/use-debounced-callback",
+        "seenhealth/medplum/value-set-autocomplete",
+        "separator",
+        "spinner",
+        "textarea",
+        "utils"
+      ],
+      "categories": ["fhir", "forms", "questionnaire"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/QuestionnaireForm), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/QuestionnaireForm",
+        "storyIds": [
+          "medplum-questionnaireform--basic",
+          "medplum-questionnaireform--groups",
+          "medplum-questionnaireform--nested-groups",
+          "medplum-questionnaireform--pages",
+          "medplum-questionnaireform--lab-ordering",
+          "medplum-questionnaireform--page-sequence",
+          "medplum-questionnaireform--disable-pagination",
+          "medplum-questionnaireform--page-and-non-page-sequence",
+          "medplum-questionnaireform--choices",
+          "medplum-questionnaireform--option-exclusive",
+          "medplum-questionnaireform--enable-when",
+          "medplum-questionnaireform--enable-when-on-submit",
+          "medplum-questionnaireform--enable-when-with-questionnaire-response",
+          "medplum-questionnaireform--exclude-buttons-with-on-change",
+          "medplum-questionnaireform--repeatable-items",
+          "medplum-questionnaireform--kitchen-sink",
+          "medplum-questionnaireform--kitchen-sink-with-initial-values",
+          "medplum-questionnaireform--kitchen-sink-with-questionnaire-response",
+          "medplum-questionnaireform--us-surgeon-general-family-health-portrait",
+          "medplum-questionnaireform--ahchrsn-screening",
+          "medplum-questionnaireform--signature-required"
+        ]
+      }
+    },
+    {
+      "name": "questionnaire-response-display",
+      "type": "registry:block",
+      "title": "QuestionnaireResponseDisplay",
+      "description": "Read-only recursive display of a FHIR QuestionnaireResponse, switching on each answer value[x].",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-response-display/questionnaire-response-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-response-display/questionnaire-response-display.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-response-display/questionnaire-response-item-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-response-display/questionnaire-response-item-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/codeable-concept-display",
+        "seenhealth/medplum/quantity-display",
+        "seenhealth/medplum/range-display"
+      ],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/QuestionnaireResponseDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/QuestionnaireResponseDisplay",
+        "storyIds": [
+          "medplum-questionnaireresponsedisplay--basic",
+          "medplum-questionnaireresponsedisplay--multiple-answer-types",
+          "medplum-questionnaireresponsedisplay--nested-items",
+          "medplum-questionnaireresponsedisplay--with-coding-answers",
+          "medplum-questionnaireresponsedisplay--no-answers",
+          "medplum-questionnaireresponsedisplay--mixed-answered-and-unanswered",
+          "medplum-questionnaireresponsedisplay--kitchen-sink",
+          "medplum-questionnaireresponsedisplay--with-pages"
+        ]
+      }
+    },
+    {
+      "name": "request-group-display",
+      "type": "registry:component",
+      "title": "RequestGroupDisplay",
+      "description": "Display a FHIR RequestGroup as a task list with Start/Edit actions.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/request-group-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/request-group-display.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": ["button", "seenhealth/medplum/resource-name", "seenhealth/medplum/status-badge"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/RequestGroupDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/RequestGroupDisplay",
+        "storyIds": ["medplum-requestgroupdisplay--simple", "medplum-requestgroupdisplay--covid-19"]
+      }
+    },
+    {
+      "name": "reference-range-editor",
+      "type": "registry:component",
+      "title": "ReferenceRangeEditor",
+      "description": "Editor for ObservationDefinition qualified intervals grouped by filter criteria.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/reference-range-editor.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/reference-range-editor.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@tabler/icons-react@^3.46.0"],
+      "registryDependencies": [
+        "button",
+        "input",
+        "native-select",
+        "seenhealth/medplum/container",
+        "seenhealth/medplum/dom",
+        "seenhealth/medplum/form",
+        "seenhealth/medplum/form-section",
+        "seenhealth/medplum/range-input",
+        "separator"
+      ],
+      "categories": ["fhir", "editor"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ReferenceRangeEditor), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ReferenceRangeEditor",
+        "storyIds": [
+          "medplum-referencerangeeditor--empty",
+          "medplum-referencerangeeditor--hdl",
+          "medplum-referencerangeeditor--testosterone",
+          "medplum-referencerangeeditor--acr"
+        ]
+      }
+    },
+    {
+      "name": "plan-definition-builder",
+      "type": "registry:component",
+      "title": "PlanDefinitionBuilder",
+      "description": "Builder for a FHIR PlanDefinition with selected/hover action editing.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/plan-definition-builder.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/plan-definition-builder.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": [
+        "button",
+        "input",
+        "native-select",
+        "seenhealth/medplum/dom",
+        "seenhealth/medplum/form",
+        "seenhealth/medplum/form-section",
+        "seenhealth/medplum/resource-input",
+        "spinner",
+        "utils"
+      ],
+      "categories": ["fhir", "editor"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/PlanDefinitionBuilder), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/PlanDefinitionBuilder",
+        "storyIds": [
+          "medplum-plandefinitionbuilder--basic",
+          "medplum-plandefinitionbuilder--covid-19-eval",
+          "medplum-plandefinitionbuilder--covid-19-pcr-lab-service-story"
+        ]
+      }
+    },
+    {
+      "name": "questionnaire-builder",
+      "type": "registry:component",
+      "title": "QuestionnaireBuilder",
+      "description": "Builder for a FHIR Questionnaire with selected/hover item editing and QuestionnaireForm preview.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/questionnaire-builder.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/questionnaire-builder.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": [
+        "input",
+        "native-select",
+        "seenhealth/medplum/dom",
+        "seenhealth/medplum/form",
+        "seenhealth/medplum/questionnaire-form",
+        "seenhealth/medplum/resource-property-display",
+        "seenhealth/medplum/resource-property-input",
+        "seenhealth/medplum/resource-type-input",
+        "textarea",
+        "utils"
+      ],
+      "categories": ["fhir", "forms", "questionnaire"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/QuestionnaireBuilder), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/QuestionnaireBuilder",
+        "storyIds": [
+          "medplum-questionnairebuilder--basic",
+          "medplum-questionnairebuilder--groups",
+          "medplum-questionnairebuilder--multiple-choice",
+          "medplum-questionnairebuilder--auto-save"
+        ]
+      }
+    },
+    {
       "name": "diagnostic-report-display",
       "type": "registry:component",
       "title": "DiagnosticReportDisplay",
