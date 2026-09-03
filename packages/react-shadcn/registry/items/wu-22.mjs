@@ -1,0 +1,90 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+// SPDX-License-Identifier: Apache-2.0
+
+/** @type {import('./core.mjs').RegistryItemSpec[]} */
+export const items = [
+  {
+    name: 'search-control',
+    title: 'SearchControl',
+    description: 'Search, filter, sort, select, and page through FHIR resources.',
+    files: [
+      'components/medplum/search-control/search-control.tsx',
+      'components/medplum/search-control/search-control-field.ts',
+      'components/medplum/search-control/search-utils.tsx',
+    ],
+    upstream: 'SearchControl',
+    categories: ['search'],
+  },
+  {
+    name: 'search-popup-menu',
+    title: 'SearchPopupMenu',
+    description: 'Column menu for FHIR search sorting and filters.',
+    files: ['components/medplum/search-popup-menu.tsx'],
+    upstream: 'SearchPopupMenu',
+    categories: ['search'],
+  },
+  {
+    name: 'search-field-editor',
+    title: 'SearchFieldEditor',
+    description: 'Choose the fields displayed by a FHIR search.',
+    files: ['components/medplum/search-field-editor.tsx'],
+    upstream: 'SearchFieldEditor',
+    categories: ['search'],
+  },
+  {
+    name: 'search-filter-editor',
+    title: 'SearchFilterEditor',
+    description: 'Edit all filters in a FHIR search request.',
+    files: ['components/medplum/search-filter-editor.tsx'],
+    upstream: 'SearchFilterEditor',
+    categories: ['search'],
+  },
+  {
+    name: 'search-filter-value-input',
+    title: 'SearchFilterValueInput',
+    description: 'Render a value input appropriate for a FHIR search parameter.',
+    files: ['components/medplum/search-filter-value-input.tsx'],
+    upstream: 'SearchFilterValueInput',
+    categories: ['search'],
+  },
+  {
+    name: 'search-filter-value-display',
+    title: 'SearchFilterValueDisplay',
+    description: 'Display a formatted FHIR search filter value.',
+    files: ['components/medplum/search-filter-value-display.tsx'],
+    upstream: 'SearchFilterValueDisplay',
+    categories: ['search'],
+  },
+  {
+    name: 'search-filter-value-dialog',
+    title: 'SearchFilterValueDialog',
+    description: 'Prompt for a typed FHIR search filter value.',
+    files: ['components/medplum/search-filter-value-dialog.tsx'],
+    upstream: 'SearchFilterValueDialog',
+    categories: ['search'],
+  },
+  {
+    name: 'search-export-dialog',
+    title: 'SearchExportDialog',
+    description: 'Choose an export format for FHIR search results.',
+    files: ['components/medplum/search-export-dialog.tsx'],
+    upstream: 'SearchExportDialog',
+    categories: ['search'],
+  },
+  {
+    name: 'bookmark-dialog',
+    title: 'BookmarkDialog',
+    description: 'Add the current search location to a user menu.',
+    files: ['components/medplum/bookmark-dialog.tsx'],
+    upstream: 'BookmarkDialog',
+    categories: ['search'],
+  },
+  {
+    name: 'fhir-path-table',
+    title: 'FhirPathTable',
+    description: 'Display GraphQL search results in FHIRPath-defined columns.',
+    files: ['components/medplum/fhir-path-table.tsx'],
+    upstream: 'FhirPathTable',
+    categories: ['search'],
+  },
+];

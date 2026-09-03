@@ -1,0 +1,23 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+// SPDX-License-Identifier: Apache-2.0
+// Modified from @medplum/react 5.1.36 packages/react/src/SearchControl/SearchControlField.test.ts for @medplum/react-shadcn (Apache-2.0 §4(b) notice)
+import { getFieldDefinitions } from '@/components/medplum/search-control/search-control-field';
+
+describe('getFieldDefinitions', () => {
+  test('prefix field names do not match in searchParam expressions', () => {
+    const fieldDefs = getFieldDefinitions({
+      resourceType: 'Patient',
+      fields: ['id', 'identifier'],
+    });
+
+    expect(fieldDefs.length).toBe(2);
+    const idField = fieldDefs.find((field) => field.name === 'id');
+    const identifierField = fieldDefs.find((field) => field.name === 'identifier');
+
+    expect(idField?.searchParams?.length).toBe(1);
+    expect(idField?.searchParams?.find((sp) => sp.code === '_id')).toBeDefined();
+
+    expect(identifierField?.searchParams?.length).toBe(1);
+    expect(identifierField?.searchParams?.find((sp) => sp.code === 'identifier')).toBeDefined();
+  });
+});

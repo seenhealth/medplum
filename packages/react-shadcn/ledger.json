@@ -1,0 +1,4366 @@
+{
+  "items": {
+    "outcomes": {
+      "upstream": "utils/outcomes.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:55.734Z",
+      "status": "done"
+    },
+    "form-section": {
+      "upstream": "FormSection",
+      "upstreamDir": "FormSection",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 12,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:59.892Z",
+      "status": "done"
+    },
+    "human-name-display": {
+      "upstream": "HumanNameDisplay",
+      "upstreamDir": "HumanNameDisplay",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:01.751Z",
+      "status": "done"
+    },
+    "human-name-input": {
+      "upstream": "HumanNameInput",
+      "upstreamDir": "HumanNameInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:02.075Z",
+      "status": "done"
+    },
+    "constants": {
+      "upstream": "constants.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:55.431Z",
+      "status": "done"
+    },
+    "dom": {
+      "upstream": "utils/dom.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:56.037Z",
+      "status": "done"
+    },
+    "date": {
+      "upstream": "utils/date.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:56.333Z",
+      "status": "done"
+    },
+    "diff": {
+      "upstream": "utils/diff.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:56.636Z",
+      "status": "done"
+    },
+    "blame": {
+      "upstream": "utils/blame.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:56.923Z",
+      "status": "done"
+    },
+    "pagination": {
+      "upstream": "utils/pagination.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:57.212Z",
+      "status": "done"
+    },
+    "recaptcha": {
+      "upstream": "utils/recaptcha.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:57.505Z",
+      "status": "done"
+    },
+    "script": {
+      "upstream": "utils/script.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:57.801Z",
+      "status": "done"
+    },
+    "app": {
+      "upstream": "utils/app.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.095Z",
+      "status": "done"
+    },
+    "load-state": {
+      "upstream": "utils/loadState.ts",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.387Z",
+      "status": "done"
+    },
+    "maybe-wrap-with-context": {
+      "upstream": "utils/maybeWrapWithContext.tsx",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.674Z",
+      "status": "done"
+    },
+    "maybe-wrap-with-tooltip": {
+      "upstream": "utils/maybeWrapWithTooltip.tsx",
+      "upstreamDir": "utils",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.973Z",
+      "status": "done"
+    },
+    "notify": {
+      "upstream": null,
+      "upstreamDir": null,
+      "tests": {
+        "upstream": 0,
+        "ported": 13,
+        "passing": 13,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.973Z",
+      "status": "done"
+    },
+    "use-debounced-callback": {
+      "upstream": null,
+      "upstreamDir": null,
+      "tests": {
+        "upstream": 0,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.973Z",
+      "status": "done"
+    },
+    "use-local-storage": {
+      "upstream": null,
+      "upstreamDir": null,
+      "tests": {
+        "upstream": 0,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.973Z",
+      "status": "done"
+    },
+    "use-resize-observer": {
+      "upstream": null,
+      "upstreamDir": null,
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.973Z",
+      "status": "done"
+    },
+    "use-clipboard": {
+      "upstream": null,
+      "upstreamDir": null,
+      "tests": {
+        "upstream": 0,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.973Z",
+      "status": "done"
+    },
+    "stepper": {
+      "upstream": null,
+      "upstreamDir": null,
+      "tests": {
+        "upstream": 0,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.974Z",
+      "status": "done"
+    },
+    "ring-progress": {
+      "upstream": null,
+      "upstreamDir": null,
+      "tests": {
+        "upstream": 0,
+        "ported": 5,
+        "passing": 5,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:58.974Z",
+      "status": "done"
+    },
+    "elements-input-utils": {
+      "upstream": "ElementsInput/ElementsInput.utils.ts",
+      "upstreamDir": "ElementsInput",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:59.265Z",
+      "status": "done"
+    },
+    "resource-property-input-utils": {
+      "upstream": "ResourcePropertyInput/ResourcePropertyInput.utils.ts",
+      "upstreamDir": "ResourcePropertyInput",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:24:59.574Z",
+      "status": "done"
+    },
+    "checkbox-form-section": {
+      "upstream": "CheckboxFormSection",
+      "upstreamDir": "CheckboxFormSection",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:00.192Z",
+      "status": "done"
+    },
+    "container": {
+      "upstream": "Container",
+      "upstreamDir": "Container",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:00.500Z",
+      "status": "done"
+    },
+    "panel": {
+      "upstream": "Panel",
+      "upstreamDir": "Panel",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:00.812Z",
+      "status": "done"
+    },
+    "document": {
+      "upstream": "Document",
+      "upstreamDir": "Document",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:01.119Z",
+      "status": "done"
+    },
+    "modal": {
+      "upstream": "Modal",
+      "upstreamDir": "Modal",
+      "tests": {
+        "upstream": 14,
+        "ported": 14,
+        "passing": 6,
+        "failing": 0,
+        "skipped": [
+          "Modal Applies the layout classes alongside the Mantine classes (Mantine-specific: no Mantine classNames bag exists on this composition)",
+          "Modal Merges caller classNames rather than replacing them (Mantine-specific: classNames prop bag has no equivalent; each sub-component takes its own className)",
+          "Modal Leaves the styles prop as an escape hatch (Mantine-specific: Modal no longer accepts a per-slot styles bag)",
+          "Modal Sets the body height custom property (bodyHeight prop dropped from the composition API; ModalBody sizes via flex-1 min-h-0 overflow-y-auto)",
+          "Modal Omits the body height custom property by default (bodyHeight prop dropped from the composition API)",
+          "Modal Submits body fields from an action button (Form/SubmitButton not yet ported to react-shadcn; onSubmit removed from Modal, callers own their <form>)",
+          "Modal Allows overriding the close button props (closeButtonProps bag replaced by boolean withCloseButton; no override mechanism modeled)",
+          "Modal Renders no header without a title or close button (header presence is caller-controlled via composition; there is no title prop to tie it to)"
+        ]
+      },
+      "stories": {
+        "upstream": 7,
+        "ported": 7,
+        "passing": 7
+      },
+      "parity": {
+        "deltas": 15,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:01.437Z",
+      "status": "in-progress"
+    },
+    "address-display": {
+      "upstream": "AddressDisplay",
+      "upstreamDir": "AddressDisplay",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:02.376Z",
+      "status": "done"
+    },
+    "codeable-concept-display": {
+      "upstream": "CodeableConceptDisplay",
+      "upstreamDir": "CodeableConceptDisplay",
+      "tests": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:02.659Z",
+      "status": "done"
+    },
+    "coding-display": {
+      "upstream": "CodingDisplay",
+      "upstreamDir": "CodingDisplay",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:02.967Z",
+      "status": "done"
+    },
+    "contact-detail-display": {
+      "upstream": "ContactDetailDisplay",
+      "upstreamDir": "ContactDetailDisplay",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:03.264Z",
+      "status": "done"
+    },
+    "contact-point-display": {
+      "upstream": "ContactPointDisplay",
+      "upstreamDir": "ContactPointDisplay",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:03.567Z",
+      "status": "done"
+    },
+    "identifier-display": {
+      "upstream": "IdentifierDisplay",
+      "upstreamDir": "IdentifierDisplay",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:03.866Z",
+      "status": "done"
+    },
+    "money-display": {
+      "upstream": "MoneyDisplay",
+      "upstreamDir": "MoneyDisplay",
+      "tests": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:04.163Z",
+      "status": "done"
+    },
+    "quantity-display": {
+      "upstream": "QuantityDisplay",
+      "upstreamDir": "QuantityDisplay",
+      "tests": {
+        "upstream": 7,
+        "ported": 7,
+        "passing": 7,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:04.467Z",
+      "status": "done"
+    },
+    "range-display": {
+      "upstream": "RangeDisplay",
+      "upstreamDir": "RangeDisplay",
+      "tests": {
+        "upstream": 7,
+        "ported": 7,
+        "passing": 7,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:04.762Z",
+      "status": "done"
+    },
+    "ratio-display": {
+      "upstream": "RatioDisplay",
+      "upstreamDir": "RatioDisplay",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:05.061Z",
+      "status": "done"
+    },
+    "reference-display": {
+      "upstream": "ReferenceDisplay",
+      "upstreamDir": "ReferenceDisplay",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:05.371Z",
+      "status": "done"
+    },
+    "medplum-link": {
+      "upstream": "MedplumLink",
+      "upstreamDir": "MedplumLink",
+      "tests": {
+        "upstream": 10,
+        "ported": 10,
+        "passing": 10,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:05.678Z",
+      "status": "done"
+    },
+    "link-tabs": {
+      "upstream": "LinkTabs",
+      "upstreamDir": "LinkTabs",
+      "tests": {
+        "upstream": 7,
+        "ported": 7,
+        "passing": 7,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 2,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:05.992Z",
+      "status": "done"
+    },
+    "resource-avatar": {
+      "upstream": "ResourceAvatar",
+      "upstreamDir": "ResourceAvatar",
+      "tests": {
+        "upstream": 7,
+        "ported": 7,
+        "passing": 7,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6
+      },
+      "parity": {
+        "deltas": 3,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:06.312Z",
+      "status": "done"
+    },
+    "resource-name": {
+      "upstream": "ResourceName",
+      "upstreamDir": "ResourceName",
+      "tests": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:06.626Z",
+      "status": "done"
+    },
+    "resource-badge": {
+      "upstream": "ResourceBadge",
+      "upstreamDir": "ResourceBadge",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:06.946Z",
+      "status": "done"
+    },
+    "status-badge": {
+      "upstream": "StatusBadge",
+      "upstreamDir": "StatusBadge",
+      "tests": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:07.261Z",
+      "status": "done"
+    },
+    "error-boundary": {
+      "upstream": "ErrorBoundary",
+      "upstreamDir": "ErrorBoundary",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:07.577Z",
+      "status": "done"
+    },
+    "loading": {
+      "upstream": "Loading",
+      "upstreamDir": "Loading",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:07.880Z",
+      "status": "done"
+    },
+    "operation-outcome-alert": {
+      "upstream": "OperationOutcomeAlert",
+      "upstreamDir": "OperationOutcomeAlert",
+      "tests": {
+        "upstream": 7,
+        "ported": 7,
+        "passing": 7,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 2,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:08.179Z",
+      "status": "done"
+    },
+    "unavailable-note": {
+      "upstream": "UnavailableNote",
+      "upstreamDir": "UnavailableNote",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:08.491Z",
+      "status": "done"
+    },
+    "scroll-to-top": {
+      "upstream": "ScrollToTop",
+      "upstreamDir": "ScrollToTop",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:08.796Z",
+      "status": "done"
+    },
+    "info-bar": {
+      "upstream": "InfoBar",
+      "upstreamDir": "InfoBar",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:09.100Z",
+      "status": "done"
+    },
+    "description-list": {
+      "upstream": "DescriptionList",
+      "upstreamDir": "DescriptionList",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:09.404Z",
+      "status": "done"
+    },
+    "note-display": {
+      "upstream": "NoteDisplay",
+      "upstreamDir": "NoteDisplay",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:09.700Z",
+      "status": "done"
+    },
+    "logo": {
+      "upstream": "Logo",
+      "upstreamDir": "Logo",
+      "tests": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:10.003Z",
+      "status": "done"
+    },
+    "array-add-button": {
+      "upstream": "buttons/ArrayAddButton.tsx",
+      "upstreamDir": "buttons",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:10.306Z",
+      "status": "done"
+    },
+    "array-remove-button": {
+      "upstream": "buttons/ArrayRemoveButton.tsx",
+      "upstreamDir": "buttons",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:10.600Z",
+      "status": "done"
+    },
+    "attachment-display": {
+      "upstream": "AttachmentDisplay",
+      "upstreamDir": "AttachmentDisplay",
+      "tests": {
+        "upstream": 16,
+        "ported": 16,
+        "passing": 16,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:10.896Z",
+      "status": "done"
+    },
+    "attachment-array-display": {
+      "upstream": "AttachmentArrayDisplay",
+      "upstreamDir": "AttachmentArrayDisplay",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:11.191Z",
+      "status": "done"
+    },
+    "attachment-button": {
+      "upstream": "AttachmentButton",
+      "upstreamDir": "AttachmentButton",
+      "tests": {
+        "upstream": 7,
+        "ported": 7,
+        "passing": 7,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:11.492Z",
+      "status": "done"
+    },
+    "attachment-input": {
+      "upstream": "AttachmentInput",
+      "upstreamDir": "AttachmentInput",
+      "tests": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:11.791Z",
+      "status": "done"
+    },
+    "attachment-array-input": {
+      "upstream": "AttachmentArrayInput",
+      "upstreamDir": "AttachmentArrayInput",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:12.094Z",
+      "status": "done"
+    },
+    "signature-input": {
+      "upstream": "SignatureInput",
+      "upstreamDir": "SignatureInput",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:12.393Z",
+      "status": "done"
+    },
+    "qr-code-scanner": {
+      "upstream": "QrCodeScanner",
+      "upstreamDir": "QrCodeScanner",
+      "tests": {
+        "upstream": 8,
+        "ported": 8,
+        "passing": 8,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:12.698Z",
+      "status": "done"
+    },
+    "ccda-display": {
+      "upstream": "CcdaDisplay",
+      "upstreamDir": "CcdaDisplay",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:13.012Z",
+      "status": "done"
+    },
+    "address-input": {
+      "upstream": "AddressInput",
+      "upstreamDir": "AddressInput",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:13.307Z",
+      "status": "done"
+    },
+    "annotation-input": {
+      "upstream": "AnnotationInput",
+      "upstreamDir": "AnnotationInput",
+      "tests": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:13.596Z",
+      "status": "done"
+    },
+    "contact-detail-input": {
+      "upstream": "ContactDetailInput",
+      "upstreamDir": "ContactDetailInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:13.888Z",
+      "status": "done"
+    },
+    "contact-point-input": {
+      "upstream": "ContactPointInput",
+      "upstreamDir": "ContactPointInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:14.184Z",
+      "status": "done"
+    },
+    "identifier-input": {
+      "upstream": "IdentifierInput",
+      "upstreamDir": "IdentifierInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:14.480Z",
+      "status": "done"
+    },
+    "money-input": {
+      "upstream": "MoneyInput",
+      "upstreamDir": "MoneyInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:14.792Z",
+      "status": "done"
+    },
+    "period-input": {
+      "upstream": "PeriodInput",
+      "upstreamDir": "PeriodInput",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:15.088Z",
+      "status": "done"
+    },
+    "quantity-input": {
+      "upstream": "QuantityInput",
+      "upstreamDir": "QuantityInput",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:15.394Z",
+      "status": "done"
+    },
+    "range-input": {
+      "upstream": "RangeInput",
+      "upstreamDir": "RangeInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:15.696Z",
+      "status": "done"
+    },
+    "ratio-input": {
+      "upstream": "RatioInput",
+      "upstreamDir": "RatioInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:16.004Z",
+      "status": "done"
+    },
+    "date-time-input": {
+      "upstream": "DateTimeInput",
+      "upstreamDir": "DateTimeInput",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:16.315Z",
+      "status": "done"
+    },
+    "calendar-input": {
+      "upstream": "CalendarInput",
+      "upstreamDir": "CalendarInput",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:16.619Z",
+      "status": "done"
+    },
+    "calendar-date-input": {
+      "upstream": "CalendarDateInput",
+      "upstreamDir": "CalendarDateInput",
+      "tests": {
+        "upstream": 45,
+        "ported": 49,
+        "passing": 49,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 8,
+        "ported": 8,
+        "passing": 8
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:16.933Z",
+      "status": "done"
+    },
+    "timing-input": {
+      "upstream": "TimingInput",
+      "upstreamDir": "TimingInput",
+      "tests": {
+        "upstream": 10,
+        "ported": 10,
+        "passing": 10,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:17.254Z",
+      "status": "done"
+    },
+    "form": {
+      "upstream": "Form",
+      "upstreamDir": "Form",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:17.570Z",
+      "status": "done"
+    },
+    "password-input": {
+      "upstream": "PasswordInput",
+      "upstreamDir": "PasswordInput",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:17.868Z",
+      "status": "done"
+    },
+    "sensitive-textarea": {
+      "upstream": "SensitiveTextarea",
+      "upstreamDir": "SensitiveTextarea",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:18.166Z",
+      "status": "done"
+    },
+    "async-autocomplete": {
+      "upstream": "AsyncAutocomplete",
+      "upstreamDir": "AsyncAutocomplete",
+      "tests": {
+        "upstream": 23,
+        "ported": 23,
+        "passing": 23,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 6,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:18.488Z",
+      "status": "done"
+    },
+    "value-set-autocomplete": {
+      "upstream": "ValueSetAutocomplete",
+      "upstreamDir": "ValueSetAutocomplete",
+      "tests": {
+        "upstream": 17,
+        "ported": 17,
+        "passing": 17,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:26:17.636Z",
+      "status": "done"
+    },
+    "code-input": {
+      "upstream": "CodeInput",
+      "upstreamDir": "CodeInput",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:19.103Z",
+      "status": "done"
+    },
+    "coding-input": {
+      "upstream": "CodingInput",
+      "upstreamDir": "CodingInput",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:19.403Z",
+      "status": "done"
+    },
+    "codeable-concept-input": {
+      "upstream": "CodeableConceptInput",
+      "upstreamDir": "CodeableConceptInput",
+      "tests": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:19.701Z",
+      "status": "done"
+    },
+    "resource-type-input": {
+      "upstream": "ResourceTypeInput",
+      "upstreamDir": "ResourceTypeInput",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:19.996Z",
+      "status": "done"
+    },
+    "resource-input": {
+      "upstream": "ResourceInput/ResourceInput.tsx",
+      "upstreamDir": "ResourceInput",
+      "tests": {
+        "upstream": 8,
+        "ported": 8,
+        "passing": 8,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:20.292Z",
+      "status": "done"
+    },
+    "multi-resource-input": {
+      "upstream": "ResourceInput/MultiResourceInput.tsx",
+      "upstreamDir": "ResourceInput",
+      "tests": {
+        "upstream": 10,
+        "ported": 10,
+        "passing": 10,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 9,
+        "ported": 9,
+        "passing": 9
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:20.598Z",
+      "status": "done"
+    },
+    "reference-input": {
+      "upstream": "ReferenceInput",
+      "upstreamDir": "ReferenceInput",
+      "tests": {
+        "upstream": 10,
+        "ported": 10,
+        "passing": 10,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:20.904Z",
+      "status": "done"
+    },
+    "resource-property-display": {
+      "upstream": "ResourcePropertyDisplay",
+      "upstreamDir": "ResourcePropertyDisplay",
+      "tests": {
+        "upstream": 42,
+        "ported": 42,
+        "passing": 41,
+        "failing": 0,
+        "skipped": [
+          "ResourcePropertyDisplay Secret field functionality Renders secret field with masked value by default (Mantine-specific: asserts mantine-Flex-root class and inline Flex gap style)"
+        ]
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:21.202Z",
+      "status": "done"
+    },
+    "resource-array-input-utils": {
+      "upstream": "ResourceArrayInput/ResourceArrayInput.utils.ts",
+      "upstreamDir": "ResourceArrayInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:21.495Z",
+      "status": "done"
+    },
+    "backbone-element-display": {
+      "upstream": "BackboneElementDisplay",
+      "upstreamDir": "BackboneElementDisplay",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:21.799Z",
+      "status": "done"
+    },
+    "slice-display": {
+      "upstream": "SliceDisplay",
+      "upstreamDir": "SliceDisplay",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:22.092Z",
+      "status": "done"
+    },
+    "resource-array-display": {
+      "upstream": "ResourceArrayDisplay",
+      "upstreamDir": "ResourceArrayDisplay",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:22.396Z",
+      "status": "done"
+    },
+    "extension-display": {
+      "upstream": "ExtensionDisplay",
+      "upstreamDir": "ExtensionDisplay",
+      "tests": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:22.697Z",
+      "status": "done"
+    },
+    "resource-form-utils": {
+      "upstream": "ResourceForm/ResourceForm.utils.ts",
+      "upstreamDir": "ResourceForm",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:22.992Z",
+      "status": "done"
+    },
+    "resource-property-input": {
+      "upstream": "ResourcePropertyInput/ResourcePropertyInput.tsx",
+      "upstreamDir": "ResourcePropertyInput",
+      "tests": {
+        "upstream": 23,
+        "ported": 23,
+        "passing": 23,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:23.312Z",
+      "status": "done"
+    },
+    "elements-input": {
+      "upstream": "ElementsInput/ElementsInput.tsx",
+      "upstreamDir": "ElementsInput",
+      "tests": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:23.612Z",
+      "status": "done"
+    },
+    "backbone-element-input": {
+      "upstream": "BackboneElementInput/BackboneElementInput.tsx",
+      "upstreamDir": "BackboneElementInput",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:23.914Z",
+      "status": "done"
+    },
+    "slice-input": {
+      "upstream": "SliceInput/SliceInput.tsx",
+      "upstreamDir": "SliceInput",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:24.218Z",
+      "status": "done"
+    },
+    "resource-array-input": {
+      "upstream": "ResourceArrayInput/ResourceArrayInput.tsx",
+      "upstreamDir": "ResourceArrayInput",
+      "tests": {
+        "upstream": 10,
+        "ported": 10,
+        "passing": 10,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:24.526Z",
+      "status": "done"
+    },
+    "extension-input": {
+      "upstream": "ExtensionInput/ExtensionInput.tsx",
+      "upstreamDir": "ExtensionInput",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:24.832Z",
+      "status": "done"
+    },
+    "resource-form": {
+      "upstream": "ResourceForm/ResourceForm.tsx",
+      "upstreamDir": "ResourceForm",
+      "tests": {
+        "upstream": 16,
+        "ported": 16,
+        "passing": 16,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 15,
+        "ported": 15,
+        "passing": 15
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:25.148Z",
+      "status": "done"
+    },
+    "resource-table": {
+      "upstream": "ResourceTable",
+      "upstreamDir": "ResourceTable",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 8,
+        "ported": 8,
+        "passing": 8
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:25.450Z",
+      "status": "done"
+    },
+    "resource-history-table": {
+      "upstream": "ResourceHistoryTable",
+      "upstreamDir": "ResourceHistoryTable",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:25.751Z",
+      "status": "done"
+    },
+    "resource-diff": {
+      "upstream": "ResourceDiff",
+      "upstreamDir": "ResourceDiff",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:26.050Z",
+      "status": "done"
+    },
+    "resource-diff-row": {
+      "upstream": "ResourceDiffRow",
+      "upstreamDir": "ResourceDiffRow",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:26.351Z",
+      "status": "done"
+    },
+    "resource-diff-table": {
+      "upstream": "ResourceDiffTable",
+      "upstreamDir": "ResourceDiffTable",
+      "tests": {
+        "upstream": 9,
+        "ported": 9,
+        "passing": 9,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:26.655Z",
+      "status": "done"
+    },
+    "resource-blame": {
+      "upstream": "ResourceBlame",
+      "upstreamDir": "ResourceBlame",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:26.959Z",
+      "status": "done"
+    },
+    "search-control": {
+      "upstream": "SearchControl",
+      "upstreamDir": "SearchControl",
+      "tests": {
+        "upstream": 61,
+        "ported": 61,
+        "passing": 61,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 10,
+        "ported": 10,
+        "passing": 10
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:27.299Z",
+      "status": "done"
+    },
+    "search-popup-menu": {
+      "upstream": "SearchPopupMenu",
+      "upstreamDir": "SearchPopupMenu",
+      "tests": {
+        "upstream": 24,
+        "ported": 31,
+        "passing": 31,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:27.617Z",
+      "status": "done"
+    },
+    "search-field-editor": {
+      "upstream": "SearchFieldEditor",
+      "upstreamDir": "SearchFieldEditor",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:27.932Z",
+      "status": "done"
+    },
+    "search-filter-editor": {
+      "upstream": "SearchFilterEditor",
+      "upstreamDir": "SearchFilterEditor",
+      "tests": {
+        "upstream": 9,
+        "ported": 9,
+        "passing": 9,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:28.235Z",
+      "status": "done"
+    },
+    "search-filter-value-input": {
+      "upstream": "SearchFilterValueInput",
+      "upstreamDir": "SearchFilterValueInput",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:28.544Z",
+      "status": "done"
+    },
+    "search-filter-value-display": {
+      "upstream": "SearchFilterValueDisplay",
+      "upstreamDir": "SearchFilterValueDisplay",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:28.835Z",
+      "status": "done"
+    },
+    "search-filter-value-dialog": {
+      "upstream": "SearchFilterValueDialog",
+      "upstreamDir": "SearchFilterValueDialog",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:29.131Z",
+      "status": "done"
+    },
+    "search-export-dialog": {
+      "upstream": "SearchExportDialog",
+      "upstreamDir": "SearchExportDialog",
+      "tests": {
+        "upstream": 5,
+        "ported": 5,
+        "passing": 5,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:29.434Z",
+      "status": "done"
+    },
+    "bookmark-dialog": {
+      "upstream": "BookmarkDialog",
+      "upstreamDir": "BookmarkDialog",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:29.739Z",
+      "status": "done"
+    },
+    "fhir-path-table": {
+      "upstream": "FhirPathTable",
+      "upstreamDir": "FhirPathTable",
+      "tests": {
+        "upstream": 7,
+        "ported": 7,
+        "passing": 7,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:30.048Z",
+      "status": "done"
+    },
+    "list-with-detail-pane": {
+      "upstream": "ListWithDetailPane",
+      "upstreamDir": "ListWithDetailPane",
+      "tests": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:30.361Z",
+      "status": "done"
+    },
+    "resource-board": {
+      "upstream": "ResourceBoard",
+      "upstreamDir": "ResourceBoard",
+      "tests": {
+        "upstream": 25,
+        "ported": 25,
+        "passing": 25,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:30.659Z",
+      "status": "done"
+    },
+    "questionnaire-form": {
+      "upstream": "QuestionnaireForm",
+      "upstreamDir": "QuestionnaireForm",
+      "tests": {
+        "upstream": 79,
+        "ported": 87,
+        "passing": 87,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 21,
+        "ported": 21,
+        "passing": 21
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:30.995Z",
+      "status": "done"
+    },
+    "questionnaire-response-display": {
+      "upstream": "QuestionnaireResponseDisplay",
+      "upstreamDir": "QuestionnaireResponseDisplay",
+      "tests": {
+        "upstream": 12,
+        "ported": 12,
+        "passing": 12,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 8,
+        "ported": 8,
+        "passing": 8
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:31.298Z",
+      "status": "done"
+    },
+    "request-group-display": {
+      "upstream": "RequestGroupDisplay",
+      "upstreamDir": "RequestGroupDisplay",
+      "tests": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:31.600Z",
+      "status": "done"
+    },
+    "reference-range-editor": {
+      "upstream": "ReferenceRangeEditor",
+      "upstreamDir": "ReferenceRangeEditor",
+      "tests": {
+        "upstream": 18,
+        "ported": 18,
+        "passing": 18,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:31.917Z",
+      "status": "done"
+    },
+    "plan-definition-builder": {
+      "upstream": "PlanDefinitionBuilder",
+      "upstreamDir": "PlanDefinitionBuilder",
+      "tests": {
+        "upstream": 12,
+        "ported": 12,
+        "passing": 12,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:32.235Z",
+      "status": "done"
+    },
+    "questionnaire-builder": {
+      "upstream": "QuestionnaireBuilder",
+      "upstreamDir": "QuestionnaireBuilder",
+      "tests": {
+        "upstream": 23,
+        "ported": 23,
+        "passing": 23,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:32.558Z",
+      "status": "done"
+    },
+    "timeline": {
+      "upstream": "Timeline",
+      "upstreamDir": "Timeline",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 2,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:32.859Z",
+      "status": "done"
+    },
+    "resource-timeline": {
+      "upstream": "ResourceTimeline",
+      "upstreamDir": "ResourceTimeline",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 2,
+        "ported": 2,
+        "passing": 2
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:33.176Z",
+      "status": "done"
+    },
+    "default-resource-timeline": {
+      "upstream": "DefaultResourceTimeline",
+      "upstreamDir": "DefaultResourceTimeline",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:33.472Z",
+      "status": "done"
+    },
+    "patient-timeline": {
+      "upstream": "PatientTimeline",
+      "upstreamDir": "PatientTimeline",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:33.766Z",
+      "status": "done"
+    },
+    "encounter-timeline": {
+      "upstream": "EncounterTimeline",
+      "upstreamDir": "EncounterTimeline",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:34.071Z",
+      "status": "done"
+    },
+    "service-request-timeline": {
+      "upstream": "ServiceRequestTimeline",
+      "upstreamDir": "ServiceRequestTimeline",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:34.374Z",
+      "status": "done"
+    },
+    "diagnostic-report-display": {
+      "upstream": "DiagnosticReportDisplay",
+      "upstreamDir": "DiagnosticReportDisplay",
+      "tests": {
+        "upstream": 22,
+        "ported": 22,
+        "passing": 22,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 10,
+        "ported": 10,
+        "passing": 10
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:34.691Z",
+      "status": "done"
+    },
+    "measure-report-display": {
+      "upstream": "MeasureReportDisplay",
+      "upstreamDir": "MeasureReportDisplay",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 2,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:34.992Z",
+      "status": "done"
+    },
+    "patient-header": {
+      "upstream": "PatientHeader",
+      "upstreamDir": "PatientHeader",
+      "tests": {
+        "upstream": 9,
+        "ported": 9,
+        "passing": 9,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:35.287Z",
+      "status": "done"
+    },
+    "smart-app-launch-link": {
+      "upstream": "SmartAppLaunchLink",
+      "upstreamDir": "SmartAppLaunchLink",
+      "tests": {
+        "upstream": 6,
+        "ported": 6,
+        "passing": 6,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:35.588Z",
+      "status": "done"
+    },
+    "scheduler": {
+      "upstream": "Scheduler",
+      "upstreamDir": "Scheduler",
+      "tests": {
+        "upstream": 16,
+        "ported": 16,
+        "passing": 16,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 2,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:35.895Z",
+      "status": "done"
+    },
+    "patient-export-form": {
+      "upstream": "PatientExportForm",
+      "upstreamDir": "PatientExportForm",
+      "tests": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:36.195Z",
+      "status": "done"
+    },
+    "patient-accounts-form": {
+      "upstream": "PatientAccountsForm",
+      "upstreamDir": "PatientAccountsForm",
+      "tests": {
+        "upstream": 11,
+        "ported": 11,
+        "passing": 11,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 0,
+        "ported": 0,
+        "passing": 0
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:36.500Z",
+      "status": "done"
+    },
+    "patient-summary": {
+      "upstream": "PatientSummary",
+      "upstreamDir": "PatientSummary",
+      "tests": {
+        "upstream": 185,
+        "ported": 185,
+        "passing": 185,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 1,
+        "ported": 1,
+        "passing": 1
+      },
+      "parity": {
+        "deltas": 1,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:36.868Z",
+      "status": "done"
+    },
+    "fhir-path-display": {
+      "upstream": "FhirPathDisplay",
+      "upstreamDir": "FhirPathDisplay",
+      "tests": {
+        "upstream": 4,
+        "ported": 4,
+        "passing": 4,
+        "failing": 0,
+        "skipped": []
+      },
+      "stories": {
+        "upstream": 3,
+        "ported": 3,
+        "passing": 3
+      },
+      "parity": {
+        "deltas": 0,
+        "documented": true
+      },
+      "hygiene": true,
+      "registry": {
+        "builds": true
+      },
+      "visual": {
+        "reviewedBy": null,
+        "notes": null
+      },
+      "updatedAt": "2026-09-03T22:25:37.167Z",
+      "status": "done"
+    }
+  },
+  "updatedAt": "2026-09-03T22:26:17.637Z"
+}

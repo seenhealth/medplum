@@ -1,0 +1,88 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+// SPDX-License-Identifier: Apache-2.0
+// Modified from @medplum/react 5.1.36 packages/react/src/PatientSummary/SexualOrientation.test.tsx for @medplum/react-shadcn (Apache-2.0 §4(b) notice)
+import { SexualOrientation } from '@/components/medplum/patient-summary/sexual-orientation';
+import { act, fireEvent, render, screen } from '@/test/render';
+import { HomerSimpson, MockClient } from '@medplum/mock';
+import { MedplumProvider } from '@medplum/react-hooks';
+import type { ReactNode } from 'react';
+
+const medplum = new MockClient();
+
+describe('PatientSummary - SexualOrientation', () => {
+  async function setup(children: ReactNode): Promise<void> {
+    await act(async () => {
+      render(<MedplumProvider medplum={medplum}>{children}</MedplumProvider>);
+    });
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(async () => {
+    await act(async () => {
+      vi.runOnlyPendingTimers();
+    });
+    vi.useRealTimers();
+  });
+
+  test('Renders empty', async () => {
+    await setup(<SexualOrientation patient={HomerSimpson} />);
+    expect(screen.getByText('Sexual Orientation')).toBeInTheDocument();
+  });
+
+  test('Renders existing', async () => {
+    await setup(
+      <SexualOrientation
+        patient={HomerSimpson}
+        sexualOrientation={{
+          resourceType: 'Observation',
+          id: 'sexualOrientation',
+          status: 'final',
+          code: { text: 'Sexual orientation' },
+          valueCodeableConcept: { text: 'Heterosexual' },
+        }}
+      />
+    );
+    expect(screen.getByText('Sexual Orientation')).toBeInTheDocument();
+    expect(screen.getByText('Heterosexual')).toBeInTheDocument();
+  });
+
+  test('Edit status', async () => {
+    await setup(<SexualOrientation patient={HomerSimpson} />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText('Add item'));
+    });
+
+    // Click "Save" button
+    const saveButton = await screen.findByText('Save');
+    await act(async () => {
+      fireEvent.click(saveButton);
+    });
+  });
+
+  test('Click on resource', async () => {
+    const mockOnClickResource = vi.fn();
+    await setup(
+      <SexualOrientation
+        patient={HomerSimpson}
+        sexualOrientation={{
+          resourceType: 'Observation',
+          id: 'sexualOrientation',
+          status: 'final',
+          code: { text: 'Sexual orientation' },
+          valueCodeableConcept: { text: 'Heterosexual' },
+        }}
+        onClickResource={mockOnClickResource}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('sexual-orientation-button'));
+    });
+
+    expect(mockOnClickResource).toHaveBeenCalled();
+  });
+});

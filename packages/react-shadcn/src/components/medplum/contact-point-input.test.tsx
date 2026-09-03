@@ -1,0 +1,102 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+// SPDX-License-Identifier: Apache-2.0
+// Modified from @medplum/react 5.1.36 packages/react/src/ContactPointInput/ContactPointInput.test.tsx for @medplum/react-shadcn (Apache-2.0 §4(b) notice)
+import { ContactPointInput } from '@/components/medplum/contact-point-input';
+import { act, fireEvent, render, screen } from '@/test/render';
+import { stringify } from '@medplum/core';
+import type { ContactPoint } from '@medplum/fhirtypes';
+
+describe('ContactPointInput', () => {
+  test('Renders', () => {
+    render(
+      <ContactPointInput
+        name="test"
+        path="test"
+        onChange={vi.fn()}
+        outcome={undefined}
+        defaultValue={{ system: 'email', value: 'abc@example.com' }}
+      />
+    );
+
+    const system = screen.getByTestId<HTMLInputElement>('system');
+    expect(system).toBeDefined();
+    expect(system.value).toEqual('email');
+
+    const value = screen.getByPlaceholderText<HTMLInputElement>('Value');
+    expect(value).toBeDefined();
+    expect(value.value).toEqual('abc@example.com');
+  });
+
+  test('Change events', async () => {
+    let lastValue: ContactPoint | undefined = undefined;
+
+    render(
+      <ContactPointInput
+        name="test"
+        path="test"
+        outcome={undefined}
+        defaultValue={{}}
+        onChange={(value) => (lastValue = value)}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('use'), {
+        target: { value: 'home' },
+      });
+    });
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('system'), {
+        target: { value: 'email' },
+      });
+    });
+
+    await act(async () => {
+      fireEvent.change(screen.getByPlaceholderText('Value'), {
+        target: { value: 'xyz@example.com' },
+      });
+    });
+
+    expect(lastValue).toBeDefined();
+    expect(lastValue).toMatchObject({
+      use: 'home',
+      system: 'email',
+      value: 'xyz@example.com',
+    });
+  });
+
+  test('Set blanks', async () => {
+    let lastValue: ContactPoint | undefined = undefined;
+
+    render(
+      <ContactPointInput
+        name="test"
+        path="test"
+        outcome={undefined}
+        defaultValue={{
+          use: 'home',
+          system: 'email',
+          value: 'abc@example.com',
+        }}
+        onChange={(value) => (lastValue = value)}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('use'), { target: { value: '' } });
+    });
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('system'), { target: { value: '' } });
+    });
+
+    await act(async () => {
+      fireEvent.change(screen.getByPlaceholderText('Value'), {
+        target: { value: '' },
+      });
+    });
+
+    expect(stringify(lastValue)).toStrictEqual('');
+  });
+});
