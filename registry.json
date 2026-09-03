@@ -3430,6 +3430,187 @@
       "meta": { "upstream": "packages/react/src/PatientAccountsForm", "storyIds": [] }
     },
     {
+      "name": "patient-summary",
+      "type": "registry:block",
+      "title": "PatientSummary",
+      "description": "Collapsible clinical summary for a Patient: demographics, insurance, allergies, problems, medications, immunizations, labs, social history, vitals, goals, and pharmacies.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/patient-summary.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/patient-summary.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/patient-summary-types.ts",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/patient-summary-types.ts"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/patient-summary-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/patient-summary-utils.ts"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/collapsible-section.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/collapsible-section.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/summary-item.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/summary-item.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/patient-info-item.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/patient-info-item.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/allergies.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/allergies.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/allergy-dialog.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/allergy-dialog.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/problem-list.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/problem-list.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/condition-dialog.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/condition-dialog.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/medications.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/medications.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/medication-dialog.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/medication-dialog.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/immunizations.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/immunizations.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/immunization-dialog.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/immunization-dialog.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/goals.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/goals.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/goal-dialog.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/goal-dialog.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/labs.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/labs.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/insurance.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/insurance.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/sexual-orientation.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/sexual-orientation.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/smoking-status.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/smoking-status.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/vitals.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/vitals.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/vitals-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/vitals-utils.ts"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/pharmacies.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/pharmacies.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/pharmacy-dialog.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/pharmacy-dialog.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/pharmacy-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/pharmacy-utils.ts"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/section-configs.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/section-configs.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/patient-summary/summary-resource-list-section.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/patient-summary/summary-resource-list-section.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0"
+      ],
+      "registryDependencies": [
+        "alert",
+        "badge",
+        "button",
+        "checkbox",
+        "collapsible",
+        "field",
+        "input",
+        "label",
+        "radio-group",
+        "seenhealth/medplum/code-input",
+        "seenhealth/medplum/codeable-concept-input",
+        "seenhealth/medplum/date",
+        "seenhealth/medplum/date-time-input",
+        "seenhealth/medplum/diagnostic-report-display",
+        "seenhealth/medplum/dom",
+        "seenhealth/medplum/form",
+        "seenhealth/medplum/form-section",
+        "seenhealth/medplum/load-state",
+        "seenhealth/medplum/modal",
+        "seenhealth/medplum/notify",
+        "seenhealth/medplum/resource-avatar",
+        "seenhealth/medplum/status-badge",
+        "separator",
+        "spinner",
+        "textarea",
+        "tooltip",
+        "utils"
+      ],
+      "categories": ["fhir", "clinical"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/PatientSummary), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/PatientSummary", "storyIds": ["medplum-patientsummary--patient"] }
+    },
+    {
       "name": "fhir-path-display",
       "type": "registry:component",
       "title": "FhirPathDisplay",

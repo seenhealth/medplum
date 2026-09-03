@@ -21,6 +21,7 @@ import { items as wu23 } from './items/wu-23.mjs';
 import { items as wu24 } from './items/wu-24.mjs';
 import { items as wu25 } from './items/wu-25.mjs';
 import { items as wu27 } from './items/wu-27.mjs';
+import { items as wu28 } from './items/wu-28.mjs';
 
 export const items = [
   ...core,
@@ -40,5 +41,6 @@ export const items = [
   ...wu24,
   ...wu25,
   ...wu27,
+  ...wu28,
   ...pending,
 ];

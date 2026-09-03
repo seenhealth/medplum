@@ -1,0 +1,88 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+// SPDX-License-Identifier: Apache-2.0
+// Modified from @medplum/react 5.1.36 packages/react/src/PatientSummary/SmokingStatus.test.tsx for @medplum/react-shadcn (Apache-2.0 §4(b) notice)
+import { SmokingStatus } from '@/components/medplum/patient-summary/smoking-status';
+import { act, fireEvent, render, screen } from '@/test/render';
+import { HomerSimpson, MockClient } from '@medplum/mock';
+import { MedplumProvider } from '@medplum/react-hooks';
+import type { ReactNode } from 'react';
+
+const medplum = new MockClient();
+
+describe('PatientSummary - SmokingStatus', () => {
+  async function setup(children: ReactNode): Promise<void> {
+    await act(async () => {
+      render(<MedplumProvider medplum={medplum}>{children}</MedplumProvider>);
+    });
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(async () => {
+    await act(async () => {
+      vi.runOnlyPendingTimers();
+    });
+    vi.useRealTimers();
+  });
+
+  test('Renders empty', async () => {
+    await setup(<SmokingStatus patient={HomerSimpson} />);
+    expect(screen.getByText('Smoking Status')).toBeInTheDocument();
+  });
+
+  test('Renders existing', async () => {
+    await setup(
+      <SmokingStatus
+        patient={HomerSimpson}
+        smokingStatus={{
+          resourceType: 'Observation',
+          id: 'smokingStatus',
+          status: 'final',
+          code: { text: 'Smoking Status' },
+          valueCodeableConcept: { text: 'Ex-smoker' },
+        }}
+      />
+    );
+    expect(screen.getByText('Smoking Status')).toBeInTheDocument();
+    expect(screen.getByText('Ex-smoker')).toBeInTheDocument();
+  });
+
+  test('Edit status', async () => {
+    await setup(<SmokingStatus patient={HomerSimpson} />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText('Add item'));
+    });
+
+    // Click "Save" button
+    const saveButton = await screen.findByText('Save');
+    await act(async () => {
+      fireEvent.click(saveButton);
+    });
+  });
+
+  test('Click on resource', async () => {
+    const mockOnClickResource = vi.fn();
+    await setup(
+      <SmokingStatus
+        patient={HomerSimpson}
+        smokingStatus={{
+          resourceType: 'Observation',
+          id: 'smokingStatus',
+          status: 'final',
+          code: { text: 'Smoking Status' },
+          valueCodeableConcept: { text: 'Ex-smoker' },
+        }}
+        onClickResource={mockOnClickResource}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('smoking-status-button'));
+    });
+
+    expect(mockOnClickResource).toHaveBeenCalled();
+  });
+});
