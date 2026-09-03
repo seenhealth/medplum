@@ -99,24 +99,34 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
   const abortControllerRef = useRef<AbortController>(abortController);
   const autoSubmitRef = useRef<boolean>(false);
   const selectedRef = useRef(selected);
+  const highlightedValueRef = useRef(highlightedValue);
   useLayoutEffect(() => {
     searchRef.current = search;
     timerRef.current = timer;
     abortControllerRef.current = abortController;
     selectedRef.current = selected;
+    highlightedValueRef.current = highlightedValue;
   });
+
+  const updateHighlightedValue = useCallback(
+    (value: string): void => {
+      highlightedValueRef.current = value;
+      setHighlightedValue(value);
+    },
+    [setHighlightedValue]
+  );
 
   const closeDropdown = useCallback((): void => {
     setOpen(false);
-    setHighlightedValue('');
-  }, [setHighlightedValue, setOpen]);
+    updateHighlightedValue('');
+  }, [setOpen, updateHighlightedValue]);
 
   const openDropdown = useCallback((): void => {
     setOpen(true);
-    setHighlightedValue(
+    updateHighlightedValue(
       options.find((option) => selectedRef.current.some((v) => v.value === option.value))?.value ?? ''
     );
-  }, [options, setHighlightedValue, setOpen]);
+  }, [options, setOpen, updateHighlightedValue]);
 
   const handleValueAdd = useCallback(
     (item: AsyncAutocompleteOption<T>): void => {
@@ -184,7 +194,7 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
             autoSubmitRef.current = false;
           } else if (newValues.length > 0) {
             setOpen(true);
-            setHighlightedValue(
+            updateHighlightedValue(
               newOptions.find((option) => selectedRef.current.some((v) => v.value === option.value))?.value ?? ''
             );
           }
@@ -207,16 +217,16 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
     minInputLength,
     setTimer,
     setAbortController,
-    setHighlightedValue,
     setOpen,
     setOptions,
+    updateHighlightedValue,
   ]);
 
   const handleSearchChange = useCallback(
     (e: SyntheticEvent): void => {
       if ((options && options.length > 0) || creatable) {
         if (open) {
-          setHighlightedValue('');
+          updateHighlightedValue('');
         } else {
           openDropdown();
         }
@@ -236,7 +246,17 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
       const newTimer = window.setTimeout(() => handleTimer(), 100);
       setTimer(newTimer);
     },
-    [options, creatable, open, handleTimer, openDropdown, setTimer, setSearch, setAbortController, setHighlightedValue]
+    [
+      options,
+      creatable,
+      open,
+      handleTimer,
+      openDropdown,
+      setTimer,
+      setSearch,
+      setAbortController,
+      updateHighlightedValue,
+    ]
   );
 
   const toggleSelected = useCallback(
@@ -276,8 +296,17 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
       } else {
         toggleSelected(val);
       }
+
+      const selectedValue = val === '$create' ? search : val;
+      const alreadySelected = selectedRef.current.some((item) => item.value === selectedValue);
+      const reachesCap =
+        !alreadySelected && maxValues !== undefined && maxValues > 0 && selectedRef.current.length + 1 >= maxValues;
+      if (!reachesCap) {
+        setOpen(true);
+        updateHighlightedValue(selectedValue);
+      }
     };
-  }, [toggleSelected, disabled, search, setSearch]);
+  }, [toggleSelected, disabled, maxValues, search, setOpen, setSearch, updateHighlightedValue]);
 
   const handleValueRemove = useCallback(
     (item: AsyncAutocompleteOption<T>): void => {
@@ -295,9 +324,9 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
           // The user pressed enter, but we don't have results yet.
           // We need to wait for the results to come in.
           autoSubmitRef.current = true;
-        } else if (highlightedValue) {
+        } else if (highlightedValueRef.current) {
           killEvent(e);
-          handleValueSelect?.(highlightedValue);
+          handleValueSelect?.(highlightedValueRef.current);
         }
       } else if (e.key === 'Backspace' && search.length === 0) {
         const lastSelected = selected[selected.length - 1];
@@ -317,15 +346,15 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
           return;
         }
         setOpen(true);
-        const currentIndex = values.indexOf(highlightedValue);
+        const currentIndex = values.indexOf(highlightedValueRef.current);
         if (e.key === 'Home') {
-          setHighlightedValue(values[0]);
+          updateHighlightedValue(values[0]);
         } else if (e.key === 'End') {
-          setHighlightedValue(values[values.length - 1]);
+          updateHighlightedValue(values[values.length - 1]);
         } else if (e.key === 'ArrowDown') {
-          setHighlightedValue(values[currentIndex < values.length - 1 ? currentIndex + 1 : 0]);
+          updateHighlightedValue(values[currentIndex < values.length - 1 ? currentIndex + 1 : 0]);
         } else {
-          setHighlightedValue(values[currentIndex > 0 ? currentIndex - 1 : values.length - 1]);
+          updateHighlightedValue(values[currentIndex > 0 ? currentIndex - 1 : values.length - 1]);
         }
       }
     },
@@ -335,13 +364,12 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
       creatable,
       handleValueRemove,
       handleValueSelect,
-      highlightedValue,
       options,
       search,
       selected,
-      setHighlightedValue,
       setOpen,
       timer,
+      updateHighlightedValue,
     ]
   );
 
@@ -450,7 +478,11 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
       </Field>
 
       {!open && (
-        <div hidden data-hidden="true" data-testid={AsyncAutocompleteTestIds.options}>
+        <div
+          hidden={!comboboxVisible}
+          data-hidden={(!comboboxVisible).toString()}
+          data-testid={AsyncAutocompleteTestIds.options}
+        >
           {!creatable && search.trim().length > 0 && options.length === 0 && <EmptyComponent search={search} />}
         </div>
       )}
@@ -460,11 +492,11 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
         className="w-(--radix-popover-trigger-width) p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onMouseDown={(e) => e.preventDefault()}
-        hidden={!open || !comboboxVisible}
-        data-hidden={(!open || !comboboxVisible).toString()}
+        hidden={!comboboxVisible}
+        data-hidden={(!comboboxVisible).toString()}
         data-testid={AsyncAutocompleteTestIds.options}
       >
-        <Command shouldFilter={false} value={highlightedValue} onValueChange={setHighlightedValue}>
+        <Command shouldFilter={false} value={highlightedValue}>
           <CommandList className="max-h-none overflow-hidden">
             <ScrollArea style={{ maxHeight: optionsDropdownMaxHeight }}>
               <div className="p-1">

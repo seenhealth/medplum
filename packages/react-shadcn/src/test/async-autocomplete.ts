@@ -13,6 +13,7 @@ const AUTOCOMPLETE_DEBOUNCE_MS = 1000;
  */
 export async function typeInAutocomplete(input: HTMLElement, text: string): Promise<void> {
   await act(async () => {
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: text } });
   });
 

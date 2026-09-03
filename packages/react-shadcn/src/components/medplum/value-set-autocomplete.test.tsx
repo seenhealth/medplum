@@ -43,7 +43,7 @@ describe('AsyncAutocomplete', () => {
     expect(onChange.mock.lastCall?.[0].map((c: ValueSetExpansionContains) => c.code)).toEqual(['test-code']);
   });
 
-  test.skip('select multiple values (Mantine-specific: Combobox reopens with the active option highlighted so two ArrowDowns reach the third item)', async () => {
+  test('select multiple values', async () => {
     const onChange = vi.fn();
     render(
       <MedplumProvider medplum={new MockClient()}>
@@ -496,7 +496,7 @@ describe('AsyncAutocomplete', () => {
     spy.mockRestore();
   });
 
-  test.skip('empty search (Mantine-specific: Combobox.Dropdown hidden attribute after an empty-filter expand)', async () => {
+  test('empty search', async () => {
     const onChange = vi.fn();
     render(
       <MedplumProvider medplum={new MockClient()}>
