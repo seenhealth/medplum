@@ -105,15 +105,15 @@
       "meta": { "upstream": "packages/react/src/utils/blame.ts", "storyIds": [] }
     },
     {
-      "name": "pagination",
+      "name": "pagination-controls",
       "type": "registry:lib",
       "title": "Pagination control props",
       "description": "aria-labels for pagination controls (Next page, Previous page, First page, Last page).",
       "files": [
         {
-          "path": "packages/react-shadcn/src/lib/medplum/pagination.ts",
+          "path": "packages/react-shadcn/src/lib/medplum/pagination-controls.ts",
           "type": "registry:lib",
-          "target": "lib/medplum/pagination.ts"
+          "target": "lib/medplum/pagination-controls.ts"
         }
       ],
       "categories": ["lib"],
@@ -1709,7 +1709,7 @@
       }
     },
     {
-      "name": "form",
+      "name": "medplum-form",
       "type": "registry:block",
       "title": "Form",
       "description": "Plain form wrapper with parseForm plus a SubmitButton that tracks submitting via FormContext.",
@@ -2629,7 +2629,7 @@
         "seenhealth/medplum/dom",
         "seenhealth/medplum/medplum-link",
         "seenhealth/medplum/operation-outcome-alert",
-        "seenhealth/medplum/pagination",
+        "seenhealth/medplum/pagination-controls",
         "seenhealth/medplum/resource-property-display",
         "seenhealth/medplum/search-export-dialog",
         "seenhealth/medplum/search-field-editor",
@@ -2716,7 +2716,7 @@
         "button",
         "native-select",
         "seenhealth/medplum/array-add-button",
-        "seenhealth/medplum/form",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/modal",
         "seenhealth/medplum/search-control",
         "seenhealth/medplum/search-filter-value-input"
@@ -2781,7 +2781,7 @@
       ],
       "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
       "registryDependencies": [
-        "seenhealth/medplum/form",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/modal",
         "seenhealth/medplum/search-filter-value-input"
       ],
@@ -2822,8 +2822,8 @@
       "registryDependencies": [
         "input",
         "native-select",
-        "seenhealth/medplum/form",
         "seenhealth/medplum/form-section",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/modal",
         "seenhealth/medplum/notify"
       ],
@@ -2878,7 +2878,7 @@
         "pagination",
         "scroll-area",
         "seenhealth/medplum/medplum-link",
-        "seenhealth/medplum/pagination",
+        "seenhealth/medplum/pagination-controls",
         "separator",
         "skeleton",
         "tabs",
@@ -2985,8 +2985,8 @@
         "seenhealth/medplum/attachment-input",
         "seenhealth/medplum/checkbox-form-section",
         "seenhealth/medplum/date-time-input",
-        "seenhealth/medplum/form",
         "seenhealth/medplum/form-section",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/notify",
         "seenhealth/medplum/quantity-input",
         "seenhealth/medplum/reference-input",
@@ -3114,8 +3114,8 @@
         "native-select",
         "seenhealth/medplum/container",
         "seenhealth/medplum/dom",
-        "seenhealth/medplum/form",
         "seenhealth/medplum/form-section",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/range-input",
         "separator"
       ],
@@ -3154,8 +3154,8 @@
         "input",
         "native-select",
         "seenhealth/medplum/dom",
-        "seenhealth/medplum/form",
         "seenhealth/medplum/form-section",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/resource-input",
         "spinner",
         "utils"
@@ -3193,7 +3193,7 @@
         "input",
         "native-select",
         "seenhealth/medplum/dom",
-        "seenhealth/medplum/form",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/questionnaire-form",
         "seenhealth/medplum/resource-property-display",
         "seenhealth/medplum/resource-property-input",
@@ -3267,7 +3267,7 @@
         "seenhealth/medplum/attachment-display",
         "seenhealth/medplum/date",
         "seenhealth/medplum/diagnostic-report-display",
-        "seenhealth/medplum/form",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/notify",
         "seenhealth/medplum/panel",
         "seenhealth/medplum/resource-avatar",
@@ -3534,8 +3534,8 @@
         "checkbox",
         "field",
         "seenhealth/medplum/date-time-input",
-        "seenhealth/medplum/form",
         "seenhealth/medplum/form-section",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/notify",
         "seenhealth/medplum/reference-input",
         "toggle-group"
@@ -3744,9 +3744,9 @@
         "seenhealth/medplum/date-time-input",
         "seenhealth/medplum/diagnostic-report-display",
         "seenhealth/medplum/dom",
-        "seenhealth/medplum/form",
         "seenhealth/medplum/form-section",
         "seenhealth/medplum/load-state",
+        "seenhealth/medplum/medplum-form",
         "seenhealth/medplum/modal",
         "seenhealth/medplum/notify",
         "seenhealth/medplum/resource-avatar",

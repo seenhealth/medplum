@@ -15,7 +15,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList } from '@/components/ui/tabs';
-import { getPaginationControlProps } from '@/lib/medplum/pagination';
+import { getPaginationControlProps } from '@/lib/medplum/pagination-controls';
 import { cn } from '@/lib/utils';
 import type { Resource } from '@medplum/fhirtypes';
 import type { JSX, MouseEvent, ReactNode } from 'react';

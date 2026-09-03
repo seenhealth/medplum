@@ -65,10 +65,10 @@ export const items = [
     categories: ['lib'],
   },
   {
-    name: 'pagination',
+    name: 'pagination-controls',
     title: 'Pagination control props',
     description: 'aria-labels for pagination controls (Next page, Previous page, First page, Last page).',
-    files: ['lib/medplum/pagination.ts'],
+    files: ['lib/medplum/pagination-controls.ts'],
     upstream: 'utils/pagination.ts',
     categories: ['lib'],
   },

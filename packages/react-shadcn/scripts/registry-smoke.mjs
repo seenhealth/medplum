@@ -96,6 +96,7 @@ writeFileSync(
         skipLibCheck: true,
         noEmit: true,
         isolatedModules: true,
+        types: ['vite/client'],
         paths: { '@/*': ['./src/*'] },
       },
       include: ['src'],

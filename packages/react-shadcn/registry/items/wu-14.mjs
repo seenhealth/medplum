@@ -42,7 +42,7 @@ export const items = [
     categories: ['fhir', 'input', 'datetime'],
   },
   {
-    name: 'form',
+    name: 'medplum-form',
     title: 'Form',
     description: 'Plain form wrapper with parseForm plus a SubmitButton that tracks submitting via FormContext.',
     files: [

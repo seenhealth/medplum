@@ -30,7 +30,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { isAuxClick, isCheckboxCell, killEvent } from '@/lib/medplum/dom';
-import { getPaginationControlProps } from '@/lib/medplum/pagination';
+import { getPaginationControlProps } from '@/lib/medplum/pagination-controls';
 import type { Filter, SearchRequest } from '@medplum/core';
 import {
   DEFAULT_SEARCH_COUNT,

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
 // Modified from @medplum/react 5.1.36 packages/react/src/utils/pagination.test.ts for @medplum/react-shadcn (Apache-2.0 §4(b) notice)
-import { getPaginationControlProps } from '@/lib/medplum/pagination';
+import { getPaginationControlProps } from '@/lib/medplum/pagination-controls';
 
 describe('Pagination utils', () => {
   test('getPaginationControlProps', () => {

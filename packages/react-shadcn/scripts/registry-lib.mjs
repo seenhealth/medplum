@@ -115,12 +115,83 @@ export function storyIdsFor(entryFile) {
     .map((n) => `${sanitize(title)}--${sanitize(startCase(n))}`);
 }
 
+// Item names shared with the official shadcn registry make the CLI rewrite imports to the official file.
+const OFFICIAL_ITEM_NAMES = new Set([
+  'accordion',
+  'alert',
+  'alert-dialog',
+  'aspect-ratio',
+  'attachment',
+  'avatar',
+  'badge',
+  'breadcrumb',
+  'bubble',
+  'button',
+  'button-group',
+  'calendar',
+  'card',
+  'carousel',
+  'chart',
+  'checkbox',
+  'collapsible',
+  'combobox',
+  'command',
+  'context-menu',
+  'dialog',
+  'direction',
+  'drawer',
+  'dropdown-menu',
+  'empty',
+  'field',
+  'form',
+  'hover-card',
+  'input',
+  'input-group',
+  'input-otp',
+  'item',
+  'kbd',
+  'label',
+  'marker',
+  'menubar',
+  'message',
+  'message-scroller',
+  'native-select',
+  'navigation-menu',
+  'pagination',
+  'popover',
+  'progress',
+  'questionnaire',
+  'radio-group',
+  'resizable',
+  'scroll-area',
+  'select',
+  'separator',
+  'sheet',
+  'sidebar',
+  'skeleton',
+  'slider',
+  'sonner',
+  'spinner',
+  'switch',
+  'table',
+  'tabs',
+  'textarea',
+  'toast',
+  'toggle',
+  'toggle-group',
+  'tooltip',
+  'utils',
+]);
+
 export function buildRegistry() {
   const seen = new Set();
   const out = [];
   for (const item of items) {
     if (seen.has(item.name)) {
       throw new Error(`Duplicate registry item name ${item.name}`);
+    }
+    if (OFFICIAL_ITEM_NAMES.has(item.name) && !item.files[0].startsWith('components/ui/')) {
+      throw new Error(`Registry item name ${item.name} collides with an official shadcn item; rename it`);
     }
     seen.add(item.name);
     const registryDependencies = new Set();
