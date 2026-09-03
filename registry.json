@@ -552,6 +552,504 @@
       }
     },
     {
+      "name": "address-input",
+      "type": "registry:component",
+      "title": "AddressInput",
+      "description": "Edit a FHIR Address (use, type, line, city, state, postalCode) with profile read-only fields.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/address-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/address-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "input",
+        "native-select",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AddressInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/AddressInput",
+        "storyIds": [
+          "medplum-addressinput--basic",
+          "medplum-addressinput--default-value",
+          "medplum-addressinput--disabled",
+          "medplum-addressinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "annotation-input",
+      "type": "registry:component",
+      "title": "AnnotationInput",
+      "description": "Edit a FHIR Annotation (text, author from the current profile, time).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/annotation-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/annotation-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["input", "seenhealth/medplum/resource-property-input-utils"],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AnnotationInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/AnnotationInput",
+        "storyIds": ["medplum-annotationinput--basic", "medplum-annotationinput--disabled"]
+      }
+    },
+    {
+      "name": "contact-detail-input",
+      "type": "registry:component",
+      "title": "ContactDetailInput",
+      "description": "Edit a FHIR ContactDetail (name plus a ContactPoint telecom).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/contact-detail-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/contact-detail-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "input",
+        "seenhealth/medplum/contact-point-input",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ContactDetailInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ContactDetailInput",
+        "storyIds": [
+          "medplum-contactdetailinput--basic",
+          "medplum-contactdetailinput--disabled",
+          "medplum-contactdetailinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "contact-point-input",
+      "type": "registry:component",
+      "title": "ContactPointInput",
+      "description": "Edit a FHIR ContactPoint (system, use, value) with OperationOutcome error mapping.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/contact-point-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/contact-point-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "field",
+        "input",
+        "native-select",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/outcomes",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ContactPointInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ContactPointInput",
+        "storyIds": [
+          "medplum-contactpointinput--basic",
+          "medplum-contactpointinput--disabled",
+          "medplum-contactpointinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "identifier-input",
+      "type": "registry:component",
+      "title": "IdentifierInput",
+      "description": "Edit a FHIR Identifier (system, value) with OperationOutcome error mapping.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/identifier-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/identifier-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "field",
+        "input",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/outcomes",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/IdentifierInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/IdentifierInput",
+        "storyIds": [
+          "medplum-identifierinput--basic",
+          "medplum-identifierinput--disabled",
+          "medplum-identifierinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "money-input",
+      "type": "registry:component",
+      "title": "MoneyInput",
+      "description": "Edit a FHIR Money amount with a currency NativeSelect addon.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/money-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/money-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36", "@tabler/icons-react@^3.46.0"],
+      "registryDependencies": [
+        "input-group",
+        "native-select",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/form-section",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/MoneyInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/MoneyInput",
+        "storyIds": [
+          "medplum-moneyinput--basic",
+          "medplum-moneyinput--default-value",
+          "medplum-moneyinput--disabled",
+          "medplum-moneyinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "period-input",
+      "type": "registry:component",
+      "title": "PeriodInput",
+      "description": "Edit a FHIR Period as start and end DateTimeInput fields.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/period-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/period-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/date-time-input",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/PeriodInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/PeriodInput",
+        "storyIds": [
+          "medplum-periodinput--example",
+          "medplum-periodinput--default-value",
+          "medplum-periodinput--disabled",
+          "medplum-periodinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "quantity-input",
+      "type": "registry:component",
+      "title": "QuantityInput",
+      "description": "Edit a FHIR Quantity (comparator, value, unit) with optional wheel disable.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/quantity-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/quantity-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "input",
+        "native-select",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/QuantityInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/QuantityInput",
+        "storyIds": [
+          "medplum-quantityinput--example",
+          "medplum-quantityinput--default-value",
+          "medplum-quantityinput--scroll-wheel-disabled",
+          "medplum-quantityinput--disabled",
+          "medplum-quantityinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "range-input",
+      "type": "registry:component",
+      "title": "RangeInput",
+      "description": "Edit a FHIR Range as low and high QuantityInput fields.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/range-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/range-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/quantity-input",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/RangeInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/RangeInput",
+        "storyIds": [
+          "medplum-rangeinput--basic",
+          "medplum-rangeinput--disabled",
+          "medplum-rangeinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "ratio-input",
+      "type": "registry:component",
+      "title": "RatioInput",
+      "description": "Edit a FHIR Ratio as numerator and denominator QuantityInput fields.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/ratio-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/ratio-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/quantity-input",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/RatioInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/RatioInput",
+        "storyIds": [
+          "medplum-ratioinput--basic",
+          "medplum-ratioinput--disabled",
+          "medplum-ratioinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "date-time-input",
+      "type": "registry:block",
+      "title": "DateTimeInput",
+      "description": "datetime-local input that converts between ISO-8601 (with offset) and local wall time.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/date-time-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/date-time-input.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/date-time-input-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/date-time-input-utils.ts"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "field",
+        "input",
+        "seenhealth/medplum/outcomes",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datetime"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/DateTimeInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/DateTimeInput",
+        "storyIds": ["medplum-datetimeinput--basic", "medplum-datetimeinput--disabled"]
+      }
+    },
+    {
+      "name": "calendar-input",
+      "type": "registry:component",
+      "title": "CalendarInput",
+      "description": "Deprecated Slot[] wrapper around CalendarDateInput.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/calendar-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/calendar-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/calendar-date-input"],
+      "categories": ["fhir", "input", "datetime"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CalendarInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/CalendarInput", "storyIds": ["medplum-calendarinput--basic"] }
+    },
+    {
+      "name": "calendar-date-input",
+      "type": "registry:block",
+      "title": "CalendarDateInput",
+      "description": "Hand-rolled month grid with available days, earliest-date gating, and drag/shift-click ranges.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/calendar-date-input/calendar-date-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/calendar-date-input/calendar-date-input.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/calendar-date-input/calendar-date-input-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/calendar-date-input/calendar-date-input-utils.ts"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/calendar-date-input/use-day-range-drag.ts",
+          "type": "registry:component",
+          "target": "components/medplum/calendar-date-input/use-day-range-drag.ts"
+        }
+      ],
+      "dependencies": ["class-variance-authority@^0.7.1"],
+      "registryDependencies": ["button", "utils"],
+      "categories": ["fhir", "input", "datetime"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CalendarDateInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/CalendarDateInput",
+        "storyIds": [
+          "medplum-calendardateinput--basic",
+          "medplum-calendardateinput--selected-day",
+          "medplum-calendardateinput--sparse-availability",
+          "medplum-calendardateinput--range",
+          "medplum-calendardateinput--selected-day-within-a-stretch",
+          "medplum-calendardateinput--empty-days-still-pickable",
+          "medplum-calendardateinput--earliest-day",
+          "medplum-calendardateinput--caller-owned-month"
+        ]
+      }
+    },
+    {
+      "name": "timing-input",
+      "type": "registry:component",
+      "title": "TimingInput",
+      "description": "Edit a FHIR Timing value in a modal (repeat period, days of week, times of day).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/timing-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/timing-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@tabler/icons-react@^3.46.0"],
+      "registryDependencies": [
+        "button",
+        "input",
+        "label",
+        "native-select",
+        "seenhealth/medplum/date-time-input",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/form-section",
+        "seenhealth/medplum/modal",
+        "seenhealth/medplum/resource-property-input-utils",
+        "switch",
+        "toggle"
+      ],
+      "categories": ["fhir", "input", "datetime"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/TimingInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/TimingInput",
+        "storyIds": [
+          "medplum-timinginput--example",
+          "medplum-timinginput--default-value",
+          "medplum-timinginput--disabled",
+          "medplum-timinginput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "form",
+      "type": "registry:block",
+      "title": "Form",
+      "description": "Plain form wrapper with parseForm plus a SubmitButton that tracks submitting via FormContext.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/form/form.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/form/form.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/form/form-context.ts",
+          "type": "registry:component",
+          "target": "components/medplum/form/form-context.ts"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/form/form-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/form/form-utils.ts"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/form/submit-button.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/form/submit-button.tsx"
+        }
+      ],
+      "registryDependencies": ["button", "spinner"],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Form), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/Form", "storyIds": ["medplum-form--basic"] }
+    },
+    {
+      "name": "password-input",
+      "type": "registry:component",
+      "title": "PasswordInput",
+      "description": "Password field with a visibility toggle in an InputGroup.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/password-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/password-input.tsx"
+        }
+      ],
+      "dependencies": ["@tabler/icons-react@^3.46.0"],
+      "registryDependencies": ["button", "input-group"],
+      "categories": ["input"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/PasswordInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/PasswordInput", "storyIds": [] }
+    },
+    {
+      "name": "sensitive-textarea",
+      "type": "registry:component",
+      "title": "SensitiveTextarea",
+      "description": "Masked textarea with a copy-to-clipboard button.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/sensitive-textarea.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/sensitive-textarea.tsx"
+        }
+      ],
+      "dependencies": ["@tabler/icons-react@^3.46.0"],
+      "registryDependencies": [
+        "button",
+        "seenhealth/medplum/notify",
+        "seenhealth/medplum/use-clipboard",
+        "textarea",
+        "utils"
+      ],
+      "categories": ["input"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/SensitiveTextarea), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/SensitiveTextarea", "storyIds": [] }
+    },
+    {
       "name": "async-autocomplete",
       "type": "registry:block",
       "title": "AsyncAutocomplete",
