@@ -17,7 +17,12 @@ export default defineConfig({
     projects: [
       {
         plugins: [react()],
-        resolve: { alias },
+        resolve: {
+          alias: {
+            ...alias,
+            signature_pad: resolve(import.meta.dirname, 'src/test/mocks/signature-pad.ts'),
+          },
+        },
         test: {
           name: 'unit',
           globals: true,

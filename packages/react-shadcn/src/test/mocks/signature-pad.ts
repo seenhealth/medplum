@@ -1,0 +1,33 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+// SPDX-License-Identifier: Apache-2.0
+// Modified from @medplum/react 5.1.36 packages/react/src/test-mocks/signature_pad.ts for @medplum/react-shadcn (Apache-2.0 §4(b) notice)
+
+/*
+ * Vitest stub for the `signature_pad` package (see vitest.config.ts resolve.alias).
+ * SignatureInput uses signature_pad to draw on a canvas; jsdom has no real canvas
+ * drawing, so tests import this mock instead of the library. The constructor and
+ * instance methods mirror what SignatureInput calls so tests can assert setup and
+ * simulate strokes by invoking the handler passed to addEventListener('endStroke').
+ */
+import type { Mock } from 'vitest';
+import { vi } from 'vitest';
+
+const SignaturePad: Mock<
+  () => {
+    fromDataURL: Mock<() => Promise<void>>;
+    clear: Mock<() => void>;
+    addEventListener: Mock<() => void>;
+    removeEventListener: Mock<() => void>;
+    toDataURL: Mock<() => string>;
+  }
+> = vi.fn(function () {
+  return {
+    fromDataURL: vi.fn().mockResolvedValue(undefined),
+    clear: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    toDataURL: vi.fn(() => 'data:image/png;base64,signature-data'),
+  };
+});
+
+export default SignaturePad;
