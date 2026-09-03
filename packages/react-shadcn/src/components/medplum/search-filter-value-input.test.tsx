@@ -1,0 +1,161 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+// SPDX-License-Identifier: Apache-2.0
+// Modified from @medplum/react 5.1.36 packages/react/src/SearchFilterValueInput/SearchFilterValueInput.test.tsx for @medplum/react-shadcn (Apache-2.0 §4(b) notice)
+import { convertIsoToLocal } from '@/components/medplum/date-time-input-utils';
+import { SearchFilterValueInput } from '@/components/medplum/search-filter-value-input';
+import { act, fireEvent, render, screen, selectAutocompleteOption } from '@/test/render';
+import { globalSchema } from '@medplum/core';
+import type { SearchParameter } from '@medplum/fhirtypes';
+import { MockClient } from '@medplum/mock';
+import { MedplumProvider } from '@medplum/react-hooks';
+import type { ReactNode } from 'react';
+
+const medplum = new MockClient();
+
+function setup(child: ReactNode): void {
+  render(<MedplumProvider medplum={medplum}>{child}</MedplumProvider>);
+}
+
+describe('SearchFilterValueInput', () => {
+  beforeEach(async () => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(async () => {
+    await act(async () => {
+      vi.runOnlyPendingTimers();
+    });
+    vi.useRealTimers();
+  });
+
+  test('Text input', async () => {
+    const onChange = vi.fn();
+
+    setup(
+      <SearchFilterValueInput
+        resourceType="Patient"
+        searchParam={globalSchema.types['Patient'].searchParams?.['name'] as SearchParameter}
+        onChange={onChange}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('filter-value'), { target: { value: 'foo' } });
+    });
+
+    expect(onChange).toHaveBeenCalledWith('foo');
+  });
+
+  test('Boolean input', async () => {
+    const onChange = vi.fn();
+
+    setup(
+      <SearchFilterValueInput
+        resourceType="Patient"
+        searchParam={globalSchema.types['Patient'].searchParams?.['active'] as SearchParameter}
+        onChange={onChange}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('filter-value'));
+    });
+
+    expect(onChange).toHaveBeenCalledWith('true');
+    onChange.mockClear();
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('filter-value'));
+    });
+
+    expect(onChange).toHaveBeenCalledWith('false');
+    onChange.mockClear();
+  });
+
+  test('Date input', async () => {
+    const onChange = vi.fn();
+
+    setup(
+      <SearchFilterValueInput
+        resourceType="Patient"
+        searchParam={globalSchema.types['Patient'].searchParams?.['birthdate'] as SearchParameter}
+        onChange={onChange}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('filter-value'), { target: { value: '1950-01-01' } });
+    });
+
+    expect(onChange).toHaveBeenCalledWith('1950-01-01');
+  });
+
+  test('Date/Time input', async () => {
+    const isoString = '2020-01-01T00:00:00.000Z';
+    const localString = convertIsoToLocal(isoString);
+    const onChange = vi.fn();
+
+    setup(
+      <SearchFilterValueInput
+        resourceType="Patient"
+        searchParam={globalSchema.types['Patient'].searchParams?.['_lastUpdated'] as SearchParameter}
+        onChange={onChange}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('filter-value'), { target: { value: localString } });
+    });
+
+    expect(onChange).toHaveBeenCalledWith(isoString);
+  });
+
+  test('Quantity input', async () => {
+    const onChange = vi.fn();
+
+    setup(
+      <SearchFilterValueInput
+        resourceType="Encounter"
+        searchParam={globalSchema.types['Encounter'].searchParams?.['length'] as SearchParameter}
+        onChange={onChange}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByPlaceholderText('Value'), { target: { value: '5' } });
+    });
+
+    expect(onChange).toHaveBeenCalledWith('5');
+  });
+
+  test('Reference input', async () => {
+    // Warm up the default value
+    await medplum.readResource('Organization', '125');
+
+    const onChange = vi.fn();
+
+    setup(
+      <SearchFilterValueInput
+        resourceType="Patient"
+        searchParam={globalSchema.types['Patient'].searchParams?.['organization'] as SearchParameter}
+        defaultValue="Organization/125"
+        onChange={onChange}
+      />
+    );
+
+    // Wait for the resource to load
+    expect(await screen.findByText('Test Organization')).toBeInTheDocument();
+
+    // Clear the existing value
+    const clearButton = screen.getByTitle('Clear all');
+    await act(async () => {
+      fireEvent.click(clearButton);
+    });
+
+    const input = screen.getAllByRole('searchbox')[0] as HTMLInputElement;
+    await selectAutocompleteOption(input, 'Different', 'Different');
+
+    // Expect new organization selected
+    expect(onChange).toHaveBeenCalledWith('Organization/456');
+  });
+});
