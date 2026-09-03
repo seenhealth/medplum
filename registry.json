@@ -2462,6 +2462,138 @@
       }
     },
     {
+      "name": "resource-table",
+      "type": "registry:component",
+      "title": "ResourceTable",
+      "description": "Schema-driven read-only table of a FHIR resource via BackboneElementDisplay.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-table.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-table.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/backbone-element-display"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceTable), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ResourceTable",
+        "storyIds": [
+          "medplum-resourcetable--patient",
+          "medplum-resourcetable--observation",
+          "medplum-resourcetable--observation-ignore-empty",
+          "medplum-resourcetable--covid-19-pcr-test-activity",
+          "medplum-resourcetable--covid-19-review-report-activity",
+          "medplum-resourcetable--covid-19-specimen-requirement",
+          "medplum-resourcetable--covid-19-observation-definition",
+          "medplum-resourcetable--us-core-patient"
+        ]
+      }
+    },
+    {
+      "name": "resource-history-table",
+      "type": "registry:component",
+      "title": "ResourceHistoryTable",
+      "description": "Version-history table with author, on-behalf-of, date, and version link columns.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-history-table.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-history-table.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/medplum-link", "seenhealth/medplum/resource-badge", "table"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceHistoryTable), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ResourceHistoryTable",
+        "storyIds": ["medplum-resourcehistorytable--basic"]
+      }
+    },
+    {
+      "name": "resource-diff",
+      "type": "registry:component",
+      "title": "ResourceDiff",
+      "description": "Line-level preformatted diff of two FHIR resources.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-diff.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-diff.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/diff"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceDiff), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ResourceDiff", "storyIds": ["medplum-resourcediff--basic"] }
+    },
+    {
+      "name": "resource-diff-row",
+      "type": "registry:component",
+      "title": "ResourceDiffRow",
+      "description": "One before/after property row in a resource diff table, with attachment expand.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-diff-row.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-diff-row.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36"],
+      "registryDependencies": ["button", "seenhealth/medplum/resource-property-display", "table"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceDiffRow), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ResourceDiffRow", "storyIds": [] }
+    },
+    {
+      "name": "resource-diff-table",
+      "type": "registry:component",
+      "title": "ResourceDiffTable",
+      "description": "Schema-driven table of JSON-patch operations between two resource versions.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-diff-table.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-diff-table.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/resource-diff-row", "table"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceDiffTable), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ResourceDiffTable", "storyIds": ["medplum-resourcedifftable--basic"] }
+    },
+    {
+      "name": "resource-blame",
+      "type": "registry:block",
+      "title": "ResourceBlame",
+      "description": "Line-level blame view attributing each resource line to the history version that introduced it.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-blame/resource-blame.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-blame/resource-blame.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-blame/resource-blame-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/resource-blame/resource-blame-utils.ts"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": [
+        "seenhealth/medplum/blame",
+        "seenhealth/medplum/medplum-link",
+        "seenhealth/medplum/resource-name"
+      ],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceBlame), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ResourceBlame", "storyIds": ["medplum-resourceblame--basic"] }
+    },
+    {
       "name": "list-with-detail-pane",
       "type": "registry:block",
       "title": "ListWithDetailPane",
