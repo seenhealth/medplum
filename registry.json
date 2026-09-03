@@ -391,7 +391,10 @@
       ],
       "categories": ["forms"],
       "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/FormSection), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
-      "meta": { "upstream": "packages/react/src/FormSection", "storyIds": [] }
+      "meta": {
+        "upstream": "packages/react/src/FormSection",
+        "storyIds": ["medplum-formsection--basic", "medplum-formsection--readonly"]
+      }
     },
     {
       "name": "checkbox-form-section",
@@ -545,6 +548,46 @@
           "medplum-humannameinput--basic",
           "medplum-humannameinput--disabled",
           "medplum-humannameinput--partially-disabled"
+        ]
+      }
+    },
+    {
+      "name": "async-autocomplete",
+      "type": "registry:block",
+      "title": "AsyncAutocomplete",
+      "description": "Debounced asynchronous autocomplete with multiple selection, pills, and creatable options.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/async-autocomplete.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/async-autocomplete.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/async-autocomplete-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/async-autocomplete-utils.ts"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@tabler/icons-react@^3.46.0"],
+      "registryDependencies": [
+        "badge",
+        "button",
+        "command",
+        "field",
+        "popover",
+        "scroll-area",
+        "seenhealth/medplum/dom",
+        "seenhealth/medplum/notify",
+        "spinner",
+        "utils"
+      ],
+      "categories": ["input", "autocomplete"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AsyncAutocomplete), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/AsyncAutocomplete",
+        "storyIds": [
+          "medplum-asyncautocomplete--multi-select-async-autocomplete",
+          "medplum-asyncautocomplete--slow-async-autocomplete"
         ]
       }
     }
