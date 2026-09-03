@@ -1,0 +1,18 @@
+# Porting rules
+
+Binding for every port from `packages/react/src` into this package. The plan behind them is `thoughts/shared/tasks/mantine-to-shadcn/02-plan-shadcn-registry-migration.md` (§4, §5).
+
+1. **Logic is copied, not rewritten.** Start with `node scripts/port.mjs <UpstreamDir>`; it copies the component, tests and stories with the Apache §4(b) notice and rewritten imports. State, effects, memoization, callbacks, helper functions, constants and control flow stay byte-for-byte. Only imports, JSX and CSS change. If a Mantine primitive supplied behavior (Combobox keyboard handling, Stepper paging, Menu focus), the shadcn primitive supplies it; hand-roll only when no primitive exists, once, as a `registry:ui` item under `src/components/ui/`.
+2. **Preserve the DOM contract the tests rely on**: exported names; data/behavior props and their semantics; `data-testid`; `name`; `placeholder`; label text and `htmlFor` association; `title`; `aria-label`; text content; ARIA roles (`dialog`, `menuitem`, `option`, `tab`, `checkbox`, `button`, `link`); uncontrolled `defaultValue` semantics; `||` vs `??`; callback signatures such as `onChange(value, propName?)`; the "Read Only" tooltip.
+3. **Behavior props stay, presentation becomes composition.** Keep FHIR values, schema plumbing (`path`, `valuePath`, `outcome`, `property`, `name`, `disabled`, `required`), callbacks and behavior switches unchanged. Presentational props (`title`/`description`/`actions`/`leftSection`/`width`/`shadow`/`color`, Mantine prop bags such as `PaperProps`) become composed sub-components with `data-slot` and `className`, cva variants, or `className`. Render-props over one item of a generic collection (`itemComponent`, `renderCell`, `getMenu`) stay render-props. Reference implementations: `form-section.tsx`, `panel.tsx`, `modal.tsx`.
+4. **Tests first.** Run the ported test file before touching the component; it must fail because the module is missing, then pass. Allowed edits: the `render` import path (done by `port.mjs`), replacing Mantine-DOM-specific queries with the helpers in `src/test/`, `vi.mock` paths, and rewriting the _render call_ (never an assertion) to the item's composition API. Any other edit or `test.skip` goes into `ledger.json` with a reason. Target ≥ 95% of upstream cases per component.
+5. **Stories second.** Keep `title` and export names identical so Storybook IDs match `storybook.medplum.com`. Swap imports only.
+6. **No Mantine leftovers.** `npm run check:no-mantine` and `npm run check:no-css-modules` must be empty. CSS modules become Tailwind utilities; `--mantine-color-dimmed` → `text-muted-foreground`, `--mantine-spacing-md` → `p-4`/`gap-4`, `light-dark()` → `dark:` variants, `@media (max-width: 800px)` → `max-md:`.
+7. **No additions.** No new behaviors, features, logic refactors, abstractions or comments beyond upstream's. Composition sub-components required by rule 3 are not additions; a new behavior prop is.
+8. **Provenance.** Every ported file keeps the two upstream SPDX lines and the notice line `port.mjs` inserts.
+9. **Icons** stay `@tabler/icons-react`. **Notifications** go through `notify` from `@/lib/medplum/notify`. **Never import `radix-ui`, `@base-ui/react` or `cmdk` directly** in `src/components/medplum/*`; go through `@/components/ui/*`.
+10. **Read `packages/react/src` only; never edit it.**
+
+## Done means
+
+For each item: ledger row with L1 tests ≥ 95% (skips justified), L2 stories rendering, L3 artifacts reviewed, L4 registry build + smoke green, L5 parity deltas all listed in `docs/migration/<item>.md`, L6 typecheck/lint/hygiene green.

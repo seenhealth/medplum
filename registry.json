@@ -1,0 +1,552 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "medplum-shadcn",
+  "homepage": "https://github.com/seenhealth/medplum/tree/main/packages/react-shadcn",
+  "items": [
+    {
+      "name": "constants",
+      "type": "registry:lib",
+      "title": "Constants",
+      "description": "Default ignored FHIR properties for schema-driven forms.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/constants.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/constants.ts"
+        }
+      ],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/constants.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/constants.ts", "storyIds": [] }
+    },
+    {
+      "name": "outcomes",
+      "type": "registry:lib",
+      "title": "OperationOutcome helpers",
+      "description": "Map OperationOutcome issues to form fields (getErrorsForInput, getIssuesForExpression).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/outcomes.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/outcomes.ts"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "categories": ["lib", "forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/outcomes.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/outcomes.ts", "storyIds": [] }
+    },
+    {
+      "name": "dom",
+      "type": "registry:lib",
+      "title": "DOM helpers",
+      "description": "killEvent, isAuxClick, isCheckboxCell, sendCommand, exportJsonFile.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/dom.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/dom.ts"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36"],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/dom.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/dom.ts", "storyIds": [] }
+    },
+    {
+      "name": "date",
+      "type": "registry:lib",
+      "title": "Date sorting helpers",
+      "description": "compareByLastUpdatedDescending and sortByDateAndPriority for timelines.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/date.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/date.ts"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/date.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/date.ts", "storyIds": [] }
+    },
+    {
+      "name": "diff",
+      "type": "registry:lib",
+      "title": "Resource diff",
+      "description": "Line-level diff of two FHIR resources.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/diff.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/diff.ts"
+        }
+      ],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/diff.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/diff.ts", "storyIds": [] }
+    },
+    {
+      "name": "blame",
+      "type": "registry:lib",
+      "title": "Resource blame",
+      "description": "Attribute each line of a resource to the history version that introduced it.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/blame.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/blame.ts"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/diff"],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/blame.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/blame.ts", "storyIds": [] }
+    },
+    {
+      "name": "pagination",
+      "type": "registry:lib",
+      "title": "Pagination control props",
+      "description": "aria-labels for pagination controls (Next page, Previous page, First page, Last page).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/pagination.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/pagination.ts"
+        }
+      ],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/pagination.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/pagination.ts", "storyIds": [] }
+    },
+    {
+      "name": "recaptcha",
+      "type": "registry:lib",
+      "title": "reCAPTCHA helpers",
+      "description": "initRecaptcha and getRecaptcha for the auth forms.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/recaptcha.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/recaptcha.ts"
+        }
+      ],
+      "registryDependencies": ["seenhealth/medplum/script"],
+      "categories": ["lib", "auth"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/recaptcha.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/recaptcha.ts", "storyIds": [] }
+    },
+    {
+      "name": "script",
+      "type": "registry:lib",
+      "title": "createScriptTag",
+      "description": "Append a script tag to the document once.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/script.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/script.ts"
+        }
+      ],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/script.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/script.ts", "storyIds": [] }
+    },
+    {
+      "name": "app",
+      "type": "registry:lib",
+      "title": "App helpers",
+      "description": "getAppName from MEDPLUM_APP_NAME.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/app.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/app.ts"
+        }
+      ],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/app.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/app.ts", "storyIds": [] }
+    },
+    {
+      "name": "load-state",
+      "type": "registry:lib",
+      "title": "LoadState type",
+      "description": "Loading/loaded/error state discriminator.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/load-state.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/load-state.ts"
+        }
+      ],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/loadState.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/loadState.ts", "storyIds": [] }
+    },
+    {
+      "name": "maybe-wrap-with-context",
+      "type": "registry:lib",
+      "title": "maybeWrapWithContext",
+      "description": "Wrap children in a context provider only when a value is present.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/maybe-wrap-with-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/medplum/maybe-wrap-with-context.tsx"
+        }
+      ],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/maybeWrapWithContext.tsx), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/maybeWrapWithContext.tsx", "storyIds": [] }
+    },
+    {
+      "name": "maybe-wrap-with-tooltip",
+      "type": "registry:lib",
+      "title": "maybeWrapWithTooltip",
+      "description": "Wrap an element in a Tooltip only when tooltip text is present; exports READ_ONLY_TOOLTIP_TEXT.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/maybe-wrap-with-tooltip.tsx",
+          "type": "registry:lib",
+          "target": "lib/medplum/maybe-wrap-with-tooltip.tsx"
+        }
+      ],
+      "registryDependencies": ["tooltip"],
+      "categories": ["lib"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/utils/maybeWrapWithTooltip.tsx), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/utils/maybeWrapWithTooltip.tsx", "storyIds": [] }
+    },
+    {
+      "name": "notify",
+      "type": "registry:lib",
+      "title": "notify",
+      "description": "Toast helper over sonner covering fire-and-forget, persistent and update-by-id notifications.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/lib/medplum/notify.ts",
+          "type": "registry:lib",
+          "target": "lib/medplum/notify.ts"
+        }
+      ],
+      "dependencies": ["sonner@^2.0.0"],
+      "categories": ["lib"],
+      "docs": "Part of @medplum/react-shadcn (Apache-2.0).",
+      "meta": { "storyIds": [] }
+    },
+    {
+      "name": "use-debounced-callback",
+      "type": "registry:hook",
+      "title": "useDebouncedCallback",
+      "description": "Trailing-edge debounced callback with a stable identity.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/hooks/medplum/use-debounced-callback.ts",
+          "type": "registry:hook",
+          "target": "hooks/medplum/use-debounced-callback.ts"
+        }
+      ],
+      "categories": ["hook"],
+      "docs": "Part of @medplum/react-shadcn (Apache-2.0).",
+      "meta": { "storyIds": [] }
+    },
+    {
+      "name": "use-local-storage",
+      "type": "registry:hook",
+      "title": "useLocalStorage",
+      "description": "JSON-serialized localStorage state.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/hooks/medplum/use-local-storage.ts",
+          "type": "registry:hook",
+          "target": "hooks/medplum/use-local-storage.ts"
+        }
+      ],
+      "categories": ["hook"],
+      "docs": "Part of @medplum/react-shadcn (Apache-2.0).",
+      "meta": { "storyIds": [] }
+    },
+    {
+      "name": "use-resize-observer",
+      "type": "registry:hook",
+      "title": "useResizeObserver",
+      "description": "Element ref plus its observed content rect.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/hooks/medplum/use-resize-observer.ts",
+          "type": "registry:hook",
+          "target": "hooks/medplum/use-resize-observer.ts"
+        }
+      ],
+      "categories": ["hook"],
+      "docs": "Part of @medplum/react-shadcn (Apache-2.0).",
+      "meta": { "storyIds": [] }
+    },
+    {
+      "name": "use-clipboard",
+      "type": "registry:hook",
+      "title": "useClipboard",
+      "description": "Copy text to the clipboard with a timed copied flag.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/hooks/medplum/use-clipboard.ts",
+          "type": "registry:hook",
+          "target": "hooks/medplum/use-clipboard.ts"
+        }
+      ],
+      "categories": ["hook"],
+      "docs": "Part of @medplum/react-shadcn (Apache-2.0).",
+      "meta": { "storyIds": [] }
+    },
+    {
+      "name": "stepper",
+      "type": "registry:ui",
+      "title": "Stepper",
+      "description": "Numbered step indicator (Stepper, StepperStep, StepperContent) used for paginated questionnaires.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/ui/stepper.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper.tsx"
+        }
+      ],
+      "dependencies": ["@tabler/icons-react@^3.46.0", "class-variance-authority@^0.7.1"],
+      "registryDependencies": ["utils"],
+      "categories": ["ui"],
+      "docs": "Part of @medplum/react-shadcn (Apache-2.0).",
+      "meta": { "storyIds": ["ui-stepper--basic"] }
+    },
+    {
+      "name": "ring-progress",
+      "type": "registry:ui",
+      "title": "RingProgress",
+      "description": "SVG ring chart with colored sections and a center label.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/ui/ring-progress.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ring-progress.tsx"
+        }
+      ],
+      "registryDependencies": ["utils"],
+      "categories": ["ui"],
+      "docs": "Part of @medplum/react-shadcn (Apache-2.0).",
+      "meta": { "storyIds": ["ui-ringprogress--basic"] }
+    },
+    {
+      "name": "elements-input-utils",
+      "type": "registry:component",
+      "title": "ElementsContext",
+      "description": "React context carrying the FHIR schema elements for the form engine, plus getElementsToRender.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/elements-input-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/elements-input-utils.ts"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/constants"],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ElementsInput/ElementsInput.utils.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ElementsInput/ElementsInput.utils.ts", "storyIds": [] }
+    },
+    {
+      "name": "resource-property-input-utils",
+      "type": "registry:component",
+      "title": "Input prop contracts",
+      "description": "BaseInputProps, ComplexTypeInputProps, PrimitiveTypeInputProps and getValuePath.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-property-input-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/resource-property-input-utils.ts"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourcePropertyInput/ResourcePropertyInput.utils.ts), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ResourcePropertyInput/ResourcePropertyInput.utils.ts", "storyIds": [] }
+    },
+    {
+      "name": "form-section",
+      "type": "registry:component",
+      "title": "FormSection",
+      "description": "Labeled form field wrapper with description, OperationOutcome error mapping and read-only tooltip (FormSection, FormSectionLabel, FormSectionDescription, FormSectionContent, FormSectionError).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/form-section.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/form-section.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "field",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/maybe-wrap-with-tooltip",
+        "seenhealth/medplum/outcomes",
+        "utils"
+      ],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/FormSection), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/FormSection", "storyIds": [] }
+    },
+    {
+      "name": "checkbox-form-section",
+      "type": "registry:component",
+      "title": "CheckboxFormSection",
+      "description": "FormSection laid out horizontally for a leading checkbox.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/checkbox-form-section.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/checkbox-form-section.tsx"
+        }
+      ],
+      "registryDependencies": ["seenhealth/medplum/form-section"],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CheckboxFormSection), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/CheckboxFormSection", "storyIds": [] }
+    },
+    {
+      "name": "container",
+      "type": "registry:component",
+      "title": "Container",
+      "description": "Centered max-width page container.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/container.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/container.tsx"
+        }
+      ],
+      "registryDependencies": ["utils"],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Container), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/Container", "storyIds": [] }
+    },
+    {
+      "name": "panel",
+      "type": "registry:component",
+      "title": "Panel",
+      "description": "Bordered card surface used by every Medplum page and story.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/panel.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/panel.tsx"
+        }
+      ],
+      "registryDependencies": ["utils"],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Panel), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/Panel",
+        "storyIds": [
+          "medplum-panel--basic",
+          "medplum-panel--extra-shadow",
+          "medplum-panel--no-border",
+          "medplum-panel--rounded",
+          "medplum-panel--nested"
+        ]
+      }
+    },
+    {
+      "name": "document",
+      "type": "registry:component",
+      "title": "Document",
+      "description": "Container + Panel: the standard Medplum page body.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/document.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/document.tsx"
+        }
+      ],
+      "registryDependencies": ["seenhealth/medplum/container", "seenhealth/medplum/panel"],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Document), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/Document", "storyIds": ["medplum-document--basic"] }
+    },
+    {
+      "name": "modal",
+      "type": "registry:component",
+      "title": "Modal",
+      "description": "Dialog with a scrolling body and pinned footer (Modal, ModalHeader, ModalTitle, ModalDescription, ModalBody, ModalFooter).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/modal.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/modal.tsx"
+        }
+      ],
+      "dependencies": ["class-variance-authority@^0.7.1"],
+      "registryDependencies": ["dialog", "utils"],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Modal), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/Modal",
+        "storyIds": [
+          "medplum-modal--basic",
+          "medplum-modal--with-form",
+          "medplum-modal--button-row",
+          "medplum-modal--long-content",
+          "medplum-modal--fixed-body-height",
+          "medplum-modal--no-actions",
+          "medplum-modal--flush-body"
+        ]
+      }
+    },
+    {
+      "name": "human-name-display",
+      "type": "registry:component",
+      "title": "HumanNameDisplay",
+      "description": "Render a FHIR HumanName with formatHumanName options.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/human-name-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/human-name-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/HumanNameDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/HumanNameDisplay", "storyIds": ["medplum-humannamedisplay--basic"] }
+    },
+    {
+      "name": "human-name-input",
+      "type": "registry:component",
+      "title": "HumanNameInput",
+      "description": "Edit a FHIR HumanName (use, prefix, given, family, suffix) with OperationOutcome error mapping.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/human-name-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/human-name-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "field",
+        "input",
+        "native-select",
+        "seenhealth/medplum/elements-input-utils",
+        "seenhealth/medplum/outcomes",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "input", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/HumanNameInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/HumanNameInput",
+        "storyIds": [
+          "medplum-humannameinput--basic",
+          "medplum-humannameinput--disabled",
+          "medplum-humannameinput--partially-disabled"
+        ]
+      }
+    }
+  ]
+}
