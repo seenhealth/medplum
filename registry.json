@@ -552,6 +552,739 @@
       }
     },
     {
+      "name": "address-display",
+      "type": "registry:component",
+      "title": "AddressDisplay",
+      "description": "Render a FHIR Address with formatAddress options.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/address-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/address-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AddressDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/AddressDisplay", "storyIds": ["medplum-addressdisplay--basic"] }
+    },
+    {
+      "name": "codeable-concept-display",
+      "type": "registry:component",
+      "title": "CodeableConceptDisplay",
+      "description": "Render a FHIR CodeableConcept via formatCodeableConcept.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/codeable-concept-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/codeable-concept-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CodeableConceptDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/CodeableConceptDisplay",
+        "storyIds": [
+          "medplum-codeableconceptdisplay--empty",
+          "medplum-codeableconceptdisplay--text-value",
+          "medplum-codeableconceptdisplay--code-value",
+          "medplum-codeableconceptdisplay--multiple-values"
+        ]
+      }
+    },
+    {
+      "name": "coding-display",
+      "type": "registry:component",
+      "title": "CodingDisplay",
+      "description": "Render a FHIR Coding via formatCoding, optionally including the code.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/coding-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/coding-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CodingDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/CodingDisplay", "storyIds": ["medplum-codingdisplay--basic"] }
+    },
+    {
+      "name": "contact-detail-display",
+      "type": "registry:component",
+      "title": "ContactDetailDisplay",
+      "description": "Render a FHIR ContactDetail name and telecom ContactPointDisplays.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/contact-detail-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/contact-detail-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/contact-point-display"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ContactDetailDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ContactDetailDisplay",
+        "storyIds": ["medplum-contactdetaildisplay--basic"]
+      }
+    },
+    {
+      "name": "contact-point-display",
+      "type": "registry:component",
+      "title": "ContactPointDisplay",
+      "description": "Render a FHIR ContactPoint value with optional use and system.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/contact-point-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/contact-point-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ContactPointDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ContactPointDisplay",
+        "storyIds": ["medplum-contactpointdisplay--basic"]
+      }
+    },
+    {
+      "name": "identifier-display",
+      "type": "registry:component",
+      "title": "IdentifierDisplay",
+      "description": "Render a FHIR Identifier system and value.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/identifier-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/identifier-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/IdentifierDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/IdentifierDisplay", "storyIds": ["medplum-identifierdisplay--basic"] }
+    },
+    {
+      "name": "money-display",
+      "type": "registry:component",
+      "title": "MoneyDisplay",
+      "description": "Render a FHIR Money amount via formatMoney.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/money-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/money-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/MoneyDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/MoneyDisplay", "storyIds": ["medplum-moneydisplay--basic"] }
+    },
+    {
+      "name": "quantity-display",
+      "type": "registry:component",
+      "title": "QuantityDisplay",
+      "description": "Render a FHIR Quantity via formatQuantity, with optional precision.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/quantity-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/quantity-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/QuantityDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/QuantityDisplay", "storyIds": ["medplum-quantitydisplay--basic"] }
+    },
+    {
+      "name": "range-display",
+      "type": "registry:component",
+      "title": "RangeDisplay",
+      "description": "Render a FHIR Range via formatRange, with optional precision and exclusive bounds.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/range-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/range-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/RangeDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/RangeDisplay",
+        "storyIds": ["medplum-rangedisplay--basic", "medplum-rangedisplay--high-only", "medplum-rangedisplay--low-only"]
+      }
+    },
+    {
+      "name": "ratio-display",
+      "type": "registry:component",
+      "title": "RatioDisplay",
+      "description": "Render a FHIR Ratio as numerator / denominator QuantityDisplays.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/ratio-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/ratio-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/quantity-display"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/RatioDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/RatioDisplay", "storyIds": ["medplum-ratiodisplay--basic"] }
+    },
+    {
+      "name": "reference-display",
+      "type": "registry:component",
+      "title": "ReferenceDisplay",
+      "description": "Render a FHIR Reference as text or a MedplumLink.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/reference-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/reference-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/medplum-link"],
+      "categories": ["fhir", "display", "datatype"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ReferenceDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ReferenceDisplay", "storyIds": ["medplum-referencedisplay--basic"] }
+    },
+    {
+      "name": "medplum-link",
+      "type": "registry:component",
+      "title": "MedplumLink",
+      "description": "In-app FHIR resource/reference/string link that navigates unless the click is auxiliary.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/medplum-link.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/medplum-link.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/dom", "utils"],
+      "categories": ["navigation"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/MedplumLink), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/MedplumLink", "storyIds": ["medplum-medplumlink--basic"] }
+    },
+    {
+      "name": "link-tabs",
+      "type": "registry:component",
+      "title": "LinkTabs",
+      "description": "Tabs whose values are URL segments; left-click navigates, aux-click keeps the native link.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/link-tabs.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/link-tabs.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/medplum-link", "tabs"],
+      "categories": ["navigation"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/LinkTabs), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/LinkTabs", "storyIds": [] }
+    },
+    {
+      "name": "resource-avatar",
+      "type": "registry:block",
+      "title": "ResourceAvatar",
+      "description": "Avatar for a FHIR resource or reference, with optional MedplumLink wrapper.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-avatar.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-avatar.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-avatar-utils.ts",
+          "type": "registry:component",
+          "target": "components/medplum/resource-avatar-utils.ts"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["avatar", "seenhealth/medplum/medplum-link"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceAvatar), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ResourceAvatar",
+        "storyIds": [
+          "medplum-resourceavatar--image",
+          "medplum-resourceavatar--letter",
+          "medplum-resourceavatar--sizes",
+          "medplum-resourceavatar--letter-sizes",
+          "medplum-resourceavatar--resource",
+          "medplum-resourceavatar--with-text"
+        ]
+      }
+    },
+    {
+      "name": "resource-name",
+      "type": "registry:component",
+      "title": "ResourceName",
+      "description": "Display string for a FHIR resource or reference, optionally linked.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-name.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-name.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/medplum-link"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceName), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/ResourceName",
+        "storyIds": [
+          "medplum-resourcename--resource",
+          "medplum-resourcename--reference",
+          "medplum-resourcename--invalid"
+        ]
+      }
+    },
+    {
+      "name": "resource-badge",
+      "type": "registry:component",
+      "title": "ResourceBadge",
+      "description": "ResourceAvatar plus ResourceName in a compact row.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/resource-badge.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/resource-badge.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/resource-avatar", "seenhealth/medplum/resource-name"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ResourceBadge), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ResourceBadge", "storyIds": ["medplum-resourcebadge--basic"] }
+    },
+    {
+      "name": "status-badge",
+      "type": "registry:component",
+      "title": "StatusBadge",
+      "description": "FHIR status string rendered as a colored Badge; hyphens become spaces.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/status-badge.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/status-badge.tsx"
+        }
+      ],
+      "dependencies": ["class-variance-authority@^0.7.1"],
+      "registryDependencies": ["badge", "utils"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/StatusBadge), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/StatusBadge", "storyIds": ["medplum-statusbadge--example-statuses"] }
+    },
+    {
+      "name": "error-boundary",
+      "type": "registry:component",
+      "title": "ErrorBoundary",
+      "description": "Class error boundary that shows a destructive Alert and clears on navigation.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/error-boundary.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/error-boundary.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@tabler/icons-react@^3.46.0"],
+      "registryDependencies": ["alert"],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ErrorBoundary), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ErrorBoundary", "storyIds": ["medplum-errorboundary--basic"] }
+    },
+    {
+      "name": "loading",
+      "type": "registry:component",
+      "title": "Loading",
+      "description": "Full-viewport centered Spinner.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/loading.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/loading.tsx"
+        }
+      ],
+      "registryDependencies": ["spinner"],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Loading), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/Loading", "storyIds": [] }
+    },
+    {
+      "name": "operation-outcome-alert",
+      "type": "registry:component",
+      "title": "OperationOutcomeAlert",
+      "description": "Destructive Alert listing OperationOutcome issues (or a raw issues array).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/operation-outcome-alert.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/operation-outcome-alert.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@tabler/icons-react@^3.46.0"],
+      "registryDependencies": ["alert"],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/OperationOutcomeAlert), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/OperationOutcomeAlert",
+        "storyIds": ["medplum-operationoutcomealert--basic", "medplum-operationoutcomealert--issues"]
+      }
+    },
+    {
+      "name": "unavailable-note",
+      "type": "registry:component",
+      "title": "UnavailableNote",
+      "description": "Inline note with a tooltip explaining why a field or suggestion is unavailable.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/unavailable-note.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/unavailable-note.tsx"
+        }
+      ],
+      "dependencies": ["@tabler/icons-react@^3.46.0"],
+      "registryDependencies": ["button", "tooltip", "utils"],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/UnavailableNote), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/UnavailableNote",
+        "storyIds": [
+          "medplum-unavailablenote--suggestions-unavailable",
+          "medplum-unavailablenote--field-unavailable",
+          "medplum-unavailablenote--both-variants"
+        ]
+      }
+    },
+    {
+      "name": "scroll-to-top",
+      "type": "registry:component",
+      "title": "ScrollToTop",
+      "description": "Scrolls the window to the top when the react-router pathname changes.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/scroll-to-top.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/scroll-to-top.tsx"
+        }
+      ],
+      "categories": ["navigation"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/ScrollToTop), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/ScrollToTop", "storyIds": [] }
+    },
+    {
+      "name": "info-bar",
+      "type": "registry:component",
+      "title": "InfoBar",
+      "description": "Horizontal key/value strip (InfoBar, Entry, Key, Value).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/info-bar.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/info-bar.tsx"
+        }
+      ],
+      "registryDependencies": ["scroll-area"],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/InfoBar), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/InfoBar", "storyIds": [] }
+    },
+    {
+      "name": "description-list",
+      "type": "registry:component",
+      "title": "DescriptionList",
+      "description": "Two-column description list with an optional compact layout.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/description-list.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/description-list.tsx"
+        }
+      ],
+      "registryDependencies": ["utils"],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/DescriptionList), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/DescriptionList", "storyIds": ["medplum-descriptionlist--basic"] }
+    },
+    {
+      "name": "note-display",
+      "type": "registry:component",
+      "title": "NoteDisplay",
+      "description": "Stack of FHIR Annotation notes as blockquotes with optional cite.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/note-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/note-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/NoteDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/NoteDisplay",
+        "storyIds": [
+          "medplum-notesdisplay--simple",
+          "medplum-notesdisplay--with-author",
+          "medplum-notesdisplay--multiple-notes"
+        ]
+      }
+    },
+    {
+      "name": "logo",
+      "type": "registry:component",
+      "title": "Logo",
+      "description": "Medplum SVG logo, overridable via MEDPLUM_LOGO_URL.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/logo.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/logo.tsx"
+        }
+      ],
+      "categories": ["layout"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/Logo), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/Logo", "storyIds": ["medplum-logo--basic"] }
+    },
+    {
+      "name": "array-add-button",
+      "type": "registry:component",
+      "title": "ArrayAddButton",
+      "description": "Add control for schema-driven arrays (labeled button or icon-only).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/array-add-button.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/array-add-button.tsx"
+        }
+      ],
+      "dependencies": ["@tabler/icons-react@^3.46.0"],
+      "registryDependencies": ["button"],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/buttons/ArrayAddButton.tsx), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/buttons/ArrayAddButton.tsx", "storyIds": [] }
+    },
+    {
+      "name": "array-remove-button",
+      "type": "registry:component",
+      "title": "ArrayRemoveButton",
+      "description": "Remove control for schema-driven arrays.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/array-remove-button.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/array-remove-button.tsx"
+        }
+      ],
+      "dependencies": ["@tabler/icons-react@^3.46.0"],
+      "registryDependencies": ["button"],
+      "categories": ["forms"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/buttons/ArrayRemoveButton.tsx), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/buttons/ArrayRemoveButton.tsx", "storyIds": [] }
+    },
+    {
+      "name": "attachment-display",
+      "type": "registry:block",
+      "title": "AttachmentDisplay",
+      "description": "Render a FHIR Attachment (image, video, PDF, text, C-CDA) with a download link and retrying scanned images.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/attachment-display/attachment-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/attachment-display/attachment-display.tsx"
+        },
+        {
+          "path": "packages/react-shadcn/src/components/medplum/attachment-display/scanned-image.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/attachment-display/scanned-image.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/ccda-display", "spinner"],
+      "categories": ["fhir", "attachment", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AttachmentDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/AttachmentDisplay", "storyIds": ["medplum-attachmentdisplay--basic"] }
+    },
+    {
+      "name": "attachment-array-display",
+      "type": "registry:component",
+      "title": "AttachmentArrayDisplay",
+      "description": "Render a list of FHIR Attachments, optionally as a DescriptionList entry.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/attachment-array-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/attachment-array-display.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/attachment-display", "seenhealth/medplum/description-list"],
+      "categories": ["fhir", "attachment", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AttachmentArrayDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/AttachmentArrayDisplay",
+        "storyIds": ["medplum-attachmentarraydisplay--basic"]
+      }
+    },
+    {
+      "name": "attachment-button",
+      "type": "registry:component",
+      "title": "AttachmentButton",
+      "description": "Hidden file input that uploads via medplum.createAttachment and renders a custom trigger.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/attachment-button.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/attachment-button.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36", "@medplum/react-hooks@5.1.36"],
+      "registryDependencies": ["seenhealth/medplum/dom"],
+      "categories": ["fhir", "attachment", "input"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AttachmentButton), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/AttachmentButton",
+        "storyIds": [
+          "medplum-attachmentbutton--example",
+          "medplum-attachmentbutton--custom-text",
+          "medplum-attachmentbutton--custom-component"
+        ]
+      }
+    },
+    {
+      "name": "attachment-input",
+      "type": "registry:component",
+      "title": "AttachmentInput",
+      "description": "Single FHIR Attachment upload/remove control.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/attachment-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/attachment-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36"],
+      "registryDependencies": [
+        "button",
+        "seenhealth/medplum/attachment-button",
+        "seenhealth/medplum/attachment-display",
+        "seenhealth/medplum/dom",
+        "seenhealth/medplum/resource-property-input-utils"
+      ],
+      "categories": ["fhir", "attachment", "input"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AttachmentInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/AttachmentInput",
+        "storyIds": [
+          "medplum-attachmentinput--basic",
+          "medplum-attachmentinput--default-value",
+          "medplum-attachmentinput--disabled"
+        ]
+      }
+    },
+    {
+      "name": "attachment-array-input",
+      "type": "registry:component",
+      "title": "AttachmentArrayInput",
+      "description": "Add and remove a list of FHIR Attachments.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/attachment-array-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/attachment-array-input.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/fhirtypes@5.1.36", "@tabler/icons-react@^3.46.0"],
+      "registryDependencies": [
+        "button",
+        "seenhealth/medplum/attachment-button",
+        "seenhealth/medplum/attachment-display",
+        "seenhealth/medplum/dom"
+      ],
+      "categories": ["fhir", "attachment", "input"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/AttachmentArrayInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": {
+        "upstream": "packages/react/src/AttachmentArrayInput",
+        "storyIds": [
+          "medplum-attachmentarrayinput--basic",
+          "medplum-attachmentarrayinput--default-value",
+          "medplum-attachmentarrayinput--disabled"
+        ]
+      }
+    },
+    {
+      "name": "signature-input",
+      "type": "registry:component",
+      "title": "SignatureInput",
+      "description": "Canvas signature pad that writes a FHIR Signature (base64 PNG).",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/signature-input.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/signature-input.tsx"
+        }
+      ],
+      "dependencies": [
+        "@medplum/core@5.1.36",
+        "@medplum/fhirtypes@5.1.36",
+        "@medplum/react-hooks@5.1.36",
+        "@tabler/icons-react@^3.46.0",
+        "signature_pad@^5.1.4"
+      ],
+      "registryDependencies": ["button", "utils"],
+      "categories": ["fhir", "input"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/SignatureInput), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/SignatureInput", "storyIds": ["medplum-signatureinput--basic"] }
+    },
+    {
+      "name": "qr-code-scanner",
+      "type": "registry:component",
+      "title": "QrCodeScanner",
+      "description": "Camera QR scanner using getUserMedia and jsqr.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/qr-code-scanner.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/qr-code-scanner.tsx"
+        }
+      ],
+      "dependencies": ["@medplum/core@5.1.36"],
+      "registryDependencies": ["alert", "spinner"],
+      "categories": ["input"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/QrCodeScanner), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/QrCodeScanner", "storyIds": [] }
+    },
+    {
+      "name": "ccda-display",
+      "type": "registry:component",
+      "title": "CcdaDisplay",
+      "description": "Embed the C-CDA viewer iframe and optionally validate the document.",
+      "files": [
+        {
+          "path": "packages/react-shadcn/src/components/medplum/ccda-display.tsx",
+          "type": "registry:component",
+          "target": "components/medplum/ccda-display.tsx"
+        }
+      ],
+      "registryDependencies": ["button", "seenhealth/medplum/dom"],
+      "categories": ["fhir", "display"],
+      "docs": "Derived from @medplum/react 5.1.36 (packages/react/src/CcdaDisplay), Apache-2.0, Copyright Orangebot, Inc. and Medplum contributors; modified for shadcn/ui in packages/react-shadcn. Storybook reference: https://storybook.medplum.com",
+      "meta": { "upstream": "packages/react/src/CcdaDisplay", "storyIds": [] }
+    },
+    {
       "name": "address-input",
       "type": "registry:component",
       "title": "AddressInput",
