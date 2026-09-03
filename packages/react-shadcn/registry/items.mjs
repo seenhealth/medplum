@@ -12,5 +12,6 @@ import { items as wu14 } from './items/wu-14.mjs';
 import { items as wu15 } from './items/wu-15.mjs';
 import { items as wu16 } from './items/wu-16.mjs';
 import { items as wu17 } from './items/wu-17.mjs';
+import { items as wu23 } from './items/wu-23.mjs';
 
-export const items = [...core, ...wu10, ...wu11, ...wu12, ...wu13, ...wu14, ...wu15, ...wu16, ...wu17];
+export const items = [...core, ...wu10, ...wu11, ...wu12, ...wu13, ...wu14, ...wu15, ...wu16, ...wu17, ...wu23];
