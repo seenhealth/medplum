@@ -434,6 +434,11 @@ export function AsyncAutocomplete<T>(props: AsyncAutocompleteProps<T>): JSX.Elem
         <FieldError>{error}</FieldError>
       </Field>
 
+      {!open && (
+        <div hidden data-hidden="true" data-testid={AsyncAutocompleteTestIds.options}>
+          {!creatable && search.trim().length > 0 && options.length === 0 && <EmptyComponent search={search} />}
+        </div>
+      )}
       <PopoverContent
         forceMount
         align="start"
