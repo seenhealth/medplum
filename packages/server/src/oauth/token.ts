@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
-import type { ProfileResource, WithId } from '@medplum/core';
+import type { JWTPayload, Operation, ProfileResource, WithId } from '@medplum/core';
 import {
   ContentType,
   OAuthClientAssertionType,
@@ -17,10 +17,17 @@ import {
   parseJWTPayload,
   resolveId,
 } from '@medplum/core';
-import type { ClientApplication, Login, ProjectMembership, Reference, User } from '@medplum/fhirtypes';
+import type {
+  ClientApplication,
+  IdentityProvider,
+  Login,
+  ProjectMembership,
+  Reference,
+  User,
+} from '@medplum/fhirtypes';
 import type { Request, RequestHandler, Response } from 'express';
 import type { JWTVerifyOptions } from 'jose';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { createRemoteJWKSet, customFetch, jwtVerify } from 'jose';
 import { createHash, randomUUID } from 'node:crypto';
 import { getUserConfiguration } from '../auth/me';
 import { getProjectIdByClientId } from '../auth/utils';
@@ -28,6 +35,7 @@ import { getConfig } from '../config/loader';
 import { getAccessPolicyForLogin } from '../fhir/accesspolicy';
 import { getGlobalSystemRepo } from '../fhir/repo';
 import { getTopicForUser } from '../fhircast/utils';
+import { getProjectScopedUrl, safeFetch } from '../util/url';
 import { validateClientCert } from './cert';
 import type { MedplumRefreshTokenClaims } from './keys';
 import { generateSecret, verifyJwt } from './keys';
@@ -166,7 +174,7 @@ async function handleClientCredentials(req: Request, res: Response): Promise<voi
     return;
   }
 
-  await sendTokenResponse(res, login, client);
+  await sendTokenResponse(req, res, login, client);
 }
 
 /**
@@ -262,7 +270,7 @@ async function handleAuthorizationCode(req: Request, res: Response): Promise<voi
     }
   }
 
-  await sendTokenResponse(res, login, client);
+  await sendTokenResponse(req, res, login, client);
 }
 
 /**
@@ -280,7 +288,8 @@ async function handleRefreshToken(req: Request, res: Response): Promise<void> {
 
   let claims: MedplumRefreshTokenClaims;
   try {
-    claims = (await verifyJwt(refreshToken)).payload as MedplumRefreshTokenClaims;
+    claims = (await verifyJwt(refreshToken, getProjectScopedUrl(req.originalUrl, getConfig().issuer)))
+      .payload as MedplumRefreshTokenClaims;
   } catch {
     sendTokenError(res, 'invalid_request', 'Invalid refresh token');
     return;
@@ -315,6 +324,17 @@ async function handleRefreshToken(req: Request, res: Response): Promise<void> {
     return;
   }
 
+  let client: ClientApplication | undefined;
+  if (login.client) {
+    const clientId = resolveId(login.client) ?? '';
+    try {
+      client = await systemRepo.readResource<ClientApplication>('ClientApplication', clientId);
+    } catch {
+      sendTokenError(res, 'invalid_request', 'Invalid client');
+      return;
+    }
+  }
+
   const authHeader = req.headers.authorization;
   if (authHeader) {
     if (!authHeader.startsWith('Basic ')) {
@@ -332,29 +352,52 @@ async function handleRefreshToken(req: Request, res: Response): Promise<void> {
       sendTokenError(res, 'invalid_grant', 'Incorrect client secret');
       return;
     }
-  }
-
-  let client: ClientApplication | undefined;
-  if (login.client) {
-    const clientId = resolveId(login.client) ?? '';
-    try {
-      client = await systemRepo.readResource<ClientApplication>('ClientApplication', clientId);
-    } catch {
-      sendTokenError(res, 'invalid_request', 'Invalid client');
+    if (!(await validateClientIdAndSecret(res, client, clientSecret))) {
       return;
     }
   }
 
   // Refresh token rotation
   // Generate a new refresh secret and update the login
-  const updatedLogin = await systemRepo.updateResource<Login>({
-    ...login,
-    refreshSecret: generateSecret(32),
+  const updatedLogin = await rotateLoginRefreshSecret(login, {
     remoteAddress: req.ip,
     userAgent: req.get('User-Agent'),
   });
 
-  await sendTokenResponse(res, updatedLogin, client);
+  await sendTokenResponse(req, res, updatedLogin, client);
+}
+
+/**
+ * Rotates a login's refresh secret as part of refresh-token rotation.
+ *
+ * The rotation is applied via `patchResource` rather than a full
+ * `updateResource` of a `{ ...login }` snapshot. `patchResource` re-reads the
+ * login inside its own transaction and mutates only the patched fields, so it
+ * cannot drop fields that a concurrent request set after the caller's read — in
+ * particular the single-use email-MFA challenge code on `login.emailMfa`, which
+ * is written by `/send-email-challenge` and read by `/enroll`. A full overwrite
+ * of a stale snapshot would clobber it, making the user's subsequent code
+ * submission fail with a spurious "Invalid token" while enrolling in email MFA.
+ *
+ * @param login - The login to rotate; only its `id` is authoritative.
+ * @param details - Request metadata to record on the login.
+ * @param details.remoteAddress - The client IP address to record, if any.
+ * @param details.userAgent - The client user agent to record, if any.
+ * @returns The updated login with a freshly rotated refresh secret.
+ */
+export async function rotateLoginRefreshSecret(
+  login: WithId<Login>,
+  details?: { remoteAddress?: string; userAgent?: string }
+): Promise<WithId<Login>> {
+  const systemRepo = getGlobalSystemRepo();
+  const patch: Operation[] = [{ op: 'add', path: '/refreshSecret', value: generateSecret(32) }];
+  if (details?.remoteAddress !== undefined) {
+    patch.push({ op: 'add', path: '/remoteAddress', value: details.remoteAddress });
+  }
+  if (details?.userAgent !== undefined) {
+    patch.push({ op: 'add', path: '/userAgent', value: details.userAgent });
+  }
+  return systemRepo.patchResource<Login>('Login', login.id, patch);
 }
 
 /**
@@ -393,53 +436,64 @@ export async function exchangeExternalAuthToken(
   subjectTokenType: OAuthTokenType,
   membershipId?: string
 ): Promise<void> {
-  if (!clientId) {
-    sendTokenError(res, 'invalid_request', 'Invalid client');
-    return;
-  }
-
-  if (!subjectToken) {
-    sendTokenError(res, 'invalid_request', 'Invalid subject_token');
-    return;
-  }
-
-  if (subjectTokenType !== OAuthTokenType.AccessToken) {
-    sendTokenError(res, 'invalid_request', 'Invalid subject_token_type');
+  if (!validateExternalAuthTokenExchangeRequest(res, clientId, subjectToken, subjectTokenType)) {
     return;
   }
 
   const systemRepo = getGlobalSystemRepo();
-  const projectId = await getProjectIdByClientId(clientId, undefined);
-  const client = await systemRepo.readResource<ClientApplication>('ClientApplication', clientId);
-  const idp = client.identityProvider;
+  let client: ClientApplication | undefined;
+  // Server external auth providers are selected before ClientApplication lookup.
+  let idp = resolveExternalAuthProvider(clientId);
+  const useServerExternalAuth = !!idp;
+
+  if (!idp) {
+    client = await tryReadTokenExchangeClient(systemRepo, clientId);
+    if (!client) {
+      sendTokenError(res, 'invalid_request', 'Invalid client');
+      return;
+    }
+
+    idp = resolveExternalAuthProvider(clientId, client);
+  }
+
   if (!idp) {
     sendTokenError(res, 'invalid_request', 'Invalid client');
     return;
   }
 
-  let userInfo;
-  try {
-    userInfo = await getExternalUserInfo(idp.userInfoUrl, subjectToken, idp);
-  } catch (err: any) {
-    const outcome = normalizeOperationOutcome(err);
-    sendTokenError(res, 'invalid_request', normalizeErrorString(err), getStatus(outcome));
+  let projectId: string | undefined;
+  if (useServerExternalAuth) {
+    if (membershipId) {
+      let membership: ProjectMembership;
+      try {
+        membership = await systemRepo.readResource<ProjectMembership>('ProjectMembership', membershipId);
+      } catch {
+        sendTokenError(res, 'invalid_request', 'Invalid membership');
+        return;
+      }
+
+      projectId = resolveId(membership.project);
+      if (!projectId) {
+        sendTokenError(res, 'invalid_request', 'Invalid membership');
+        return;
+      }
+    }
+  } else {
+    projectId = await getProjectIdByClientId(clientId, undefined);
+  }
+
+  const userInfo = await tryGetExternalUserInfo(res, idp, subjectToken);
+  if (!userInfo) {
     return;
   }
 
-  let email: string | undefined = undefined;
-  let externalId: string | undefined = undefined;
-  if (idp.useSubject) {
-    externalId = userInfo.sub as string;
-  } else {
-    email = userInfo.email as string;
-  }
-
+  const { email, externalId } = getExternalAuthLoginIdentity(idp, userInfo);
   const login = await tryLogin({
     authMethod: 'exchange',
     email,
     externalId,
     projectId,
-    clientId,
+    clientId: client?.id,
     scope: req.body.scope || 'openid offline_access',
     nonce: req.body.nonce || randomUUID(),
     remoteAddress: req.ip,
@@ -448,7 +502,89 @@ export async function exchangeExternalAuthToken(
     membershipId,
   });
 
-  await sendTokenResponse(res, login, client);
+  await sendTokenResponse(req, res, login, client);
+}
+
+function validateExternalAuthTokenExchangeRequest(
+  res: Response,
+  clientId: string,
+  subjectToken: string,
+  subjectTokenType: OAuthTokenType
+): boolean {
+  if (!clientId) {
+    sendTokenError(res, 'invalid_request', 'Invalid client');
+    return false;
+  }
+
+  if (!subjectToken) {
+    sendTokenError(res, 'invalid_request', 'Invalid subject_token');
+    return false;
+  }
+
+  if (subjectTokenType !== OAuthTokenType.AccessToken) {
+    sendTokenError(res, 'invalid_request', 'Invalid subject_token_type');
+    return false;
+  }
+
+  return true;
+}
+
+async function tryReadTokenExchangeClient(
+  systemRepo: ReturnType<typeof getGlobalSystemRepo>,
+  clientId: string
+): Promise<ClientApplication | undefined> {
+  try {
+    return await systemRepo.readResource<ClientApplication>('ClientApplication', clientId);
+  } catch {
+    return undefined;
+  }
+}
+
+async function tryGetExternalUserInfo(
+  res: Response,
+  idp: IdentityProvider,
+  subjectToken: string
+): Promise<JWTPayload | undefined> {
+  if (!idp.userInfoUrl) {
+    sendTokenError(res, 'invalid_request', 'Missing user info URL', 400);
+    return undefined;
+  }
+  try {
+    return await getExternalUserInfo(idp.userInfoUrl, subjectToken, idp);
+  } catch (err: any) {
+    const outcome = normalizeOperationOutcome(err);
+    sendTokenError(res, 'invalid_request', normalizeErrorString(err), getStatus(outcome));
+    return undefined;
+  }
+}
+
+function getExternalAuthLoginIdentity(
+  idp: IdentityProvider,
+  userInfo: JWTPayload
+): { email?: string; externalId?: string } {
+  if (idp.useSubject) {
+    return { externalId: userInfo.sub };
+  }
+
+  return { email: userInfo.email as string };
+}
+
+function resolveExternalAuthProvider(clientId: string, client?: ClientApplication): IdentityProvider | undefined {
+  const externalAuthConfig = getConfig().externalAuthProviders?.find(
+    (provider) => (provider.clientId ?? provider.identityProvider?.clientId) === clientId
+  );
+  if (externalAuthConfig) {
+    if (externalAuthConfig.identityProvider) {
+      return externalAuthConfig.identityProvider;
+    }
+
+    const userInfoUrl = externalAuthConfig.userInfoUrl;
+    if (userInfoUrl) {
+      return { userInfoUrl };
+    }
+  }
+
+  return client?.identityProvider;
 }
 
 /**
@@ -540,7 +676,7 @@ async function handlePreAuthorizedCode(req: Request, res: Response): Promise<voi
     return;
   }
 
-  await sendTokenResponse(res, login, client);
+  await sendTokenResponse(req, res, login, client);
 }
 
 /**
@@ -557,7 +693,7 @@ async function handlePreAuthorizedCode(req: Request, res: Response): Promise<voi
  */
 async function getClientIdAndSecret(req: Request): Promise<ClientIdAndSecret> {
   if (req.body.client_assertion_type) {
-    return parseClientAssertion(req.body.client_assertion_type, req.body.client_assertion);
+    return parseClientAssertion(req, req.body.client_assertion_type, req.body.client_assertion);
   }
 
   const authHeader = req.headers.authorization;
@@ -594,11 +730,13 @@ async function getClientIdAndSecret(req: Request): Promise<ClientIdAndSecret> {
  * 2. https://www.hl7.org/fhir/smart-app-launch/example-backend-services.html#step-2-discovery
  * 3. https://docs.oracle.com/en/cloud/get-started/subscriptions-cloud/csimg/obtaining-access-token-using-self-signed-client-assertion.html
  * 4. https://darutk.medium.com/oauth-2-0-client-authentication-4b5f929305d4
+ * @param req - The HTTP request.
  * @param clientAssertionType - The client assertion type.
  * @param clientAssertion - The client assertion JWT.
  * @returns The parsed client ID and secret on success, or an error message on failure.
  */
 async function parseClientAssertion(
+  req: Request,
   clientAssertionType: OAuthClientAssertionType,
   clientAssertion: string
 ): Promise<ClientIdAndSecret> {
@@ -610,7 +748,8 @@ async function parseClientAssertion(
     return { error: 'Invalid client assertion' };
   }
 
-  const { tokenUrl } = getConfig();
+  const config = getConfig();
+  const tokenUrl = getProjectScopedUrl(req.originalUrl, config.baseUrl, config.tokenUrl);
   const claims = parseJWTPayload(clientAssertion);
 
   if (claims.aud !== tokenUrl) {
@@ -634,7 +773,7 @@ async function parseClientAssertion(
     return { error: 'Client must have a JWK Set URL' };
   }
 
-  const JWKS = createRemoteJWKSet(new URL(client.jwksUri));
+  const JWKS = createRemoteJWKSet(new URL(client.jwksUri), { [customFetch]: safeFetch });
 
   const verifyOptions: JWTVerifyOptions = {
     issuer: clientId,
@@ -751,11 +890,17 @@ async function validateClientIdAndSecret(
 
 /**
  * Sends a successful token response.
+ * @param req - The HTTP request.
  * @param res - The HTTP response.
  * @param login - The user login.
  * @param client - The client application. Optional.
  */
-async function sendTokenResponse(res: Response, login: WithId<Login>, client?: ClientApplication): Promise<void> {
+async function sendTokenResponse(
+  req: Request,
+  res: Response,
+  login: WithId<Login>,
+  client?: ClientApplication
+): Promise<void> {
   const config = getConfig();
 
   const systemRepo = getGlobalSystemRepo();
@@ -767,6 +912,7 @@ async function sendTokenResponse(res: Response, login: WithId<Login>, client?: C
   const tokens = await getAuthTokens(user, login, membership.profile as Reference<ProfileResource>, {
     accessLifetime: client?.accessTokenLifetime,
     refreshLifetime: client?.refreshTokenLifetime,
+    issuer: getProjectScopedUrl(req.originalUrl, config.issuer),
   });
   let patient = undefined;
   let encounter = undefined;

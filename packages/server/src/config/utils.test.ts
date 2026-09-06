@@ -10,6 +10,8 @@ describe('utils', () => {
   test('isBooleanConfig', () => {
     expect(isBooleanConfig('baseUrl')).toBe(false);
     expect(isBooleanConfig('logRequests')).toBe(true);
+    expect(isBooleanConfig('rateLimitsEnabled')).toBe(true);
+    expect(isBooleanConfig('requireVerifiedEmailForProjectCreation')).toBe(true);
   });
 
   test('isIntegerConfig', () => {
@@ -22,6 +24,13 @@ describe('utils', () => {
       baseUrl: 'https://example.com',
     } as any);
     expect(config.maxSearchOffset).toBe(10_000);
+  });
+
+  test('addDefaults enables rate limits by default', () => {
+    const config = addDefaults({
+      baseUrl: 'https://example.com',
+    } as any);
+    expect(config.rateLimitsEnabled).toBe(true);
   });
 
   test('addDefaults preserves existing maxSearchOffset', () => {
@@ -54,6 +63,18 @@ describe('utils', () => {
     });
   });
 
+  test('setValue parses rateLimitsEnabled as boolean', () => {
+    const config = {};
+    setValue(config, 'rateLimitsEnabled', 'false');
+    expect(config).toEqual({ rateLimitsEnabled: false });
+  });
+
+  test('setValue parses requireVerifiedEmailForProjectCreation as boolean', () => {
+    const config = {};
+    setValue(config, 'requireVerifiedEmailForProjectCreation', 'false');
+    expect(config).toEqual({ requireVerifiedEmailForProjectCreation: false });
+  });
+
   test('addDefaults preserves dataWarehouse.startDate as ISO-8601 string', () => {
     const config = addDefaults({
       baseUrl: 'https://example.com',
@@ -81,6 +102,14 @@ describe('utils', () => {
       dataWarehouse: {
         includeResourceTypes: ['Patient', 'Observation'],
       },
+    });
+  });
+
+  test('setValue stores blockedEmailDomains as comma-separated list', () => {
+    const config = {};
+    setValue(config, 'blockedEmailDomains', 'example.com,test.com');
+    expect(config).toEqual({
+      blockedEmailDomains: ['example.com', 'test.com'],
     });
   });
 

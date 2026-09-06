@@ -48,6 +48,7 @@ import { isBrowserEnvironment, locationUtils } from './environment';
 import { TypedEventTarget } from './eventtarget';
 import type {
   CurrentContext,
+  FhircastConnectionOptions,
   FhircastEventContext,
   FhircastEventName,
   FhircastEventVersionOptional,
@@ -301,8 +302,6 @@ export interface MedplumClientOptions {
    * Fetch implementation.
    *
    * Default is `window.fetch` (if available).
-   *
-   * For Node.js applications, consider the 'node-fetch' package.
    */
   fetch?: FetchLike;
 
@@ -546,6 +545,12 @@ export interface LoginAuthenticationResponse {
   readonly mfaEnrollRequired?: boolean;
   readonly mfaRequired?: boolean;
   readonly enrollQrCode?: string;
+  /** MFA enrollment methods the project allows (e.g. 'totp', 'email'). */
+  readonly allowedMfaMethods?: ('totp' | 'email')[];
+  /** MFA methods the user is enrolled in, returned when an MFA challenge is required. */
+  readonly mfaMethods?: ('totp' | 'email')[];
+  /** The user's email address, returned with an MFA challenge so the UI can show where a magic link was sent. */
+  readonly email?: string;
   readonly code?: string;
   readonly memberships?: ProjectMembership[];
 }
@@ -610,6 +615,12 @@ export interface InviteRequest {
   lastName: string;
   email?: string;
   externalId?: string;
+  /**
+   * The patient that a newly provisioned `RelatedPerson` is related to.
+   * Required when inviting a `RelatedPerson` without an existing
+   * `membership.profile`, since `RelatedPerson.patient` is a required FHIR field.
+   */
+  patient?: Reference<Patient>;
   scope?: 'project' | 'server';
   password?: string;
   sendEmail?: boolean;
@@ -799,7 +810,21 @@ interface AutoBatchEntry<T = any> {
 interface RequestState {
   statusUrl?: string;
   pollCount?: number;
+  /**
+   * Number of times this logical request has already been dispatched to the server.
+   * Starts at 0 for the initial attempt and is incremented before each 401 recovery
+   * retry. Used to bound the unauthenticated-retry path so a rejected token can never
+   * loop forever (see {@link MedplumClient.handleUnauthenticated}).
+   */
+  authAttempt?: number;
 }
+
+/**
+ * Maximum number of times a single logical request may be dispatched to the server
+ * across the 401/unauthenticated recovery path: 1 initial attempt + 1 recovery attempt.
+ * A 401 on the recovery attempt is terminal and is never retried again.
+ */
+const MAX_AUTH_ATTEMPTS = 2;
 
 /**
  * OAuth 2.0 Grant Type Identifiers
@@ -901,6 +926,30 @@ export interface RequestProfileSchemaOptions extends MedplumRequestOptions {
 }
 
 /**
+ * Payload of the `resourceModified` event, emitted after this client instance successfully
+ * creates, updates, patches, or deletes a FHIR resource.
+ *
+ * Emitted by `createResource`, `createResourceIfNoneExist`, `updateResource`, `upsertResource`,
+ * `patchResource`, `deleteResource`, and by `notifyResourceModified`.
+ * Conditional methods (`createResourceIfNoneExist`, `upsertResource`) emit
+ * even when the server made no change, except on HTTP 304 "Not Modified".
+ *
+ * The generic type parameter `T` specifies the type of the modified resource.
+ * It defaults to `Resource`; narrow it (e.g. via `useResourceModified('Slot', ...)`)
+ * to get a typed `resource` payload without extra guards.
+ */
+export interface ResourceModifiedEvent<T extends Resource = Resource> {
+  /** The type of the modified resource. */
+  resourceType: T['resourceType'];
+  /** How the resource was modified. */
+  operation: 'create' | 'update' | 'patch' | 'delete';
+  /** The resource id, when known. */
+  id?: string;
+  /** The server-returned resource, when available. Undefined for deletes. */
+  resource?: WithId<T>;
+}
+
+/**
  * This map enumerates all the lifecycle events that `MedplumClient` emits and what the shape of the `Event` is.
  */
 export type MedplumClientEventMap = {
@@ -910,6 +959,7 @@ export type MedplumClientEventMap = {
   profileRefreshed: { type: 'profileRefreshed' };
   storageInitialized: { type: 'storageInitialized' };
   storageInitFailed: { type: 'storageInitFailed'; payload: { error: Error } };
+  resourceModified: { type: 'resourceModified'; payload: ResourceModifiedEvent };
 };
 
 /**
@@ -1257,6 +1307,37 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
         this.requestCache?.delete(key);
       }
     }
+  }
+
+  /**
+   * Notifies listeners that a resource was modified outside of the standard CRUD methods,
+   * and invalidates the relevant cached values.
+   *
+   * The client emits the `resourceModified` event automatically for `createResource`,
+   * `updateResource`, `patchResource`, `deleteResource`, and related methods. Use this method
+   * to announce modifications the client cannot classify itself, such as custom operations,
+   * GraphQL mutations, or out-of-band changes:
+   *
+   * ```typescript
+   * await medplum.post(medplum.fhirUrl('Appointment', '$book'), parameters);
+   * medplum.notifyResourceModified({ resourceType: 'Appointment', operation: 'create' });
+   * medplum.notifyResourceModified({ resourceType: 'Slot', operation: 'update' });
+   * ```
+   *
+   * Cached searches for the resource type are invalidated. If `event.resource` is provided
+   * for a non-delete operation, it becomes the cached read value; otherwise, if `event.id`
+   * is provided, the cached read is invalidated.
+   * @category Caching
+   * @param event - The resource modification to announce.
+   */
+  notifyResourceModified(event: ResourceModifiedEvent): void {
+    if (event.operation !== 'delete' && event.resource) {
+      this.cacheResource(event.resource, undefined);
+    } else if (event.id) {
+      this.deleteCacheEntry(this.fhirUrl(event.resourceType, event.id).toString());
+    }
+    this.invalidateSearches(event.resourceType);
+    this.dispatchResourceModified(event);
   }
 
   /**
@@ -2246,12 +2327,19 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
    * @param options - Optional fetch options.
    * @returns The result of the create operation.
    */
-  createResource<T extends Resource>(resource: T, options?: MedplumRequestOptions): Promise<WithId<T>> {
+  async createResource<T extends Resource>(resource: T, options?: MedplumRequestOptions): Promise<WithId<T>> {
     if (!resource.resourceType) {
       throw new Error('Missing resourceType');
     }
     this.invalidateSearches(resource.resourceType);
-    return this.post(this.fhirUrl(resource.resourceType), resource, undefined, options);
+    const result = await this.post(this.fhirUrl(resource.resourceType), resource, undefined, options);
+    this.dispatchResourceModified({
+      resourceType: resource.resourceType,
+      operation: 'create',
+      id: result?.id,
+      resource: result,
+    });
+    return result;
   }
 
   /**
@@ -2307,6 +2395,12 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
     this.cacheResource(result, options);
     this.invalidateUrl(this.fhirUrl(resource.resourceType, resource.id as string, '_history'));
     this.invalidateSearches(resource.resourceType);
+    this.dispatchResourceModified({
+      resourceType: resource.resourceType,
+      operation: 'create',
+      id: result?.id,
+      resource: result,
+    });
     return result;
   }
 
@@ -2327,6 +2421,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
     const url = this.fhirSearchUrl(resource.resourceType, query);
 
     let result = await this.put(url, resource, undefined, options);
+    const wasModified = result !== undefined;
     if (!result) {
       // On 304 not modified, result will be undefined
       // Return the user input instead
@@ -2335,6 +2430,14 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
     this.cacheResource(result, options);
     this.invalidateUrl(this.fhirUrl(resource.resourceType, resource.id as string, '_history'));
     this.invalidateSearches(resource.resourceType);
+    if (wasModified) {
+      this.dispatchResourceModified({
+        resourceType: resource.resourceType,
+        operation: 'update',
+        id: result.id,
+        resource: result,
+      });
+    }
     return result;
   }
 
@@ -2704,6 +2807,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
       throw new Error('Missing id');
     }
     let result = await this.put(this.fhirUrl(resource.resourceType, resource.id), resource, undefined, options);
+    const wasModified = result !== undefined;
     if (!result) {
       // On 304 not modified, result will be undefined
       // Return the user input instead
@@ -2712,6 +2816,14 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
     this.cacheResource(result, options);
     this.invalidateUrl(this.fhirUrl(resource.resourceType, resource.id, '_history'));
     this.invalidateSearches(resource.resourceType);
+    if (wasModified) {
+      this.dispatchResourceModified({
+        resourceType: resource.resourceType,
+        operation: 'update',
+        id: result.id,
+        resource: result,
+      });
+    }
     return result;
   }
 
@@ -2750,6 +2862,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
     this.cacheResource(result, options);
     this.invalidateUrl(this.fhirUrl(resourceType, id, '_history'));
     this.invalidateSearches(resourceType);
+    this.dispatchResourceModified({ resourceType, operation: 'patch', id, resource: result });
     return result;
   }
 
@@ -2770,10 +2883,12 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
    * @param options - Optional fetch options.
    * @returns The result of the delete operation.
    */
-  deleteResource(resourceType: ResourceType, id: string, options?: MedplumRequestOptions): Promise<any> {
+  async deleteResource(resourceType: ResourceType, id: string, options?: MedplumRequestOptions): Promise<any> {
     this.deleteCacheEntry(this.fhirUrl(resourceType, id).toString());
     this.invalidateSearches(resourceType);
-    return this.delete(this.fhirUrl(resourceType, id), options);
+    const result = await this.delete(this.fhirUrl(resourceType, id), options);
+    this.dispatchResourceModified({ resourceType, operation: 'delete', id });
+    return result;
   }
 
   /**
@@ -3304,7 +3419,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
       headers['Accept'] = '*/*';
     }
 
-    this.addFetchOptionsDefaults(options);
+    this.addFetchOptionsDefaults(options, url.toString());
     return this.fetchWithRetry(url.toString(), options);
   }
 
@@ -3453,7 +3568,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
    * @returns The response body.
    */
   async startAsyncRequest<T>(url: string, options: MedplumRequestOptions = {}): Promise<T> {
-    this.addFetchOptionsDefaults(options);
+    this.addFetchOptionsDefaults(options, url);
 
     const headers = options.headers as Record<string, string>;
     headers['Prefer'] = 'respond-async';
@@ -3471,7 +3586,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
   async wrappedFetch(url: string, options: RequestInit): Promise<Response> {
     await this.refreshIfExpired();
 
-    this.addFetchOptionsDefaults(options);
+    this.addFetchOptionsDefaults(options, url);
 
     return this.fetchWithRetry(url, options);
   }
@@ -3590,6 +3705,16 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
   }
 
   /**
+   * Dispatches a `resourceModified` event if there are any listeners.
+   * @param payload - The event payload.
+   */
+  private dispatchResourceModified(payload: ResourceModifiedEvent): void {
+    if (this.listenerCount('resourceModified') > 0) {
+      this.dispatchEvent({ type: 'resourceModified', payload });
+    }
+  }
+
+  /**
    * Makes an HTTP request.
    * @param url - The target URL.
    * @param options - Optional fetch request init options.
@@ -3601,7 +3726,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
 
     if (response.status === 401) {
       // Refresh and try again
-      return this.handleUnauthenticated(url, options);
+      return this.handleUnauthenticated<T>(url, options, state);
     }
 
     if (response.status === 204 || response.status === 304) {
@@ -3808,7 +3933,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
       await sleep(retryDelay, { signal: options.signal });
       state.pollCount++;
     }
-    return this.request(statusUrl, { ...options, method: 'GET' }, state);
+    return this.request(statusUrl, statusOptions, state);
   }
 
   /**
@@ -3844,15 +3969,13 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
     const batch: Bundle = {
       resourceType: 'Bundle',
       type: 'batch',
-      entry: entries.map(
-        (e): BundleEntry => ({
-          request: {
-            method: e.method,
-            url: e.url,
-          },
-          resource: e.options.body ? (JSON.parse(e.options.body as string) as Resource) : undefined,
-        })
-      ),
+      entry: entries.map((e): BundleEntry => ({
+        request: {
+          method: e.method,
+          url: e.url,
+        },
+        resource: e.options.body ? (JSON.parse(e.options.body as string) as Resource) : undefined,
+      })),
     };
 
     // Execute the batch request
@@ -3874,7 +3997,30 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
    * Adds default options to the fetch options.
    * @param options - The options to add defaults to.
    */
-  private addFetchOptionsDefaults(options: MedplumRequestOptions): void {
+  /**
+   * Determines if a URL is internal and should receive authentication credentials.
+   * @param url - The URL to check
+   * @returns True if the URL should receive credentials
+   */
+  private isInternalUrl(url: string): boolean {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return true; // Relative URLs are internal
+    }
+
+    try {
+      const target = new URL(url);
+      return (
+        url.startsWith(this.baseUrl) ||
+        url.startsWith(this.fhirBaseUrl) ||
+        (target.origin === new URL(this.baseUrl).origin &&
+          ensureTrailingSlash(target.pathname).startsWith(ensureTrailingSlash(new URL(this.baseUrl).pathname)))
+      );
+    } catch {
+      return false; // Treat unparseable URLs as external
+    }
+  }
+
+  private addFetchOptionsDefaults(options: MedplumRequestOptions, url: string): void {
     // Apply default headers
     Object.entries(this.defaultHeaders).forEach(([name, value]) => {
       this.setRequestHeader(options, name, value);
@@ -3890,18 +4036,17 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
       this.setRequestHeader(options, 'Content-Type', ContentType.FHIR_JSON, true);
     }
 
-    if (this.accessToken) {
-      this.setRequestHeader(options, 'Authorization', 'Bearer ' + this.accessToken);
-    } else if (this.basicAuth) {
-      this.setRequestHeader(options, 'Authorization', 'Basic ' + this.basicAuth);
-    }
+    // Only add authentication credentials for internal URLs
+    if (this.isInternalUrl(url)) {
+      if (this.accessToken) {
+        this.setRequestHeader(options, 'Authorization', 'Bearer ' + this.accessToken);
+      } else if (this.basicAuth) {
+        this.setRequestHeader(options, 'Authorization', 'Basic ' + this.basicAuth);
+      }
 
-    if (!options.cache) {
-      options.cache = 'no-cache';
-    }
-
-    if (!options.credentials) {
-      options.credentials = 'include';
+      if (!options.credentials) {
+        options.credentials = 'include';
+      }
     }
   }
 
@@ -3987,16 +4132,25 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
   }
 
   /**
-   * Handles an unauthenticated response from the server.
-   * First, tries to refresh the access token and retry the request.
-   * Otherwise, calls unauthenticated callbacks and rejects.
+   * Handles an unauthenticated (HTTP 401) response from the server.
+   *
+   * Bounded and terminal: at most `MAX_AUTH_ATTEMPTS` attempts per request (1 initial
+   * + 1 recovery, tracked via `RequestState.authAttempt`). The recovery re-mints via a
+   * forced {@link MedplumClient.refresh} (bypassing the {@link MedplumClient.isAuthenticated}
+   * short-circuit on the rejected token), single-flight so concurrent 401s share one re-mint.
+   * A second 401 is terminal: clear auth, `onUnauthenticated`, reject — never recurse.
+   *
    * @param url - The URL of the original request.
    * @param options - Optional fetch request init options.
+   * @param state - The request state carrying the per-request attempt count.
    * @returns The result of the retry.
    */
-  private handleUnauthenticated(url: string, options: MedplumRequestOptions): Promise<any> {
-    if (this.refresh()) {
-      return this.request(url, options);
+  private async handleUnauthenticated<T>(url: string, options: MedplumRequestOptions, state: RequestState): Promise<T> {
+    const attempt = state.authAttempt ?? 0;
+    const refreshPromise = attempt + 1 < MAX_AUTH_ATTEMPTS ? this.refresh(undefined, true) : undefined;
+    if (refreshPromise) {
+      await refreshPromise;
+      return this.request<T>(url, options, { ...state, authAttempt: attempt + 1 });
     }
     this.clear();
     this.onUnauthenticated?.();
@@ -4100,10 +4254,11 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
    * has already refreshed.
    *
    * @param gracePeriod - Optional grace period in milliseconds threaded through to the post-lock authentication check.
+   * @param force - When true, re-mint even if the current token still looks locally valid — used by the 401 recovery path, where the server has rejected a token that has not locally expired. A newer token already in storage (e.g. from a peer tab) is still preferred over a fresh mint.
    * @returns The refresh promise if available; otherwise undefined.
    * @see https://openid.net/specs/openid-connect-core-1_0.html#RefreshTokens
    */
-  private refresh(gracePeriod?: number): Promise<void> | undefined {
+  private refresh(gracePeriod?: number, force = false): Promise<void> | undefined {
     if (this.refreshPromise) {
       return this.refreshPromise;
     }
@@ -4112,7 +4267,7 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
       return undefined;
     }
 
-    this.refreshPromise = this.runRefreshWithLock(gracePeriod);
+    this.refreshPromise = this.runRefreshWithLock(gracePeriod, force);
     return this.refreshPromise;
   }
 
@@ -4121,17 +4276,22 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
    * Tabs that wait on the lock check storage on acquisition and skip the network call
    * if a peer tab has already produced a fresh access token.
    * @param gracePeriod - Optional grace period in milliseconds used by the post-lock authentication check to decide whether the current token still has enough life left to skip the network refresh.
+   * @param force - When true, bypass the post-lock expiry short-circuit for the current token (still preferring a newer token a peer tab produced).
    * @returns Promise that resolves when the refresh (or short-circuit) is complete.
    */
-  private async runRefreshWithLock(gracePeriod?: number): Promise<ProfileResource | undefined> {
+  private async runRefreshWithLock(gracePeriod?: number, force = false): Promise<ProfileResource | undefined> {
     const run = (): Promise<ProfileResource | undefined> => {
       // Re-read latest tokens from storage before hitting the network.
       // A peer tab may have completed a refresh while we were queued on the lock.
+      const previousAccessToken = this.accessToken;
       const latest = this.getActiveLogin();
       if (latest?.accessToken && latest.accessToken !== this.accessToken) {
         this.setAccessToken(latest.accessToken, latest.refreshToken);
       }
-      if (this.isAuthenticated(gracePeriod)) {
+      // A forced refresh (401 recovery) skips the expiry short-circuit for the rejected
+      // token, but still reuses a different token a peer already produced if it is valid.
+      const adoptedNewerToken = this.accessToken !== previousAccessToken;
+      if (this.isAuthenticated(gracePeriod) && (!force || adoptedNewerToken)) {
         return Promise.resolve(this.getProfile());
       }
 
@@ -4395,10 +4555,11 @@ export class MedplumClient extends TypedEventTarget<MedplumClientEventMap> {
    *
    * @category FHIRcast
    * @param subRequest - The `SubscriptionRequest` to use for connecting.
+   * @param options - Options for the underlying `ReconnectingWebSocket`.
    * @returns A `FhircastConnection` which emits lifecycle events for the `FHIRcast` WebSocket connection.
    */
-  fhircastConnect(subRequest: SubscriptionRequest): FhircastConnection {
-    return new FhircastConnection(subRequest);
+  fhircastConnect(subRequest: SubscriptionRequest, options?: FhircastConnectionOptions): FhircastConnection {
+    return new FhircastConnection(subRequest, options);
   }
 
   /**

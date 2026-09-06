@@ -3,7 +3,6 @@
 import type { Bundle } from '@medplum/fhirtypes';
 import { MockClient } from '@medplum/mock';
 import { MedplumProvider } from '@medplum/react-hooks';
-import { MemoryRouter } from 'react-router';
 import { act, render, screen } from '../test-utils/render';
 import type { ResourceHistoryTableProps } from './ResourceHistoryTable';
 import { ResourceHistoryTable } from './ResourceHistoryTable';
@@ -14,11 +13,9 @@ describe('ResourceHistoryTable', () => {
   async function setup(args: ResourceHistoryTableProps): Promise<void> {
     await act(async () => {
       render(
-        <MemoryRouter>
-          <MedplumProvider medplum={medplum}>
-            <ResourceHistoryTable {...args} />
-          </MedplumProvider>
-        </MemoryRouter>
+        <MedplumProvider medplum={medplum}>
+          <ResourceHistoryTable {...args} />
+        </MedplumProvider>
       );
     });
   }
@@ -61,8 +58,8 @@ describe('ResourceHistoryTable', () => {
             meta: {
               versionId: '1',
               lastUpdated: '2024-01-01T00:00:00Z',
-              author: { reference: 'Practitioner/123' },
-              onBehalfOf: { reference: 'Practitioner/123' },
+              author: { reference: 'Practitioner/124' },
+              onBehalfOf: { reference: 'Practitioner/124' },
             },
           },
         },

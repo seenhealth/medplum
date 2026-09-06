@@ -11,11 +11,25 @@ import {
 } from '@medplum/core';
 import type { Period } from '@medplum/fhirtypes';
 import { env } from 'node:process';
-import type { Client, Pool, PoolClient } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 import { getLogger, globalLogger } from '../logger';
 import type { ColumnSearchParameterImplementation } from './searchparameter';
 
 let DEBUG: string | undefined = env['SQL_DEBUG'];
+
+/**
+ * The query signature overload from pg.ClientBase['query'] most often used:
+ * @example
+ * ```typescript
+ *   query<R extends QueryResultRow = any, I = any[]>(
+ *     queryTextOrConfig: string | QueryConfig<I>,
+ *     values?: QueryConfigValues<I>
+ *   ) => Promise<QueryResult<R>>;
+ * ```
+ */
+export type PgQueryable = Pick<Pool, 'query'> & Pick<PoolClient, 'query'>;
+
+export const PUBLIC_SCHEMA = 'public';
 
 export function setSqlDebug(value: string | undefined): void {
   DEBUG = value;
@@ -69,6 +83,13 @@ export const Operator = {
     sql.appendColumn(column);
     sql.append(' ILIKE ');
     sql.param(parameter as string);
+  },
+  UNACCENT_ILIKE: (sql: SqlBuilder, column: Column, parameter: any, _paramType?: string) => {
+    sql.append(`${MedplumUnaccentFn.name}(`);
+    sql.appendColumn(column);
+    sql.append(`) ILIKE ${MedplumUnaccentFn.name}(`);
+    sql.param(parameter as string);
+    sql.append(')');
   },
   '<': simpleBinaryOperator('<'),
   '<=': simpleBinaryOperator('<='),
@@ -234,7 +255,7 @@ abstract class Executable implements Expression {
     throw new Error('Method not implemented');
   }
 
-  async execute<T = any>(conn: Pool | PoolClient): Promise<T[]> {
+  async execute<T = any>(conn: PgQueryable): Promise<T[]> {
     const sql = new SqlBuilder();
     sql.appendExpression(this);
     return (await sql.execute(conn)).rows;
@@ -378,7 +399,7 @@ export class TypedCondition<T extends keyof typeof Operator> extends Condition {
   }
 }
 
-export abstract class Connective implements Expression {
+abstract class Connective implements Expression {
   readonly keyword: string;
   readonly expressions: Expression[];
 
@@ -466,7 +487,7 @@ export class UnionAllBuilder {
     this.queryCount++;
   }
 
-  async execute(conn: Pool | PoolClient): Promise<any[]> {
+  async execute(conn: PgQueryable): Promise<any[]> {
     return (await this.sql.execute(conn)).rows;
   }
 }
@@ -632,7 +653,7 @@ export class SqlBuilder {
     return this.values;
   }
 
-  async execute(conn: Client | Pool | PoolClient): Promise<{ rowCount: number; rows: any[] }> {
+  async execute(conn: PgQueryable): Promise<{ rowCount: number; rows: any[] }> {
     const sql = this.toString();
     let startTime = 0;
     if (this.debug) {
@@ -688,33 +709,35 @@ export function normalizeDatabaseError(err: any): OperationOutcomeError {
     return err;
   }
 
-  // Handle known Postgres error codes
-  // @see https://www.postgresql.org/docs/16/errcodes-appendix.html
-  switch (err?.code) {
-    case PostgresError.UniqueViolation:
-      // Duplicate key error -> 409 Conflict
-      // @see https://github.com/brianc/node-postgres/issues/1602
-      return new OperationOutcomeError(conflict(err.detail), err);
-    case PostgresError.SerializationFailure:
-      // Transaction rollback due to serialization error -> 409 Conflict
-      return new OperationOutcomeError(conflict(err.message, err.code), err);
-    case PostgresError.QueryCanceled:
-      // Statement timeout -> 504 Gateway Timeout
-      getLogger().warn('Database statement timeout', { error: err.message, stack: err.stack, code: err.code });
-      return new OperationOutcomeError(serverTimeout(err.message), err);
-    case PostgresError.InFailedSqlTransaction:
-      getLogger().warn('Statement in failed transaction', { stack: err.stack });
-      return new OperationOutcomeError(normalizeOperationOutcome(err), err);
-    case PostgresError.DatetimeFieldOverflow:
-      // Date/time value out of range (e.g. Feb 29 on a non-leap year) -> 400 Bad Request
-      return new OperationOutcomeError(badRequest(err.message), err);
+  if (err.code) {
+    // Handle known Postgres error codes
+    // @see https://www.postgresql.org/docs/16/errcodes-appendix.html
+    switch (err.code) {
+      case PostgresError.UniqueViolation:
+        // Duplicate key error -> 409 Conflict
+        // @see https://github.com/brianc/node-postgres/issues/1602
+        return new OperationOutcomeError(conflict(err.detail), err);
+      case PostgresError.SerializationFailure:
+        // Transaction rollback due to serialization error -> 409 Conflict
+        return new OperationOutcomeError(conflict(err.message, err.code), err);
+      case PostgresError.QueryCanceled:
+        // Statement timeout -> 504 Gateway Timeout
+        getLogger().warn('Database statement timeout', { error: err.message, stack: err.stack, code: err.code });
+        return new OperationOutcomeError(serverTimeout(err.message), err);
+      case PostgresError.InFailedSqlTransaction:
+        getLogger().warn('Statement in failed transaction', { stack: err.stack });
+        return new OperationOutcomeError(normalizeOperationOutcome(err), err);
+      case PostgresError.DatetimeFieldOverflow:
+        // Date/time value out of range (e.g. Feb 29 on a non-leap year) -> 400 Bad Request
+        return new OperationOutcomeError(badRequest(err.message), err);
+    }
+    getLogger().error('Database error', { error: err.message, stack: err.stack, code: err.code });
   }
 
-  getLogger().error('Database error', { error: err.message, stack: err.stack, code: err.code });
   return new OperationOutcomeError(normalizeOperationOutcome(err), err);
 }
 
-export abstract class BaseQuery extends Executable {
+abstract class BaseQuery extends Executable {
   readonly actualTableName: string;
   readonly predicate: Conjunction;
   explain: boolean | string[] = false;
@@ -809,6 +832,11 @@ export class SelectQuery extends BaseQuery {
 
   column(column: Column | string): this {
     this.columns.push(getColumn(column, this.effectiveTableName));
+    return this;
+  }
+
+  clearColumns(): this {
+    this.columns.length = 0;
     return this;
   }
 
@@ -1224,7 +1252,7 @@ export class InsertQuery extends BaseQuery {
     }
   }
 
-  async execute(conn: Pool | PoolClient): Promise<any[]> {
+  async execute(conn: PgQueryable): Promise<any[]> {
     if (!this.values?.length) {
       return [];
     }
@@ -1362,12 +1390,15 @@ export const TokenArrayToTextFn: SqlFunctionDefinition = {
     AS $function$SELECT e'\x03'||array_to_string($1, e'\x03')||e'\x03'$function$`,
 };
 
-export function isValidTableName(tableName: string): boolean {
-  return /^\w+$/.test(tableName);
-}
+export const MedplumUnaccentFn: SqlFunctionDefinition = {
+  name: 'medplum_unaccent',
+  createQuery: `CREATE FUNCTION medplum_unaccent(text)
+    RETURNS text LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT
+    AS $function$SELECT public.unaccent('public.unaccent', normalize($1, NFC))$function$`,
+};
 
-export function isValidColumnName(columnName: string): boolean {
-  return /^\w+$/.test(columnName);
+export function isValidPostgresIdentifier(identifier: string): boolean {
+  return /^\w+$/.test(identifier);
 }
 
 export function replaceNullWithUndefinedInRows(rows: any[]): void {
@@ -1436,4 +1467,8 @@ export function truncateTextColumn(value: string | null | undefined): string | u
   // never producing a partial multi-byte sequence.
   const { written } = truncationEncoder.encodeInto(value, truncationBuffer);
   return truncationDecoder.decode(truncationBuffer.subarray(0, written));
+}
+
+export function isPoolClient(client: PgQueryable): client is PoolClient {
+  return 'release' in client && typeof client.release === 'function';
 }

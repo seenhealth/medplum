@@ -18,7 +18,7 @@ import * as migrateModule from '../migrations/migrate';
 import * as migrationUtils from '../migrations/migration-utils';
 import type { PhasalMigration } from '../migrations/types';
 import type { ServerRegistryInfo } from '../server-registry';
-import { getRegisteredServers } from '../server-registry';
+import * as serverRegistry from '../server-registry';
 import { withTestContext } from '../test.setup';
 import * as versionModule from '../util/version';
 import { getServerVersion } from '../util/version';
@@ -31,8 +31,6 @@ import {
   runCustomMigration,
 } from './post-deploy-migration';
 import { queueRegistry } from './utils';
-
-jest.mock('../server-registry');
 
 describe('Post-Deploy Migration Worker', () => {
   let config: MedplumServerConfig;
@@ -48,8 +46,7 @@ describe('Post-Deploy Migration Worker', () => {
   });
 
   beforeEach(() => {
-    jest.resetModules();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockRegisteredServers = [
       {
         id: 'test-id',
@@ -61,9 +58,9 @@ describe('Post-Deploy Migration Worker', () => {
     ];
 
     // suppress error log output during testing
-    jest.spyOn(globalLogger, 'error').mockImplementation(() => {});
+    vi.spyOn(globalLogger, 'error').mockImplementation(() => {});
 
-    (getRegisteredServers as jest.Mock).mockImplementation(() => mockRegisteredServers);
+    vi.spyOn(serverRegistry, 'getRegisteredServers').mockImplementation(async () => mockRegisteredServers);
   });
 
   afterEach(async () => {
@@ -93,11 +90,11 @@ describe('Post-Deploy Migration Worker', () => {
     return queue;
   }
 
-  test('prepareCustomMigrationJobData and addPostDeployMigrationJobData', async () => {
+  test('prepareCustomMigrationJobData and addPostDeployMigrationJobData without deduplication', async () => {
     await initWorkers(config);
 
     const queue = getQueueFromRegistryOrThrow();
-    const addSpy = jest.mocked(queue.add).mockImplementation(async (jobName, jobData, options) => {
+    const addSpy = vi.mocked(queue.add).mockImplementation(async (jobName, jobData, options) => {
       return {
         id: '123',
         name: jobName,
@@ -130,9 +127,7 @@ describe('Post-Deploy Migration Worker', () => {
           data: data1,
         })
       );
-      expect(addSpy).toHaveBeenCalledWith('PostDeployMigrationJobData', data1, {
-        deduplication: { id: expect.any(String) },
-      });
+      expect(addSpy).toHaveBeenCalledWith('PostDeployMigrationJobData', data1, undefined);
     });
 
     // outside of withTestContext, requestId and traceId are undefined
@@ -150,16 +145,14 @@ describe('Post-Deploy Migration Worker', () => {
         data: data2,
       })
     );
-    expect(addSpy).toHaveBeenCalledWith('PostDeployMigrationJobData', data2, {
-      deduplication: { id: expect.any(String) },
-    });
+    expect(addSpy).toHaveBeenCalledWith('PostDeployMigrationJobData', data2, undefined);
   });
 
   test.each<[string, Partial<AsyncJob>, boolean]>([
     ['is not active', { status: 'cancelled' }, false],
     ['has no dataVersion', { dataVersion: undefined }, true],
   ])('Job processor skips job if AsyncJob %s', async (_, jobProps, shouldThrow) => {
-    const getPostDeployMigrationSpy = jest.spyOn(migrationUtils, 'getPostDeployMigration');
+    const getPostDeployMigrationSpy = vi.spyOn(migrationUtils, 'getPostDeployMigration');
 
     const mockAsyncJob = await systemRepo.createResource<AsyncJob>({
       resourceType: 'AsyncJob',
@@ -196,14 +189,14 @@ describe('Post-Deploy Migration Worker', () => {
   });
 
   test('Job processor runs dynamic migration when AsyncJob is active', async () => {
-    const getPostDeployMigrationSpy = jest.spyOn(migrationUtils, 'getPostDeployMigration').mockImplementation(() => {
+    const getPostDeployMigrationSpy = vi.spyOn(migrationUtils, 'getPostDeployMigration').mockImplementation(() => {
       throw new Error('Should not be called');
     });
 
-    const executeMigrationActionsSpy = jest
+    const executeMigrationActionsSpy = vi
       .spyOn(migrateModule, 'executeMigrationActions')
       .mockImplementation(async (_client, results) => {
-        results.push({ name: 'some-action', durationMs: 10 });
+        results.push({ name: 'some-action', durationMs: 10, notices: 'index "some_index" was reindexed' });
       });
 
     const mockAsyncJob = await systemRepo.createResource<AsyncJob>({
@@ -249,7 +242,13 @@ describe('Post-Deploy Migration Worker', () => {
     const updatedAsyncJob = await systemRepo.readResource<AsyncJob>('AsyncJob', mockAsyncJob.id);
     expect(updatedAsyncJob.status).toBe('completed');
     expect(updatedAsyncJob.output?.parameter).toEqual([
-      { name: 'some-action', part: [{ name: 'durationMs', valueInteger: 10 }] },
+      {
+        name: 'some-action',
+        part: [
+          { name: 'durationMs', valueInteger: 10 },
+          { name: 'notices', valueString: 'index "some_index" was reindexed' },
+        ],
+      },
     ]);
 
     getPostDeployMigrationSpy.mockRestore();
@@ -257,11 +256,11 @@ describe('Post-Deploy Migration Worker', () => {
   });
 
   test('Job processor runs dynamic migration with both preDeploy and postDeploy actions', async () => {
-    const getPostDeployMigrationSpy = jest.spyOn(migrationUtils, 'getPostDeployMigration').mockImplementation(() => {
+    const getPostDeployMigrationSpy = vi.spyOn(migrationUtils, 'getPostDeployMigration').mockImplementation(() => {
       throw new Error('Should not be called');
     });
 
-    const executeMigrationActionsSpy = jest
+    const executeMigrationActionsSpy = vi
       .spyOn(migrateModule, 'executeMigrationActions')
       .mockImplementation(async (_client, results) => {
         results.push({ name: 'executed-action', durationMs: 5 });
@@ -327,8 +326,8 @@ describe('Post-Deploy Migration Worker', () => {
   test('Job processor runs migration when AsyncJob is active', async () => {
     const mockCustomMigration: CustomPostDeployMigration = {
       type: 'custom',
-      prepareJobData: jest.fn(),
-      run: jest.fn().mockImplementation(async (repo, job, jobData) => {
+      prepareJobData: vi.fn(),
+      run: vi.fn().mockImplementation(async (repo, job, jobData) => {
         return runCustomMigration(repo, job, jobData, async (_client, results) => {
           results.push({ name: 'first', durationMs: 111 });
           results.push({ name: 'second', durationMs: 222 });
@@ -336,7 +335,7 @@ describe('Post-Deploy Migration Worker', () => {
       }),
     };
 
-    const getPostDeployMigrationSpy = jest
+    const getPostDeployMigrationSpy = vi
       .spyOn(migrationUtils, 'getPostDeployMigration')
       .mockReturnValue(mockCustomMigration);
 
@@ -391,15 +390,15 @@ describe('Post-Deploy Migration Worker', () => {
 
       const mockCustomMigration: CustomPostDeployMigration = {
         type: 'custom',
-        prepareJobData: jest.fn(),
-        run: jest.fn().mockImplementation(async (repo, job, jobData) => {
+        prepareJobData: vi.fn(),
+        run: vi.fn().mockImplementation(async (repo, job, jobData) => {
           return runCustomMigration(repo, job, jobData, async (_client, results) => {
             results.push({ name: 'first', durationMs: 111 });
             results.push({ name: 'second', durationMs: 222 });
           });
         }),
       };
-      const getPostDeployMigrationSpy = jest
+      const getPostDeployMigrationSpy = vi
         .spyOn(migrationUtils, 'getPostDeployMigration')
         .mockReturnValue(mockCustomMigration);
 
@@ -459,8 +458,8 @@ describe('Post-Deploy Migration Worker', () => {
 
     const mockCustomMigration: CustomPostDeployMigration = {
       type: 'custom',
-      prepareJobData: jest.fn(),
-      run: jest.fn().mockImplementation(async (repo, job, jobData) => {
+      prepareJobData: vi.fn(),
+      run: vi.fn().mockImplementation(async (repo, job, jobData) => {
         return runCustomMigration(repo, job, jobData, async (_client, results) => {
           results.push({ name: 'first', durationMs: 111 });
           results.push({ name: 'second', durationMs: 222 });
@@ -493,7 +492,7 @@ describe('Post-Deploy Migration Worker', () => {
   ])('Job process %s ', async (_msg, includeOldServer) => {
     const mockServerVersion = '4.3.0';
     const oldServerVersion = '4.2.2';
-    jest.spyOn(versionModule, 'getServerVersion').mockImplementation(() => mockServerVersion);
+    vi.spyOn(versionModule, 'getServerVersion').mockImplementation(() => mockServerVersion);
     await initWorkers(config);
 
     const mockAsyncJob = await systemRepo.createResource<AsyncJob>({
@@ -507,15 +506,15 @@ describe('Post-Deploy Migration Worker', () => {
 
     const mockCustomMigration: CustomPostDeployMigration = {
       type: 'custom',
-      prepareJobData: jest.fn(),
-      run: jest.fn().mockImplementation(async (repo, job, jobData) => {
+      prepareJobData: vi.fn(),
+      run: vi.fn().mockImplementation(async (repo, job, jobData) => {
         return runCustomMigration(repo, job, jobData, async (_client, results) => {
           results.push({ name: 'first', durationMs: 111 });
           results.push({ name: 'second', durationMs: 222 });
         });
       }),
     };
-    const getPostDeployMigrationSpy = jest
+    const getPostDeployMigrationSpy = vi
       .spyOn(migrationUtils, 'getPostDeployMigration')
       .mockReturnValue(mockCustomMigration);
 
@@ -576,7 +575,7 @@ describe('Post-Deploy Migration Worker', () => {
       request: '/admin/super/migrate',
     });
 
-    const mockCallback = jest.fn().mockImplementation(async (_client, results) => {
+    const mockCallback = vi.fn().mockImplementation(async (_client, results) => {
       results.push({ name: 'testAction', durationMs: 100 });
     });
 

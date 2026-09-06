@@ -3,7 +3,10 @@
 import { ContentType } from '@medplum/core';
 import type { OperationOutcome, Parameters } from '@medplum/fhirtypes';
 import express from 'express';
+import type { Response } from 'supertest';
 import request from 'supertest';
+import type { Mock } from 'vitest';
+import { vi } from 'vitest';
 import { initApp, shutdownApp } from '../../app';
 import { loadTestConfig } from '../../config/loader';
 import { createTestProject, initTestAuth } from '../../test.setup';
@@ -60,14 +63,14 @@ describe('AI Operation', () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('Happy path', async () => {
     const mockFetchResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [
           {
             message: {
@@ -91,7 +94,7 @@ describe('AI Operation', () => {
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -115,12 +118,22 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
     expect(res.body.resourceType).toBe('Parameters');
-    expect((res.body as Parameters).parameter).toHaveLength(2);
+    expect((res.body as Parameters).parameter).toHaveLength(4);
     expect((res.body as Parameters).parameter?.[0]?.name).toBe('content');
     expect((res.body as Parameters).parameter?.[0]?.valueString).toBe('Here are the matching patients');
     expect((res.body as Parameters).parameter?.[1]?.name).toBe('tool_calls');
+
+    // The normalized view is accompanied by the provider's own payload, so a caller can reach
+    // what normalizing omits without a second request
+    const params = res.body as Parameters;
+    expect(params.parameter?.find((p) => p.name === 'provider')?.valueString).toBe('openai');
+    const raw = JSON.parse(params.parameter?.find((p) => p.name === 'raw')?.valueString as string);
+    expect(raw.choices[0].message.content).toBe('Here are the matching patients');
+    expect(raw.choices[0].message.tool_calls[0].function.arguments).toBe(
+      JSON.stringify({ method: 'GET', path: 'Patient?phone=718-564-9483' })
+    );
 
     const toolCalls = JSON.parse((res.body as Parameters).parameter?.[1]?.valueString as string);
     expect(toolCalls).toHaveLength(1);
@@ -144,7 +157,7 @@ describe('AI Operation', () => {
     const mockFetchResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [
           {
             message: {
@@ -179,7 +192,7 @@ describe('AI Operation', () => {
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -205,7 +218,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
     expect(res.body.resourceType).toBe('Parameters');
 
     const params = res.body as Parameters;
@@ -247,7 +260,7 @@ describe('AI Operation', () => {
     const mockFetchResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [
           {
             message: {
@@ -259,7 +272,7 @@ describe('AI Operation', () => {
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -283,7 +296,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
     expect(res.body.resourceType).toBe('Parameters');
     expect((res.body as Parameters).parameter?.[0]?.valueString).toBe('I can help you with FHIR queries.');
     // When there are no tool calls, the implementation doesn't return a tool_calls parameter
@@ -317,7 +330,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(403);
+    expect(res).toHaveStatus(403);
   });
 
   test('Missing API key in project settings', async () => {
@@ -347,7 +360,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect((res.body as OperationOutcome).issue?.[0]?.details?.text).toBe(
       'OpenAI API key not configured in project secrets'
     );
@@ -368,7 +381,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect((res.body as OperationOutcome).issue?.[0]?.details?.text).toBe(
       'Expected 1 value(s) for input parameter model, but 0 provided'
     );
@@ -389,7 +402,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect((res.body as OperationOutcome).issue?.[0]?.details?.text).toBe(
       'Expected 1 value(s) for input parameter messages, but 0 provided'
     );
@@ -414,7 +427,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect((res.body as OperationOutcome).issue?.[0]?.details?.text).toBe('Messages must be an array');
   });
 
@@ -437,7 +450,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect((res.body as OperationOutcome).issue?.[0]?.severity).toBe('error');
   });
 
@@ -464,7 +477,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect((res.body as OperationOutcome).issue?.[0]?.severity).toBe('error');
   });
 
@@ -472,7 +485,7 @@ describe('AI Operation', () => {
     const mockFetchResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [
           {
             message: {
@@ -484,7 +497,7 @@ describe('AI Operation', () => {
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -504,11 +517,11 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
     expect(res.body.resourceType).toBe('Parameters');
     expect((res.body as Parameters).parameter?.[0]?.valueString).toBe('I can help you with general questions.');
 
-    const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+    const fetchCall = (global.fetch as Mock).mock.calls[0];
     const bodyParam = JSON.parse(fetchCall[1].body);
     expect(bodyParam.tools).toBeUndefined();
     expect(bodyParam.tool_choice).toBeUndefined();
@@ -518,12 +531,12 @@ describe('AI Operation', () => {
     const mockFetchResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [{ message: { content: 'ok', tool_calls: null } }],
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -541,10 +554,120 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
-    const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+    expect(res).toHaveStatus(200);
+    const fetchCall = (global.fetch as Mock).mock.calls[0];
     const bodyParam = JSON.parse(fetchCall[1].body);
     expect(bodyParam.temperature).toBe(0.3);
+  });
+
+  test('Defaults to OpenAI when no base URL secret is set', async () => {
+    const mockFetchResponse = {
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({
+        choices: [{ message: { content: 'ok', tool_calls: null } }],
+      }),
+    };
+
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
+
+    const res = await request(app)
+      .post(`/fhir/R4/$ai`)
+      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Content-Type', ContentType.FHIR_JSON)
+      .send({
+        resourceType: 'Parameters',
+        parameter: [
+          { name: 'messages', valueString: JSON.stringify([{ role: 'user', content: 'hi' }]) },
+          { name: 'model', valueString: 'gpt-4' },
+        ],
+      });
+
+    expect(res).toHaveStatus(200);
+    expect((global.fetch as Mock).mock.calls[0][0]).toBe('https://api.openai.com/v1/chat/completions');
+  });
+
+  test('Uses custom base URL secret (LiteLLM proxy)', async () => {
+    const litellmAccessToken = await initTestAuth({
+      project: {
+        features: ['ai'],
+        secret: [
+          { name: 'OPENAI_API_KEY', valueString: 'sk-litellm-key' },
+          { name: 'LLM_BASE_URL', valueString: 'https://litellm.example.com/v1' },
+        ],
+      },
+    });
+
+    const mockFetchResponse = {
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({
+        choices: [{ message: { content: 'ok', tool_calls: null } }],
+      }),
+    };
+
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
+
+    const res = await request(app)
+      .post(`/fhir/R4/$ai`)
+      .set('Authorization', 'Bearer ' + litellmAccessToken)
+      .set('Content-Type', ContentType.FHIR_JSON)
+      .send({
+        resourceType: 'Parameters',
+        parameter: [
+          { name: 'messages', valueString: JSON.stringify([{ role: 'user', content: 'hi' }]) },
+          { name: 'model', valueString: 'claude-3-5-sonnet' },
+        ],
+      });
+
+    expect(res).toHaveStatus(200);
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://litellm.example.com/v1/chat/completions',
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer sk-litellm-key',
+          'Content-Type': 'application/json',
+        },
+      })
+    );
+  });
+
+  test('Normalizes trailing slash on base URL secret', async () => {
+    const litellmAccessToken = await initTestAuth({
+      project: {
+        features: ['ai'],
+        secret: [
+          { name: 'OPENAI_API_KEY', valueString: 'sk-litellm-key' },
+          { name: 'LLM_BASE_URL', valueString: 'https://litellm.example.com/v1/' },
+        ],
+      },
+    });
+
+    const mockFetchResponse = {
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({
+        choices: [{ message: { content: 'ok', tool_calls: null } }],
+      }),
+    };
+
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
+
+    const res = await request(app)
+      .post(`/fhir/R4/$ai`)
+      .set('Authorization', 'Bearer ' + litellmAccessToken)
+      .set('Content-Type', ContentType.FHIR_JSON)
+      .send({
+        resourceType: 'Parameters',
+        parameter: [
+          { name: 'messages', valueString: JSON.stringify([{ role: 'user', content: 'hi' }]) },
+          { name: 'model', valueString: 'gpt-4' },
+        ],
+      });
+
+    expect(res).toHaveStatus(200);
+    expect((global.fetch as Mock).mock.calls[0][0]).toBe('https://litellm.example.com/v1/chat/completions');
   });
 
   test('Unsupported content type', async () => {
@@ -554,7 +677,7 @@ describe('AI Operation', () => {
       .set('Content-Type', ContentType.TEXT)
       .send('hello');
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect((res.body as OperationOutcome).issue?.[0]?.details?.text).toContain(
       'Expected at least 1 value(s) for required input parameter'
     );
@@ -569,7 +692,7 @@ describe('AI Operation', () => {
         resourceType: 'Patient',
       });
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect((res.body as OperationOutcome).issue?.[0]?.details?.text).toContain(
       'Expected at least 1 value(s) for required input parameter'
     );
@@ -580,14 +703,14 @@ describe('AI Operation', () => {
       ok: false,
       status: 401,
       statusText: 'Unauthorized',
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         error: {
           message: 'Incorrect API key provided',
         },
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -607,14 +730,14 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
   });
 
   test('Handles multiple messages in conversation', async () => {
     const mockFetchResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [
           {
             message: {
@@ -626,7 +749,7 @@ describe('AI Operation', () => {
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const messages = [
       { role: 'user', content: 'First message' },
@@ -656,9 +779,9 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
 
-    const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+    const fetchCall = (global.fetch as Mock).mock.calls[0];
     const bodyParam = JSON.parse(fetchCall[1].body);
     expect(bodyParam.messages).toEqual(messages);
   });
@@ -667,7 +790,7 @@ describe('AI Operation', () => {
     const mockFetchResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [
           {
             message: {
@@ -688,7 +811,7 @@ describe('AI Operation', () => {
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -712,7 +835,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
     const params = res.body as Parameters;
 
     const contentParam = params.parameter?.find((p) => p.name === 'content');
@@ -727,7 +850,7 @@ describe('AI Operation', () => {
     const mockFetchResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [
           {
             message: {
@@ -739,7 +862,7 @@ describe('AI Operation', () => {
       }),
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -763,9 +886,9 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
 
-    const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+    const fetchCall = (global.fetch as Mock).mock.calls[0];
     const bodyParam = JSON.parse(fetchCall[1].body);
     expect(bodyParam.model).toBe('gpt-3.5-turbo');
   });
@@ -775,9 +898,9 @@ describe('AI Operation', () => {
       ok: true,
       status: 200,
       body: {
-        pipeThrough: jest.fn().mockReturnValue({
+        pipeThrough: vi.fn().mockReturnValue({
           getReader: () => ({
-            read: jest
+            read: vi
               .fn()
               .mockResolvedValueOnce({
                 done: false,
@@ -791,13 +914,13 @@ describe('AI Operation', () => {
                 done: true,
                 value: undefined,
               }),
-            releaseLock: jest.fn(),
+            releaseLock: vi.fn(),
           }),
         }),
       },
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockStreamResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockStreamResponse);
 
     const res = await request(app)
       .post(`/fhir/R4/$ai`)
@@ -818,7 +941,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
     expect(res.headers['content-type']).toBe('text/event-stream');
 
     // Parse SSE format - should not be Parameters format
@@ -859,9 +982,9 @@ describe('AI Operation', () => {
 
     let chunkIndex = 0;
     const mockReadableStream = {
-      pipeThrough: jest.fn().mockReturnValue({
-        getReader: jest.fn().mockReturnValue({
-          read: jest.fn().mockImplementation(async () => {
+      pipeThrough: vi.fn().mockReturnValue({
+        getReader: vi.fn().mockReturnValue({
+          read: vi.fn().mockImplementation(async () => {
             if (chunkIndex < streamChunks.length) {
               // Simulate network delay between chunks
               await new Promise<void>((resolve) => {
@@ -873,7 +996,7 @@ describe('AI Operation', () => {
             }
             return { done: true };
           }),
-          releaseLock: jest.fn(),
+          releaseLock: vi.fn(),
         }),
       }),
     };
@@ -884,7 +1007,7 @@ describe('AI Operation', () => {
       body: mockReadableStream,
     };
 
-    global.fetch = jest.fn().mockResolvedValue(mockFetchResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockFetchResponse);
 
     // Make a real request to the endpoint and check the progressive streaming
     const res = await request(app)
@@ -906,7 +1029,7 @@ describe('AI Operation', () => {
         ],
       });
 
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
     expect(res.headers['content-type']).toBe('text/event-stream');
 
     // Verify response is SSE format, not Parameters format
@@ -943,5 +1066,257 @@ describe('AI Operation', () => {
     // Verify no Parameters format in response
     expect(res.text).not.toContain('"resourceType":"Parameters"');
     expect(res.text).not.toContain('"parameter"');
+  });
+
+  describe('Streaming with tool calls', () => {
+    /**
+     * Builds a mock fetch response that yields `chunks` from the SSE reader, one read at a time.
+     * @param chunks - Raw SSE text to emit, in order
+     * @returns A mock fetch response shaped like the one `callAI` returns for streams
+     */
+    function mockSseStream(chunks: string[]): object {
+      let index = 0;
+      return {
+        ok: true,
+        status: 200,
+        body: {
+          pipeThrough: vi.fn().mockReturnValue({
+            getReader: vi.fn().mockReturnValue({
+              read: vi.fn().mockImplementation(async () => {
+                if (index < chunks.length) {
+                  return { done: false, value: chunks[index++] };
+                }
+                return { done: true, value: undefined };
+              }),
+              releaseLock: vi.fn(),
+            }),
+          }),
+        },
+      };
+    }
+
+    /**
+     * Splits an SSE response body into its `data:` payloads.
+     * @param text - The raw response body
+     * @returns The payloads verbatim, and the subset parsed as JSON (excluding `[DONE]`)
+     */
+    function parseSse(text: string): { payloads: string[]; frames: Record<string, unknown>[] } {
+      const payloads = text
+        .split('\n\n')
+        .filter((line: string) => line.startsWith('data: '))
+        .map((line: string) => line.slice(6).trim());
+      const frames: Record<string, unknown>[] = [];
+      for (const payload of payloads) {
+        if (payload === '[DONE]') {
+          continue;
+        }
+        frames.push(JSON.parse(payload) as Record<string, unknown>);
+      }
+      return { payloads, frames };
+    }
+
+    /**
+     * Selects the frames of one kind, since every frame carries exactly one key.
+     * @param frames - The parsed frames
+     * @param key - The frame key to keep, e.g. `content` or `tool_calls`
+     * @returns The values carried under `key`, in order
+     */
+    function framesOfKind(frames: Record<string, unknown>[], key: string): unknown[] {
+      return frames.filter((frame) => key in frame).map((frame) => frame[key]);
+    }
+
+    /**
+     * Sends a streaming `$ai` request.
+     * @param params - Parameters to send, beyond the required messages and model
+     * @returns The supertest response
+     */
+    async function postStreaming(params: { name: string; valueString: string }[] = []): Promise<Response> {
+      return request(app)
+        .post('/fhir/R4/$ai')
+        .set('Authorization', 'Bearer ' + accessToken)
+        .set('Content-Type', ContentType.FHIR_JSON)
+        .set('Accept', 'text/event-stream')
+        .send({
+          resourceType: 'Parameters',
+          parameter: [
+            { name: 'messages', valueString: JSON.stringify([{ role: 'user', content: 'Find Frodo' }]) },
+            { name: 'model', valueString: 'gpt-4' },
+            ...params,
+          ],
+        });
+    }
+
+    test('Sends tools and stream together', async () => {
+      global.fetch = vi.fn().mockResolvedValue(mockSseStream([]));
+
+      const res = await postStreaming([{ name: 'tools', valueString: JSON.stringify(fhirTools) }]);
+      expect(res).toHaveStatus(200);
+
+      // Regression guard: tools used to be dropped whenever stream was set, which made
+      // streaming and tool calling mutually exclusive.
+      const body = JSON.parse((global.fetch as Mock).mock.calls[0][1].body);
+      expect(body.stream).toBe(true);
+      expect(body.tools).toStrictEqual(fhirTools);
+      expect(body.tool_choice).toBe('auto');
+    });
+
+    test('Reassembles a tool call split across chunks', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          mockSseStream([
+            'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_abc","type":"function","function":{"name":"fhir_request","arguments":""}}]}}]}\n\n',
+            'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\\"method\\":\\"GET\\","}}]}}]}\n\n',
+            'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\\"path\\":\\"Patient?name=Frodo\\"}"}}]}}]}\n\n',
+          ])
+        );
+
+      const res = await postStreaming([{ name: 'tools', valueString: JSON.stringify(fhirTools) }]);
+      expect(res).toHaveStatus(200);
+
+      const { payloads, frames } = parseSse(res.text);
+      const toolCallFrames = framesOfKind(frames, 'tool_calls');
+      expect(toolCallFrames).toHaveLength(1);
+      expect(toolCallFrames[0]).toStrictEqual([
+        {
+          id: 'call_abc',
+          type: 'function',
+          function: { name: 'fhir_request', arguments: { method: 'GET', path: 'Patient?name=Frodo' } },
+        },
+      ]);
+
+      // The client needs the completed call before it stops reading
+      expect(payloads[payloads.length - 1]).toBe('[DONE]');
+    });
+
+    test('Streams content and tool calls in the same turn', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          mockSseStream([
+            'data: {"choices":[{"delta":{"content":"Looking"}}]}\n\n',
+            'data: {"choices":[{"delta":{"content":" that up"}}]}\n\n',
+            'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"fhir_request","arguments":"{\\"method\\":\\"GET\\",\\"path\\":\\"Patient\\"}"}}]}}]}\n\n',
+          ])
+        );
+
+      const res = await postStreaming([{ name: 'tools', valueString: JSON.stringify(fhirTools) }]);
+      expect(res).toHaveStatus(200);
+
+      const { frames } = parseSse(res.text);
+      // Content forwards as it arrives; the tool call can only be sent once complete
+      expect(framesOfKind(frames, 'content')).toStrictEqual(['Looking', ' that up']);
+      expect(framesOfKind(frames, 'tool_calls')).toStrictEqual([
+        [
+          {
+            id: 'call_1',
+            type: 'function',
+            function: { name: 'fhir_request', arguments: { method: 'GET', path: 'Patient' } },
+          },
+        ],
+      ]);
+    });
+
+    test('Reassembles parallel tool calls independently', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          mockSseStream([
+            'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_a","type":"function","function":{"name":"fhir_request","arguments":"{\\"path\\":"}}]}}]}\n\n',
+            'data: {"choices":[{"delta":{"tool_calls":[{"index":1,"id":"call_b","type":"function","function":{"name":"fhir_request","arguments":"{\\"path\\":"}}]}}]}\n\n',
+            'data: {"choices":[{"delta":{"tool_calls":[{"index":1,"function":{"arguments":"\\"Task\\"}"}},{"index":0,"function":{"arguments":"\\"Patient\\"}"}}]}}]}\n\n',
+          ])
+        );
+
+      const res = await postStreaming([{ name: 'tools', valueString: JSON.stringify(fhirTools) }]);
+      expect(res).toHaveStatus(200);
+
+      const { frames } = parseSse(res.text);
+      const toolCallFrames = framesOfKind(frames, 'tool_calls');
+      expect(toolCallFrames).toHaveLength(1);
+      // Interleaved fragments must land on the call matching their index, not the latest one
+      expect(toolCallFrames[0]).toStrictEqual([
+        { id: 'call_a', type: 'function', function: { name: 'fhir_request', arguments: { path: 'Patient' } } },
+        { id: 'call_b', type: 'function', function: { name: 'fhir_request', arguments: { path: 'Task' } } },
+      ]);
+    });
+
+    test('Passes through arguments that never became valid JSON', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          mockSseStream([
+            'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_cut","type":"function","function":{"name":"fhir_request","arguments":"{\\"method\\":\\"GET\\""}}]}}]}\n\n',
+          ])
+        );
+
+      const res = await postStreaming([{ name: 'tools', valueString: JSON.stringify(fhirTools) }]);
+      expect(res).toHaveStatus(200);
+
+      const { frames } = parseSse(res.text);
+      // A truncated fragment is handed to the client as-is rather than throwing away the call
+      expect(framesOfKind(frames, 'tool_calls')).toStrictEqual([
+        [{ id: 'call_cut', type: 'function', function: { name: 'fhir_request', arguments: '{"method":"GET"' } }],
+      ]);
+    });
+
+    test('Forwards a chunk that carries no choices as raw only', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          mockSseStream([
+            'data: {"choices":[{"delta":{"content":"before"}}]}\n\n',
+            'data: {"usage":{"prompt_tokens":10,"completion_tokens":2}}\n\n',
+            'data: {"choices":[{"delta":{"content":"after"}}]}\n\n',
+          ])
+        );
+
+      const res = await postStreaming();
+      expect(res).toHaveStatus(200);
+
+      // A usage-only chunk must not abort the stream, and it produces no content frame. It does
+      // reach the client as raw: token usage is exactly what a caller cannot get any other way.
+      const { frames } = parseSse(res.text);
+      expect(framesOfKind(frames, 'content')).toStrictEqual(['before', 'after']);
+      expect(framesOfKind(frames, 'raw')).toContainEqual({ usage: { prompt_tokens: 10, completion_tokens: 2 } });
+    });
+
+    test('Reports an upstream failure in-band and still closes the stream', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        json: vi.fn().mockResolvedValue({ error: { message: 'Incorrect API key provided' } }),
+      });
+
+      const res = await postStreaming([{ name: 'tools', valueString: JSON.stringify(fhirTools) }]);
+
+      // The 200 and SSE headers are already committed, so the failure cannot become an HTTP
+      // error status — it has to arrive as a frame, and the stream must still terminate.
+      expect(res).toHaveStatus(200);
+
+      const { payloads, frames } = parseSse(res.text);
+      expect(frames).toHaveLength(1);
+      expect(frames[0].error).toContain('401');
+      expect(payloads[payloads.length - 1]).toBe('[DONE]');
+    });
+
+    test('Sends no tool_calls frame when the model requests none', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(mockSseStream(['data: {"choices":[{"delta":{"content":"Just prose"}}]}\n\n']));
+
+      const res = await postStreaming([{ name: 'tools', valueString: JSON.stringify(fhirTools) }]);
+      expect(res).toHaveStatus(200);
+
+      const { payloads, frames } = parseSse(res.text);
+      expect(frames).toStrictEqual([
+        { content: 'Just prose' },
+        { raw: { choices: [{ delta: { content: 'Just prose' } }] } },
+      ]);
+      // A turn that requested no tools ends without a tool_calls frame at all, rather than an empty one
+      expect(framesOfKind(frames, 'tool_calls')).toStrictEqual([]);
+      expect(payloads[payloads.length - 1]).toBe('[DONE]');
+    });
   });
 });

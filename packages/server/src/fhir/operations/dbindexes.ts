@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 import { allOk, badRequest, EMPTY, OperationOutcomeError } from '@medplum/core';
 import type { FhirRequest, FhirResponse } from '@medplum/fhir-router';
-import type { Pool, PoolClient } from 'pg';
-import { requireSuperAdmin } from '../../admin/super';
+import { requireSuperAdmin } from '../../context';
 import { DatabaseMode, getDatabasePool } from '../../database';
 import { escapeUnicode } from '../../migrations/migrate-utils';
-import { isValidTableName, replaceNullWithUndefinedInRows, SqlBuilder } from '../sql';
+import type { PgQueryable } from '../sql';
+import { isValidPostgresIdentifier, replaceNullWithUndefinedInRows, SqlBuilder } from '../sql';
 import { makeOperationDefinition } from './definitions';
 import {
   buildOutputParameters,
@@ -50,7 +50,7 @@ export async function dbIndexesHandler(req: FhirRequest): Promise<FhirResponse> 
 
   const tableNames = [];
   for (const tableName of params.tableName?.split(',').map((name) => name.trim()) ?? EMPTY) {
-    if (!isValidTableName(tableName)) {
+    if (!isValidPostgresIdentifier(tableName)) {
       throw new OperationOutcomeError(badRequest('Invalid tableName'));
     }
     tableNames.push(tableName);
@@ -79,7 +79,7 @@ async function getDefaultGinPendingListLimit(): Promise<number> {
   return Number(defaultStatisticsTarget.rows[0].setting);
 }
 
-async function getGinIndexInfo(client: PoolClient | Pool, tableNames: string[]): Promise<GinIndexInfo[]> {
+async function getGinIndexInfo(client: PgQueryable, tableNames: string[]): Promise<GinIndexInfo[]> {
   const schemaName = 'public';
   const builder = new SqlBuilder();
   const sql = `SELECT

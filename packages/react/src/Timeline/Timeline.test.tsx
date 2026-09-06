@@ -3,7 +3,6 @@
 import type { Communication } from '@medplum/fhirtypes';
 import { MockClient } from '@medplum/mock';
 import { MedplumProvider } from '@medplum/react-hooks';
-import { MemoryRouter } from 'react-router';
 import { act, render, screen } from '../test-utils/render';
 import { Timeline, TimelineItem } from './Timeline';
 
@@ -16,13 +15,11 @@ describe('Timeline', () => {
     } as Communication;
 
     render(
-      <MemoryRouter>
-        <MedplumProvider medplum={medplum}>
-          <Timeline>
-            <TimelineItem resource={resource}>test</TimelineItem>
-          </Timeline>
-        </MedplumProvider>
-      </MemoryRouter>
+      <MedplumProvider medplum={medplum}>
+        <Timeline>
+          <TimelineItem resource={resource}>test</TimelineItem>
+        </Timeline>
+      </MedplumProvider>
     );
 
     expect(screen.getByText('test')).toBeDefined();
@@ -34,20 +31,18 @@ describe('Timeline', () => {
     const resource: Communication = {
       resourceType: 'Communication',
       meta: {
-        author: { reference: 'Practitioner/123' },
-        onBehalfOf: { reference: 'Practitioner/123' },
+        author: { reference: 'Practitioner/124' },
+        onBehalfOf: { reference: 'Practitioner/124' },
       },
     } as Communication;
 
     await act(async () => {
       render(
-        <MemoryRouter>
-          <MedplumProvider medplum={medplum}>
-            <Timeline>
-              <TimelineItem resource={resource}>test</TimelineItem>
-            </Timeline>
-          </MedplumProvider>
-        </MemoryRouter>
+        <MedplumProvider medplum={medplum}>
+          <Timeline>
+            <TimelineItem resource={resource}>test</TimelineItem>
+          </Timeline>
+        </MedplumProvider>
       );
     });
 
@@ -59,19 +54,17 @@ describe('Timeline', () => {
     const resource: Communication = {
       resourceType: 'Communication',
       meta: {
-        author: { reference: 'Practitioner/123' },
+        author: { reference: 'Practitioner/124' },
       },
     } as Communication;
 
     await act(async () => {
       render(
-        <MemoryRouter>
-          <MedplumProvider medplum={medplum}>
-            <Timeline>
-              <TimelineItem resource={resource}>test</TimelineItem>
-            </Timeline>
-          </MedplumProvider>
-        </MemoryRouter>
+        <MedplumProvider medplum={medplum}>
+          <Timeline>
+            <TimelineItem resource={resource}>test</TimelineItem>
+          </Timeline>
+        </MedplumProvider>
       );
     });
 

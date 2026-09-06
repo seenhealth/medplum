@@ -1,16 +1,18 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
-import { Box, useComputedColorScheme } from '@mantine/core';
+import { Box, Center, Loader, useComputedColorScheme } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { normalizeErrorString } from '@medplum/core';
 import { useScriptSureIFrame } from '@medplum/scriptsure-react';
 import type { JSX } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import { useParams } from 'react-router';
 import { applyDarkmode } from '../../components/meds/applyDarkmode';
+import { useScriptSurePractice } from '../../scriptsure/ScriptSurePractice';
 
 export function ScriptSureTab(): JSX.Element {
   const { patientId } = useParams();
+  const { selectedOrganization } = useScriptSurePractice();
   const syncedRef = useRef(false);
   const iframeLoadedRef = useRef(false);
 
@@ -27,6 +29,7 @@ export function ScriptSureTab(): JSX.Element {
 
   const iframeUrl = useScriptSureIFrame({
     patientId,
+    organization: selectedOrganization,
     onPatientSyncSuccess: () => {
       syncedRef.current = true;
       checkAndNotify();
@@ -42,16 +45,22 @@ export function ScriptSureTab(): JSX.Element {
   // per iframe load so toggling the Mantine color scheme does not force the
   // chart iframe to reload (and lose any in-progress state).
   const colorScheme = useComputedColorScheme('light');
-  const [renderedUrl, setRenderedUrl] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    setRenderedUrl(applyDarkmode(iframeUrl, colorScheme));
+
+  const renderedUrl = useMemo(
+    () => applyDarkmode(iframeUrl, colorScheme),
     // Intentionally not depending on `colorScheme` so the iframe is not
     // reloaded mid-session when the user toggles the theme.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [iframeUrl]);
+    [iframeUrl]
+  );
 
   return (
     <Box style={{ flex: 1, minHeight: 0 }}>
+      {!renderedUrl && (
+        <Center mt="xl">
+          <Loader />
+        </Center>
+      )}
       {renderedUrl && (
         <iframe
           id="scriptsure-iframe"

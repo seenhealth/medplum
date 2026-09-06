@@ -3,7 +3,6 @@
 import { createReference } from '@medplum/core';
 import { HomerSimpson, MockClient } from '@medplum/mock';
 import { MedplumProvider } from '@medplum/react-hooks';
-import { MemoryRouter } from 'react-router';
 import { act, render, screen } from '../test-utils/render';
 import type { PatientSummaryProps } from './PatientSummary';
 import { PatientSummary } from './PatientSummary';
@@ -29,11 +28,9 @@ describe('PatientSummary', () => {
   async function setup(args: PatientSummaryProps): Promise<void> {
     await act(async () => {
       render(
-        <MemoryRouter>
-          <MedplumProvider medplum={medplum}>
-            <PatientSummary {...args} />
-          </MedplumProvider>
-        </MemoryRouter>
+        <MedplumProvider medplum={medplum}>
+          <PatientSummary {...args} />
+        </MedplumProvider>
       );
     });
   }
@@ -315,23 +312,25 @@ describe('PatientSummary', () => {
 
   test('getDefaultSections returns all built-in sections', () => {
     const sections = getDefaultSections();
-    expect(sections).toHaveLength(10);
+    expect(sections).toHaveLength(12);
     expect(sections.map((s) => s.key)).toEqual([
       'demographics',
       'insurance',
       'allergies',
       'problemList',
       'medications',
+      'immunizations',
       'labs',
       'sexualOrientation',
       'smokingStatus',
       'vitals',
+      'goals',
       'pharmacies',
     ]);
   });
 
   test('createLabsSection creates a labs section config', () => {
-    const callback = jest.fn();
+    const callback = vi.fn();
     const section = createLabsSection(callback);
     expect(section.key).toBe('labs');
     expect(section.title).toBe('Labs');
@@ -488,6 +487,10 @@ describe('PatientSummary', () => {
 
     expect(MedicationsSection.key).toBe('medications');
     expect(MedicationsSection.title).toBe('Medications');
+    expect(MedicationsSection.searches).toEqual([
+      { key: 'medicationRequests', resourceType: 'MedicationRequest', patientParam: 'subject' },
+      { key: 'medicationStatements', resourceType: 'MedicationStatement', patientParam: 'subject' },
+    ]);
 
     expect(LabsSection.key).toBe('labs');
     expect(LabsSection.searches).toHaveLength(2);
@@ -588,11 +591,9 @@ describe('PatientSummary', () => {
   test('Renders null when patient cannot be resolved', async () => {
     const { container } = await act(async () => {
       return render(
-        <MemoryRouter>
-          <MedplumProvider medplum={medplum}>
-            <PatientSummary patient={{ reference: 'Patient/does-not-exist-xyz' }} />
-          </MedplumProvider>
-        </MemoryRouter>
+        <MedplumProvider medplum={medplum}>
+          <PatientSummary patient={{ reference: 'Patient/does-not-exist-xyz' }} />
+        </MedplumProvider>
       );
     });
 
@@ -601,7 +602,7 @@ describe('PatientSummary', () => {
   });
 
   test('Renders with onClickResource callback', async () => {
-    const onClick = jest.fn();
+    const onClick = vi.fn();
 
     await setup({
       patient: HomerSimpson,
@@ -613,7 +614,7 @@ describe('PatientSummary', () => {
   });
 
   test('Renders with onRequestLabs callback (default sections)', async () => {
-    const onRequestLabs = jest.fn();
+    const onRequestLabs = vi.fn();
 
     await setup({
       patient: HomerSimpson,

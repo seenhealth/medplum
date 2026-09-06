@@ -14,7 +14,7 @@ import { extname, join, relative } from 'node:path';
 // The normal AWS CLI command to copy files to S3 does not reliably handle content type and cache control headers.
 // This script uses the AWS SDK to upload files with the correct headers.
 
-const region = 'us-east-1'; // S3 buckets for CloudFront must be in us-east-1
+const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1';
 const s3Client = new S3Client({ region });
 
 const mimeTypes = {
@@ -91,6 +91,9 @@ async function main() {
     if (relativePath === 'index.html') {
       // Special case for root index.html
       s3Key += 'index.html';
+    } else if (relativePath === 'iframe.html') {
+      // Special case for root iframe.html (Storybook nested page)
+      s3Key += 'iframe.html';
     } else if (relativePath.endsWith('/index.html')) {
       // Special case for directories with index.html
       s3Key += relativePath.slice(0, -'index.html'.length);
@@ -148,4 +151,7 @@ async function uploadAll(requests) {
   await Promise.all(uploads);
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  console.error(err);
+  process.exitCode = 1;
+});

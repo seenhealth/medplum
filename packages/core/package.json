@@ -1,6 +1,6 @@
 {
   "name": "@medplum/core",
-  "version": "5.1.17",
+  "version": "5.1.37",
   "description": "Medplum TS/JS Library",
   "keywords": [
     "medplum",
@@ -57,9 +57,9 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@medplum/definitions": "5.1.17",
-    "@medplum/fhirtypes": "5.1.17",
-    "fast-check": "4.8.0",
+    "@medplum/definitions": "5.1.37",
+    "@medplum/fhirtypes": "5.1.37",
+    "fast-check": "4.9.0",
     "@fast-check/vitest": "0.4.1"
   },
   "peerDependencies": {

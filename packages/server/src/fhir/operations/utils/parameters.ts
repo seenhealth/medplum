@@ -9,6 +9,7 @@ import {
   isResource,
   isResourceType,
   isTypedValue,
+  tryGetDataType,
   validateResource,
 } from '@medplum/core';
 import type { FhirRequest } from '@medplum/fhir-router';
@@ -48,17 +49,31 @@ export function parseInputParameters<T>(operation: OperationDefinition, req: Req
   // Otherwise, use the body
   const input = req.method === 'GET' ? parseQueryString(req.query, inputParameters) : req.body;
 
+  if (isResourceInputParam(inputParameters, input)) {
+    const param = inputParameters[0];
+    return { [param.name]: validateInputParam(param, input) } as T;
+  }
+
   if (input.resourceType === 'Parameters') {
     if (!input.parameter) {
       return {} as T;
     }
     validateResource(input as Parameters);
-    return parseParams(inputParameters, input.parameter) as T;
+    return parseParametersFromDefinitions(inputParameters, input.parameter) as T;
   } else {
     return Object.fromEntries(
       inputParameters.map((param) => [param.name, validateInputParam(param, input[param.name])])
     ) as T;
   }
+}
+
+function isResourceInputParam(inputParameters: OperationDefinitionParameter[], input: unknown): boolean {
+  if (!isResource(input) || input.resourceType === 'Parameters' || inputParameters.length !== 1) {
+    return false;
+  }
+
+  const paramType = inputParameters[0].type;
+  return paramType === 'Resource' || (!!paramType && isResource(input, paramType as ResourceType));
 }
 
 function parseQueryString(
@@ -156,7 +171,7 @@ function validateInputParam(param: OperationDefinitionParameter, value: unknown)
   return Array.isArray(value) && max === 1 ? value[0] : value;
 }
 
-function parseParams(
+export function parseParametersFromDefinitions(
   params: OperationDefinitionParameter[],
   inputParameters: ParametersParameter[]
 ): Record<string, unknown> {
@@ -168,7 +183,7 @@ function parseParams(
     const inParams = inputParameters.filter((p) => p.name === param.name);
     let value: unknown;
     if (param.part?.length) {
-      value = inParams.map((input) => parseParams(param.part as [], input.part ?? []));
+      value = inParams.map((input) => parseParametersFromDefinitions(param.part as [], input.part ?? []));
     } else {
       value = inParams?.map((v) => {
         const paramType = param.type ?? 'string';
@@ -178,7 +193,9 @@ function parseParams(
           // Parse as TypedValue
           for (const key of Object.keys(v)) {
             if (key.startsWith('value')) {
-              return { type: key.substring(5), value: v[key as keyof ParametersParameter] };
+              const str = key.substring(5);
+              const dataType = tryGetDataType(str) ?? tryGetDataType(key[5].toLowerCase() + key.substring(6));
+              return { type: dataType?.name ?? str, value: v[key as keyof ParametersParameter] };
             }
           }
           return undefined;
@@ -277,13 +294,13 @@ function makeParameter(param: OperationDefinitionParameter, value: unknown): Par
   const type = getParameterType(param);
   if (type?.length === 1) {
     return { name: param.name, ['value' + capitalize(type[0])]: value };
-  } else if (isTypedValue(value) && value.value !== undefined && type?.length) {
-    // Handle TypedValue
-    for (const t of type) {
-      if (value.type === t) {
-        return { name: param.name, ['value' + capitalize(t)]: value.value };
-      }
+  } else if (isTypedValue(value) && value.value !== undefined) {
+    if (type?.length && !type.includes(value.type)) {
+      throw new Error(
+        `Expected value of type ${type.join(' | ')} for output parameter ${param.name}, got ${value.type}`
+      );
     }
+    return { name: param.name, ['value' + capitalize(value.type)]: value.value };
   }
   return undefined;
 }

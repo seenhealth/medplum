@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { Client, PoolClient } from 'pg';
 import { globalLogger } from '../logger';
-import type { CTE, Operator } from './sql';
+import type { CTE, Operator, PgQueryable } from './sql';
 import {
   Column,
   Condition,
@@ -10,8 +10,8 @@ import {
   Disjunction,
   InsertQuery,
   IsNull,
-  isValidColumnName,
-  isValidTableName,
+  isPoolClient,
+  isValidPostgresIdentifier,
   MAX_INDEX_DATA_BYTES,
   Negation,
   periodToRangeString,
@@ -28,7 +28,7 @@ import {
 
 describe('SqlBuilder', () => {
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
   });
 
   describe('SelectQuery', () => {
@@ -329,6 +329,15 @@ describe('SqlBuilder', () => {
       expect(sql.toString()).toBe('SELECT "MyTable"."id" FROM "MyTable" WHERE "MyTable"."name" ILIKE $1');
     });
 
+    test('Select where unaccent ilike', () => {
+      const sql = new SqlBuilder();
+      new SelectQuery('MyTable').column('id').where('name', 'UNACCENT_ILIKE', '%x%').buildSql(sql);
+      expect(sql.toString()).toBe(
+        'SELECT "MyTable"."id" FROM "MyTable" WHERE medplum_unaccent("MyTable"."name") ILIKE medplum_unaccent($1)'
+      );
+      expect(sql.getValues()).toStrictEqual(['%x%']);
+    });
+
     test('Select missing columns', () => {
       const sql = new SqlBuilder();
       new SelectQuery('MyTable').buildSql(sql);
@@ -343,7 +352,7 @@ describe('SqlBuilder', () => {
     });
 
     test('Debug mode', async () => {
-      const writeSpy = jest.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
+      const writeSpy = vi.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
 
       const sql = new SqlBuilder();
       sql.debug = 'true';
@@ -351,7 +360,7 @@ describe('SqlBuilder', () => {
       expect(sql.toString()).toBe('SELECT "MyTable"."id" FROM "MyTable"');
 
       const conn = {
-        query: jest.fn(() => ({ rows: [] })),
+        query: vi.fn(() => ({ rows: [] })),
       } as unknown as Client;
 
       await sql.execute(conn);
@@ -360,7 +369,7 @@ describe('SqlBuilder', () => {
     });
 
     test('Empty insert is no-op', async () => {
-      const db = { query: jest.fn() } as unknown as PoolClient;
+      const db = { query: vi.fn() } as unknown as PoolClient;
       await expect(new InsertQuery('Patient', []).execute(db)).resolves.toStrictEqual([]);
       expect(db.query).not.toHaveBeenCalled();
     });
@@ -477,30 +486,26 @@ describe('SqlBuilder', () => {
   });
 });
 
-test('isValidTableName', () => {
-  expect(isValidTableName('Observation')).toStrictEqual(true);
-  expect(isValidTableName('Observation_History')).toStrictEqual(true);
-  expect(isValidTableName('Observation_Token_text_idx_tsv')).toStrictEqual(true);
-  expect(isValidTableName('Robert"; DROP TABLE Students;')).toStrictEqual(false);
-  expect(isValidTableName('Observation History')).toStrictEqual(false);
-});
+test('isValidPostgresIdentifier', () => {
+  expect(isValidPostgresIdentifier('Observation')).toStrictEqual(true);
+  expect(isValidPostgresIdentifier('Observation_History')).toStrictEqual(true);
+  expect(isValidPostgresIdentifier('Observation_Token_text_idx_tsv')).toStrictEqual(true);
+  expect(isValidPostgresIdentifier('id')).toStrictEqual(true);
+  expect(isValidPostgresIdentifier('ID')).toStrictEqual(true);
+  expect(isValidPostgresIdentifier('lastUpdated')).toStrictEqual(true);
+  expect(isValidPostgresIdentifier('__version')).toStrictEqual(true);
 
-test('isValidColumnName', () => {
-  expect(isValidColumnName('id')).toStrictEqual(true);
-  expect(isValidColumnName('ID')).toStrictEqual(true);
-  expect(isValidColumnName('lastUpdated')).toStrictEqual(true);
-  expect(isValidColumnName('__version')).toStrictEqual(true);
-
-  expect(isValidColumnName('Robert"; DROP TABLE Students;')).toStrictEqual(false);
-  expect(isValidColumnName('last-updated')).toStrictEqual(false);
-  expect(isValidColumnName('')).toStrictEqual(false);
+  expect(isValidPostgresIdentifier('Robert"; DROP TABLE Students;')).toStrictEqual(false);
+  expect(isValidPostgresIdentifier('Observation History')).toStrictEqual(false);
+  expect(isValidPostgresIdentifier('last-updated')).toStrictEqual(false);
+  expect(isValidPostgresIdentifier('')).toStrictEqual(false);
 });
 
 test('debug', async () => {
-  const writeSpy = jest.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
+  const writeSpy = vi.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
 
   const conn = {
-    query: jest.fn(() => ({ rows: [] })),
+    query: vi.fn(() => ({ rows: [] })),
   } as unknown as Client;
 
   const query = new SelectQuery('MyTable').column('id');
@@ -582,5 +587,22 @@ describe('truncateTextColumn', () => {
     expect(new TextEncoder().encode(result).length).toBeLessThanOrEqual(MAX_INDEX_DATA_BYTES);
     // Should keep all ASCII chars + 1 emoji (exactly MAX_INDEX_DATA_BYTES bytes)
     expect(result).toBe('a'.repeat(asciiLen) + '\u{1F600}');
+  });
+});
+
+describe('isPoolClient', () => {
+  test('returns true for a client with a release function', () => {
+    const client = { query: vi.fn(), release: vi.fn() } as PgQueryable;
+    expect(isPoolClient(client)).toBe(true);
+  });
+
+  test('returns false for a pool without a release function', () => {
+    const pool = { query: vi.fn() } as PgQueryable;
+    expect(isPoolClient(pool)).toBe(false);
+  });
+
+  test('returns false when release is not a function', () => {
+    const notAClient = { query: vi.fn(), release: true } as PgQueryable;
+    expect(isPoolClient(notAClient)).toBe(false);
   });
 });

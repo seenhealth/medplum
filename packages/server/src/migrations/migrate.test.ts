@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { FileBuilder, loadDataType } from '@medplum/core';
 import { escapeIdentifier } from 'pg';
+import type { Mock, MockInstance } from 'vitest';
 import { loadTestConfig } from '../config/loader';
 import { closeDatabase, DatabaseMode, getDatabasePool, initDatabase } from '../database';
 import { globalLogger } from '../logger';
@@ -12,6 +13,7 @@ import {
   combine,
   executeMigrationActions,
   generateConstraintsActions,
+  generateIndexesActions,
   generateMigrationActions,
   getCreateTableQueries,
   indexStructureDefinitionsAndSearchParameters,
@@ -30,13 +32,13 @@ import type {
 } from './types';
 
 describe('Generator', () => {
-  let consoleLogSpy: jest.SpyInstance;
+  let consoleLogSpy: MockInstance;
   beforeAll(async () => {
     indexStructureDefinitionsAndSearchParameters();
 
     const config = await loadTestConfig();
     await initDatabase(config);
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterAll(async () => {
@@ -54,13 +56,13 @@ describe('Generator', () => {
 
   describe('generateMigrationActions', () => {
     test('generates migration without errors', async () => {
-      await expect(() =>
+      await expect(
         generateMigrationActions({
           dbClient: getDatabasePool(DatabaseMode.WRITER),
           dropUnmatchedIndexes: false,
           analyzeResourceTables: true,
         })
-      ).resolves.not.toThrow();
+      ).resolves.toBeDefined();
     });
 
     test('returns PhasalMigration with preDeploy and postDeploy arrays', async () => {
@@ -413,7 +415,7 @@ describe('Generator', () => {
 
   describe('generateConstraintsActions', () => {
     test('logs when start has an unmatched constraint', () => {
-      const loggerSpy = jest.spyOn(globalLogger, 'info').mockImplementation(() => {});
+      const loggerSpy = vi.spyOn(globalLogger, 'info').mockImplementation(() => {});
 
       const startTable: TableDefinition = {
         name: 'TestTable',
@@ -435,6 +437,93 @@ describe('Generator', () => {
       expect(loggerSpy).toHaveBeenCalledWith('[TestTable] Existing constraint should not exist: id IS NOT NULL');
 
       loggerSpy.mockRestore();
+    });
+  });
+
+  describe('generateIndexesActions', () => {
+    test('allows a primary key to satisfy a structurally identical unique index declaration', () => {
+      const startTable: TableDefinition = {
+        name: 'Coding',
+        columns: [{ name: 'id', type: 'BIGSERIAL', primaryKey: true }],
+        indexes: [
+          {
+            columns: ['id'],
+            indexType: 'btree',
+            unique: true,
+            indexdef: 'CREATE UNIQUE INDEX "Coding_pkey" ON public."Coding" USING btree (id)',
+          },
+        ],
+      };
+      const targetTable: TableDefinition = {
+        name: 'Coding',
+        columns: [{ name: 'id', type: 'BIGSERIAL', primaryKey: true }],
+        indexes: [{ columns: ['id'], indexType: 'btree', unique: true }],
+      };
+
+      const result = generateIndexesActions(startTable, targetTable, {
+        dbClient: getDatabasePool(DatabaseMode.WRITER),
+        dropUnmatchedIndexes: true,
+      });
+
+      expect(result).toEqual({ preDeploy: [], postDeploy: [] });
+    });
+
+    test('drops concurrent rebuild indexes instead of valid indexes with the same definition', () => {
+      const primaryKeyDefinition = {
+        columns: ['resourceId', 'targetId', 'code'],
+        indexType: 'btree' as const,
+        unique: true,
+      };
+      const targetIdDefinition = {
+        columns: ['targetId', 'code'],
+        indexType: 'btree' as const,
+        include: ['resourceId'],
+      };
+      const startTable: TableDefinition = {
+        name: 'AuditEvent_References',
+        columns: [],
+        indexes: [
+          {
+            ...primaryKeyDefinition,
+            indexdef:
+              'CREATE UNIQUE INDEX "AuditEvent_References_pkey_ccnew" ON public."AuditEvent_References" USING btree ("resourceId", "targetId", code)',
+          },
+          {
+            ...primaryKeyDefinition,
+            indexdef:
+              'CREATE UNIQUE INDEX "AuditEvent_References_pkey" ON public."AuditEvent_References" USING btree ("resourceId", "targetId", code)',
+          },
+          {
+            ...targetIdDefinition,
+            indexdef:
+              'CREATE INDEX "AuditEvent_References_targetId_code_idx_ccnew" ON public."AuditEvent_References" USING btree ("targetId", code) INCLUDE ("resourceId")',
+          },
+          {
+            ...targetIdDefinition,
+            indexdef:
+              'CREATE INDEX "AuditEvent_References_targetId_code_idx" ON public."AuditEvent_References" USING btree ("targetId", code) INCLUDE ("resourceId")',
+          },
+        ],
+      };
+      const targetTable: TableDefinition = {
+        name: 'AuditEvent_References',
+        columns: [],
+        compositePrimaryKey: primaryKeyDefinition.columns,
+        indexes: [targetIdDefinition],
+      };
+
+      const result = generateIndexesActions(startTable, targetTable, {
+        dbClient: getDatabasePool(DatabaseMode.WRITER),
+        dropUnmatchedIndexes: true,
+      });
+
+      expect(result).toEqual({
+        preDeploy: [
+          { type: 'DROP_INDEX', indexName: 'AuditEvent_References_pkey_ccnew' },
+          { type: 'DROP_INDEX', indexName: 'AuditEvent_References_targetId_code_idx_ccnew' },
+        ],
+        postDeploy: [],
+      });
     });
   });
 
@@ -474,12 +563,14 @@ type MigrationActionTestCase = {
   action: MigrationAction;
   builderExpected: string | string[];
   executionCheck: (mocks: {
-    mockQuery: jest.SpyInstance;
-    mockAnalyzeTable: jest.SpyInstance;
-    mockIdempotentCreateIndex: jest.SpyInstance;
-    mockNonBlockingAlterColumnNotNull: jest.SpyInstance;
-    mockNonBlockingAddCheckConstraint: jest.SpyInstance;
-    mockClient: { query: jest.Mock };
+    mockQuery: MockInstance;
+    mockAnalyzeTable: MockInstance;
+    mockDropInvalidIndexConcurrently: MockInstance;
+    mockReindexConcurrently: MockInstance;
+    mockIdempotentCreateIndex: MockInstance;
+    mockNonBlockingAlterColumnNotNull: MockInstance;
+    mockNonBlockingAddCheckConstraint: MockInstance;
+    mockClient: { query: Mock };
     results: MigrationActionResult[];
   }) => void;
 };
@@ -649,6 +740,27 @@ const migrationActionTestCases: MigrationActionTestCase[] = [
     },
   },
   {
+    name: 'DROP_INVALID_INDEX',
+    action: { type: 'DROP_INVALID_INDEX', schemaName: 'public', indexName: 'Patient_name_idx_ccnew' },
+    builderExpected: "await fns.dropInvalidIndexConcurrently(client, results, 'public', 'Patient_name_idx_ccnew');",
+    executionCheck: ({ mockDropInvalidIndexConcurrently, mockClient, results }) => {
+      expect(mockDropInvalidIndexConcurrently).toHaveBeenCalledWith(
+        mockClient,
+        results,
+        'public',
+        'Patient_name_idx_ccnew'
+      );
+    },
+  },
+  {
+    name: 'REINDEX_CONCURRENTLY',
+    action: { type: 'REINDEX_CONCURRENTLY', target: 'INDEX', name: 'Patient_name_idx' },
+    builderExpected: 'await fns.reindexConcurrently(client, results, \'INDEX\', "Patient_name_idx");',
+    executionCheck: ({ mockReindexConcurrently, mockClient, results }) => {
+      expect(mockReindexConcurrently).toHaveBeenCalledWith(mockClient, results, 'INDEX', 'Patient_name_idx');
+    },
+  },
+  {
     name: 'ADD_CONSTRAINT',
     action: {
       type: 'ADD_CONSTRAINT',
@@ -671,24 +783,28 @@ const migrationActionTestCases: MigrationActionTestCase[] = [
 ];
 
 describe('writeActionsToBuilder and executeMigrationActions', () => {
-  let mockClient: { query: jest.Mock };
-  let mockQuery: jest.SpyInstance;
-  let mockAnalyzeTable: jest.SpyInstance;
-  let mockIdempotentCreateIndex: jest.SpyInstance;
-  let mockNonBlockingAlterColumnNotNull: jest.SpyInstance;
-  let mockNonBlockingAddCheckConstraint: jest.SpyInstance;
+  let mockClient: { query: Mock };
+  let mockQuery: MockInstance;
+  let mockAnalyzeTable: MockInstance;
+  let mockDropInvalidIndexConcurrently: MockInstance;
+  let mockReindexConcurrently: MockInstance;
+  let mockIdempotentCreateIndex: MockInstance;
+  let mockNonBlockingAlterColumnNotNull: MockInstance;
+  let mockNonBlockingAddCheckConstraint: MockInstance;
 
   beforeEach(() => {
-    mockClient = { query: jest.fn() };
-    mockQuery = jest.spyOn(fns, 'query').mockResolvedValue({ rows: [], rowCount: 0 } as any);
-    mockAnalyzeTable = jest.spyOn(fns, 'analyzeTable').mockResolvedValue(undefined);
-    mockIdempotentCreateIndex = jest.spyOn(fns, 'idempotentCreateIndex').mockResolvedValue(undefined);
-    mockNonBlockingAlterColumnNotNull = jest.spyOn(fns, 'nonBlockingAlterColumnNotNull').mockResolvedValue(undefined);
-    mockNonBlockingAddCheckConstraint = jest.spyOn(fns, 'nonBlockingAddCheckConstraint').mockResolvedValue(undefined);
+    mockClient = { query: vi.fn() };
+    mockQuery = vi.spyOn(fns, 'query').mockResolvedValue({ rows: [], rowCount: 0 } as any);
+    mockAnalyzeTable = vi.spyOn(fns, 'analyzeTable').mockResolvedValue(undefined);
+    mockDropInvalidIndexConcurrently = vi.spyOn(fns, 'dropInvalidIndexConcurrently').mockResolvedValue(undefined);
+    mockReindexConcurrently = vi.spyOn(fns, 'reindexConcurrently').mockResolvedValue(undefined);
+    mockIdempotentCreateIndex = vi.spyOn(fns, 'idempotentCreateIndex').mockResolvedValue(undefined);
+    mockNonBlockingAlterColumnNotNull = vi.spyOn(fns, 'nonBlockingAlterColumnNotNull').mockResolvedValue(undefined);
+    mockNonBlockingAddCheckConstraint = vi.spyOn(fns, 'nonBlockingAddCheckConstraint').mockResolvedValue(undefined);
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('writePreDeployActionsToBuilder generates boilerplate', () => {
@@ -765,6 +881,8 @@ async function callback(client: PoolClient, results: MigrationActionResult[]): P
     executionCheck({
       mockQuery,
       mockAnalyzeTable,
+      mockDropInvalidIndexConcurrently,
+      mockReindexConcurrently,
       mockIdempotentCreateIndex,
       mockNonBlockingAlterColumnNotNull,
       mockNonBlockingAddCheckConstraint,

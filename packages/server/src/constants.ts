@@ -16,7 +16,7 @@ export const syntheticR4Project: WithId<Project> = {
   resourceType: 'Project',
   id: r4ProjectId,
   name: 'FHIR R4',
-  exportedResourceType: ['StructureDefinition', 'ValueSet', 'CodeSystem', 'SearchParameter'],
+  exportedResourceType: ['StructureDefinition', 'ValueSet', 'CodeSystem', 'SearchParameter', 'OperationDefinition'],
 };
 
 /**
@@ -30,3 +30,23 @@ export const syntheticR4Project: WithId<Project> = {
 export const systemResourceProjectId = '65897e4f-7add-55f3-9b17-035b5a4e6d52';
 
 export const WEBSOCKET_SUB_PUBLISH_CHANNEL = 'medplum:subscriptions:r4:websockets';
+
+/**
+ * How long a single-use email MFA code remains valid before it expires, in milliseconds.
+ */
+export const EMAIL_MFA_CODE_EXPIRATION_MS = 20 * 60 * 1000; // 20 minutes
+
+/**
+ * Minimum accepted password length, in bytes.
+ */
+export const MIN_PASSWORD_LENGTH = 8;
+
+/**
+ * Maximum accepted password length, in bytes.
+ *
+ * bcrypt only consumes the first 72 bytes of its input and silently ignores the
+ * rest, so anything longer provides a false sense of security (and needlessly
+ * hashes/copies data). We cap at 72 bytes so the truncation is explicit rather
+ * than silent, and to bound work on the hashing path.
+ */
+export const MAX_PASSWORD_LENGTH = 72;

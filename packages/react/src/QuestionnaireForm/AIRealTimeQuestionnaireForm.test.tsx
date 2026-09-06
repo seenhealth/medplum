@@ -4,28 +4,28 @@ import type { Project, Questionnaire, QuestionnaireResponse } from '@medplum/fhi
 import { MockClient } from '@medplum/mock';
 import { MedplumProvider, useWhisper } from '@medplum/react-hooks';
 import { useState } from 'react';
-import { MemoryRouter } from 'react-router';
+import type { Mock, MockInstance } from 'vitest';
 import { act, fireEvent, render, screen } from '../test-utils/render';
 import type { AIRealTimeQuestionnaireFormProps } from './AIRealTimeQuestionnaireForm';
 import { AIRealTimeQuestionnaireForm } from './AIRealTimeQuestionnaireForm';
 
-jest.mock('@mantine/notifications');
+vi.mock('@mantine/notifications');
 
 // Replace useWhisper with a controllable mock while keeping the rest of
 // @medplum/react-hooks (useMedplum, MedplumProvider, ...) real.
-jest.mock('@medplum/react-hooks', () => {
-  const actual = jest.requireActual('@medplum/react-hooks');
+vi.mock(import('@medplum/react-hooks'), async (importOriginal) => {
+  const actual = await importOriginal();
   return {
     ...actual,
-    useWhisper: jest.fn(),
+    useWhisper: vi.fn(),
   };
 });
 
-const SILENCE_DEBOUNCE_MS = 3000;
+const SILENCE_DEBOUNCE_MS = 500;
 const BOT_IDENTIFIER_STRING = 'https://www.medplum.com/bots|ai-realtime-questionnaire';
 const VOICE_TRANSCRIPT_EXTENSION_URL = 'https://medplum.com/ai-voice-transcript';
 
-const mockUseWhisper = useWhisper as unknown as jest.Mock;
+const mockUseWhisper = useWhisper as unknown as Mock;
 
 type WhisperStatus =
   | 'idle'
@@ -42,12 +42,12 @@ type WhisperStatus =
 let whisper: {
   setStatus: (status: WhisperStatus) => void;
   emitTranscript: (text: string) => void;
-  start: jest.Mock;
-  stop: jest.Mock;
+  start: Mock;
+  stop: Mock;
 };
 
-let startMock: jest.Mock;
-let stopMock: jest.Mock;
+let startMock: Mock;
+let stopMock: Mock;
 
 const sampleQuestionnaire: Questionnaire = {
   resourceType: 'Questionnaire',
@@ -69,8 +69,8 @@ function buildBotResponse(response: QuestionnaireResponse | string): { resourceT
 
 interface SetupResult {
   medplum: MockClient;
-  searchOneSpy: jest.SpyInstance;
-  executeBotSpy: jest.SpyInstance;
+  searchOneSpy: MockInstance;
+  executeBotSpy: MockInstance;
 }
 
 async function setup(
@@ -87,22 +87,20 @@ async function setup(
 
   const searchOneImpl =
     options?.searchOneImpl ?? (async () => (botAvailable ? { resourceType: 'Bot', id: 'bot-1' } : undefined));
-  const searchOneSpy = jest.spyOn(medplum, 'searchOne').mockImplementation(() => searchOneImpl() as never);
+  const searchOneSpy = vi.spyOn(medplum, 'searchOne').mockImplementation(() => searchOneImpl() as never);
 
   const project: Project = voiceFeatureEnabled
     ? { resourceType: 'Project', features: ['ai-realtime'] }
     : { resourceType: 'Project' };
-  jest.spyOn(medplum, 'getProject').mockReturnValue(project);
+  vi.spyOn(medplum, 'getProject').mockReturnValue(project);
 
-  const executeBotSpy = jest.spyOn(medplum, 'executeBot');
+  const executeBotSpy = vi.spyOn(medplum, 'executeBot');
 
   await act(async () => {
     render(
-      <MemoryRouter>
-        <MedplumProvider medplum={medplum}>
-          <AIRealTimeQuestionnaireForm questionnaire={sampleQuestionnaire} {...props} />
-        </MedplumProvider>
-      </MemoryRouter>
+      <MedplumProvider medplum={medplum}>
+        <AIRealTimeQuestionnaireForm questionnaire={sampleQuestionnaire} {...props} />
+      </MedplumProvider>
     );
   });
 
@@ -121,7 +119,7 @@ async function dictate(text: string): Promise<void> {
     whisper.setStatus('speech_stopped');
   });
   await act(async () => {
-    jest.advanceTimersByTime(SILENCE_DEBOUNCE_MS);
+    vi.advanceTimersByTime(SILENCE_DEBOUNCE_MS);
   });
   await act(async () => {});
 }
@@ -129,15 +127,15 @@ async function dictate(text: string): Promise<void> {
 describe('AIRealTimeQuestionnaireForm', () => {
   beforeAll(() => {
     Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
-      value: jest.fn(),
+      value: vi.fn(),
       writable: true,
     });
   });
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    startMock = jest.fn().mockResolvedValue(undefined);
-    stopMock = jest.fn();
+    vi.useFakeTimers();
+    startMock = vi.fn().mockResolvedValue(undefined);
+    stopMock = vi.fn();
     mockUseWhisper.mockImplementation((opts: { onTranscript: (text: string) => void }) => {
       const [status, setStatus] = useState<WhisperStatus>('idle');
       whisper = {
@@ -152,10 +150,10 @@ describe('AIRealTimeQuestionnaireForm', () => {
 
   afterEach(async () => {
     await act(async () => {
-      jest.runOnlyPendingTimers();
+      vi.runOnlyPendingTimers();
     });
-    jest.useRealTimers();
-    jest.clearAllMocks();
+    vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
   test('Renders the dictation banner with idle label', async () => {
@@ -178,7 +176,7 @@ describe('AIRealTimeQuestionnaireForm', () => {
   });
 
   test('Treats bot availability failure as unavailable', async () => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     await setup({}, { searchOneImpl: async () => Promise.reject(new Error('network')) });
     expect(screen.getByText(/Voice dictation unavailable/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start Dictation' })).toBeDisabled();
@@ -219,7 +217,7 @@ describe('AIRealTimeQuestionnaireForm', () => {
   });
 
   test('Shows Listening status and live transcript while recording', async () => {
-    const onTranscript = jest.fn();
+    const onTranscript = vi.fn();
     await setup({ onTranscript });
     await act(async () => {
       whisper.setStatus('listening');
@@ -233,7 +231,7 @@ describe('AIRealTimeQuestionnaireForm', () => {
   });
 
   test('Accumulates multiple transcript chunks before flushing', async () => {
-    const onTranscript = jest.fn();
+    const onTranscript = vi.fn();
     await setup({ onTranscript });
     await act(async () => {
       whisper.setStatus('listening');
@@ -333,7 +331,7 @@ describe('AIRealTimeQuestionnaireForm', () => {
       whisper.setStatus('speech_stopped');
     });
     await act(async () => {
-      jest.advanceTimersByTime(SILENCE_DEBOUNCE_MS);
+      vi.advanceTimersByTime(SILENCE_DEBOUNCE_MS);
     });
     await act(async () => {});
     expect(executeBotSpy).not.toHaveBeenCalled();
@@ -355,7 +353,7 @@ describe('AIRealTimeQuestionnaireForm', () => {
       whisper.setStatus('speech_started');
     });
     await act(async () => {
-      jest.advanceTimersByTime(SILENCE_DEBOUNCE_MS);
+      vi.advanceTimersByTime(SILENCE_DEBOUNCE_MS);
     });
     await act(async () => {});
     expect(executeBotSpy).not.toHaveBeenCalled();
@@ -442,7 +440,7 @@ describe('AIRealTimeQuestionnaireForm', () => {
   });
 
   test('Forwards onChange edits from the underlying QuestionnaireForm', async () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     await setup({ onChange });
     const input = screen.getByDisplayValue('');
     await act(async () => {

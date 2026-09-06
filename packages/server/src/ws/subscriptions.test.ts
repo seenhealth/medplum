@@ -7,8 +7,8 @@ import type {
   Bundle,
   BundleEntry,
   DocumentReference,
+  Parameters as FhirParameters,
   Login,
-  Parameters,
   Patient,
   Project,
   ProjectMembership,
@@ -20,17 +20,18 @@ import express from 'express';
 import { randomUUID } from 'node:crypto';
 import type { Server } from 'node:http';
 import request from 'superwstest';
+import type { Mock } from 'vitest';
 import { initApp, shutdownApp } from '../app';
 import { loadTestConfig } from '../config/loader';
 import type { MedplumServerConfig } from '../config/types';
+import type * as Constants from '../constants';
 import { WEBSOCKET_SUB_PUBLISH_CHANNEL } from '../constants';
 import type { SystemRepository } from '../fhir/repo';
 import { Repository } from '../fhir/repo';
-import * as rewriteModule from '../fhir/rewrite';
-import { RewriteMode } from '../fhir/rewrite';
+import type * as FhirRewrite from '../fhir/rewrite';
 import { globalLogger } from '../logger';
 import * as keysModule from '../oauth/keys';
-import * as oauthUtilsModule from '../oauth/utils';
+import type * as OauthUtils from '../oauth/utils';
 import * as pubsubModule from '../pubsub';
 import {
   addUserActiveWebSocketSubscription,
@@ -40,26 +41,65 @@ import {
   publish,
   setActiveSubscription,
 } from '../pubsub';
+import * as redisModule from '../redis';
 import { createTestProject, withTestContext } from '../test.setup';
 import { findAndExecDispatchJob } from '../workers/test-utils';
+import { cleanupR4SubscriptionResources } from './subscriptions';
 
-jest.mock('hibp');
-jest.mock('../constants', () => ({
-  ...jest.requireActual('../constants'),
-  WEBSOCKET_SUB_PUBLISH_CHANNEL: 'medplum:subscriptions:r4:websockets:test:ws',
+const wsSubscriptionTestChannels = vi.hoisted(() => {
+  const suffix = process.env.VITEST_WORKER_ID ?? process.env.VITEST_POOL_ID ?? `pid-${process.pid}`;
+  return {
+    ws: `medplum:subscriptions:r4:websockets:test:ws:${suffix}`,
+  };
+});
+
+vi.mock('../constants', async () => ({
+  ...(await vi.importActual<typeof Constants>('../constants')),
+  WEBSOCKET_SUB_PUBLISH_CHANNEL: wsSubscriptionTestChannels.ws,
 }));
+
+const wsTestMocks = vi.hoisted(() => ({
+  mockRewriteAttachments: false,
+  mockGetLoginForAccessToken: false,
+}));
+
+vi.mock('../fhir/rewrite', async (importOriginal) => {
+  const actual = await importOriginal<typeof FhirRewrite>();
+  return {
+    ...actual,
+    rewriteAttachments: async (...args: Parameters<typeof actual.rewriteAttachments>) => {
+      if (wsTestMocks.mockRewriteAttachments && args[0] === actual.RewriteMode.PRESIGNED_URL) {
+        throw new Error('Error rewriting attachments');
+      }
+      return actual.rewriteAttachments(...args);
+    },
+  };
+});
+
+vi.mock('../oauth/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof OauthUtils>();
+  return {
+    ...actual,
+    getLoginForAccessToken: async (...args: Parameters<typeof actual.getLoginForAccessToken>) => {
+      if (wsTestMocks.mockGetLoginForAccessToken) {
+        return undefined;
+      }
+      return actual.getLoginForAccessToken(...args);
+    },
+  };
+});
 
 describe('WebSocket Subscription', () => {
   let config: MedplumServerConfig;
   let server: Server;
-  let project: Project;
+  let project: WithId<Project>;
   let repo: Repository;
   let app: Express;
   let accessToken: string;
   let patientSubscription: WithId<Subscription>;
 
   beforeAll(async () => {
-    jest.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
+    vi.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
     app = express();
     config = await loadTestConfig();
     config.heartbeatEnabled = false;
@@ -117,7 +157,7 @@ describe('WebSocket Subscription', () => {
         .set('Authorization', 'Bearer ' + accessToken);
 
       expect(res.body).toBeDefined();
-      const body = res.body as Parameters;
+      const body = res.body as FhirParameters;
       expect(body.resourceType).toStrictEqual('Parameters');
       expect(body.parameter?.[0]).toBeDefined();
       expect(body.parameter?.[0]?.name).toStrictEqual('token');
@@ -164,11 +204,7 @@ describe('WebSocket Subscription', () => {
           while (!subActive) {
             await sleep(0);
             subActive =
-              (await isSubscriptionActive(
-                project.id as string,
-                'Patient',
-                `Subscription/${patientSubscription?.id}`
-              )) === 1;
+              (await isSubscriptionActive(project.id, 'Patient', `Subscription/${patientSubscription?.id}`)) === 1;
           }
           expect(subActive).toStrictEqual(true);
         })
@@ -202,8 +238,7 @@ describe('WebSocket Subscription', () => {
       while (subActive || inCache) {
         await sleep(0);
         subActive =
-          (await isSubscriptionActive(project.id as string, 'Patient', `Subscription/${patientSubscription?.id}`)) ===
-          1;
+          (await isSubscriptionActive(project.id, 'Patient', `Subscription/${patientSubscription?.id}`)) === 1;
         try {
           await repo.readResource<Subscription>('Subscription', patientSubscription?.id);
           inCache = true;
@@ -249,7 +284,7 @@ describe('WebSocket Subscription', () => {
         .set('Authorization', 'Bearer ' + accessToken);
 
       expect(res.body).toBeDefined();
-      const body = res.body as Parameters;
+      const body = res.body as FhirParameters;
       expect(body.resourceType).toStrictEqual('Parameters');
       expect(body.parameter?.[0]).toBeDefined();
       expect(body.parameter?.[0]?.name).toStrictEqual('token');
@@ -296,11 +331,7 @@ describe('WebSocket Subscription', () => {
           while (!subActive) {
             await sleep(0);
             subActive =
-              (await isSubscriptionActive(
-                project.id as string,
-                'Patient',
-                `Subscription/${patientSubscription?.id}`
-              )) === 1;
+              (await isSubscriptionActive(project.id, 'Patient', `Subscription/${patientSubscription?.id}`)) === 1;
           }
           expect(subActive).toStrictEqual(true);
         })
@@ -327,11 +358,7 @@ describe('WebSocket Subscription', () => {
           while (subActive) {
             await sleep(0);
             subActive =
-              (await isSubscriptionActive(
-                project.id as string,
-                'Patient',
-                `Subscription/${patientSubscription?.id}`
-              )) === 1;
+              (await isSubscriptionActive(project.id, 'Patient', `Subscription/${patientSubscription?.id}`)) === 1;
           }
           expect(subActive).toStrictEqual(false);
         })
@@ -340,11 +367,11 @@ describe('WebSocket Subscription', () => {
         .exec(async () => {
           const expectedMsg =
             /"level":"WARN".*\[WS\] Failed to retrieve subscription cache entry when unbinding from token/;
-          const writeMock = globalLogger.write as unknown as jest.Mock;
+          const writeMock = globalLogger.write as unknown as Mock;
           const deadline = Date.now() + 5000;
           while (
             Date.now() < deadline &&
-            !writeMock.mock.calls.some((args) => typeof args[0] === 'string' && expectedMsg.test(args[0]))
+            !writeMock.mock.calls.some((args: unknown[]) => typeof args[0] === 'string' && expectedMsg.test(args[0]))
           ) {
             await sleep(10);
           }
@@ -380,12 +407,12 @@ describe('WebSocket Subscription', () => {
       const patientTokenRes = await request(server)
         .get(`/fhir/R4/Subscription/${patientSub.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
-      const patientToken = (patientTokenRes.body as Parameters).parameter?.[0]?.valueString as string;
+      const patientToken = (patientTokenRes.body as FhirParameters).parameter?.[0]?.valueString as string;
 
       const observationTokenRes = await request(server)
         .get(`/fhir/R4/Subscription/${observationSub.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
-      const observationToken = (observationTokenRes.body as Parameters).parameter?.[0]?.valueString as string;
+      const observationToken = (observationTokenRes.body as FhirParameters).parameter?.[0]?.valueString as string;
 
       // Bind both subscriptions on the same WebSocket, then close
       await request(server)
@@ -412,11 +439,9 @@ describe('WebSocket Subscription', () => {
           let observationActive = false;
           while (!patientActive || !observationActive) {
             await sleep(0);
-            patientActive =
-              (await isSubscriptionActive(project.id as string, 'Patient', `Subscription/${patientSub.id}`)) === 1;
+            patientActive = (await isSubscriptionActive(project.id, 'Patient', `Subscription/${patientSub.id}`)) === 1;
             observationActive =
-              (await isSubscriptionActive(project.id as string, 'Observation', `Subscription/${observationSub.id}`)) ===
-              1;
+              (await isSubscriptionActive(project.id, 'Observation', `Subscription/${observationSub.id}`)) === 1;
           }
           expect(patientActive).toStrictEqual(true);
           expect(observationActive).toStrictEqual(true);
@@ -429,11 +454,9 @@ describe('WebSocket Subscription', () => {
           let observationActive = true;
           while (patientActive || observationActive) {
             await sleep(0);
-            patientActive =
-              (await isSubscriptionActive(project.id as string, 'Patient', `Subscription/${patientSub.id}`)) === 1;
+            patientActive = (await isSubscriptionActive(project.id, 'Patient', `Subscription/${patientSub.id}`)) === 1;
             observationActive =
-              (await isSubscriptionActive(project.id as string, 'Observation', `Subscription/${observationSub.id}`)) ===
-              1;
+              (await isSubscriptionActive(project.id, 'Observation', `Subscription/${observationSub.id}`)) === 1;
           }
           expect(patientActive).toStrictEqual(false);
           expect(observationActive).toStrictEqual(false);
@@ -503,6 +526,78 @@ describe('WebSocket Subscription', () => {
         .expectClosed();
     }));
 
+  test.each([
+    ['project-scoped', (projectId: string) => `/projects/${projectId}/ws/subscriptions-r4`],
+    ['project-scoped with /api prefix', (projectId: string) => `/api/projects/${projectId}/ws/subscriptions-r4`],
+    ['/api prefix', () => '/api/ws/subscriptions-r4'],
+  ])('Binds on a %s URL', (_name, buildPath) =>
+    withTestContext(async () => {
+      const subscription = await repo.createResource<Subscription>({
+        resourceType: 'Subscription',
+        reason: 'test',
+        status: 'active',
+        criteria: 'Patient',
+        channel: { type: 'websocket' },
+      });
+
+      const res = await request(server)
+        .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
+        .set('Authorization', 'Bearer ' + accessToken);
+      const token = (res.body as FhirParameters).parameter?.[0]?.valueString as string;
+      expect(token).toBeDefined();
+
+      await request(server)
+        .ws(buildPath(project.id))
+        .sendJson({ type: 'bind-with-token', payload: { token } })
+        .expectJson((actual) => {
+          expect(actual).toMatchObject({
+            resourceType: 'Bundle',
+            type: 'history',
+            entry: [
+              {
+                resource: {
+                  resourceType: 'SubscriptionStatus',
+                  type: 'handshake',
+                  subscription: { reference: `Subscription/${subscription.id}` },
+                },
+              },
+            ],
+          });
+        })
+        .close()
+        .expectClosed();
+    })
+  );
+
+  test('Rejects binding on a URL scoped to another project', () =>
+    withTestContext(async () => {
+      const subscription = await repo.createResource<Subscription>({
+        resourceType: 'Subscription',
+        reason: 'test',
+        status: 'active',
+        criteria: 'Patient',
+        channel: { type: 'websocket' },
+      });
+
+      const res = await request(server)
+        .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
+        .set('Authorization', 'Bearer ' + accessToken);
+      const token = (res.body as FhirParameters).parameter?.[0]?.valueString as string;
+      expect(token).toBeDefined();
+
+      await request(server)
+        .ws(`/projects/${randomUUID()}/ws/subscriptions-r4`)
+        .sendJson({ type: 'bind-with-token', payload: { token } })
+        .expectJson((actual) => {
+          expect(actual).toMatchObject({
+            resourceType: 'OperationOutcome',
+            issue: [{ severity: 'error', code: 'forbidden' }],
+          });
+        })
+        .close()
+        .expectClosed();
+    }));
+
   test('Should respond with a pong if sent a ping', () =>
     withTestContext(async () => {
       await request(server)
@@ -532,7 +627,7 @@ describe('WebSocket Subscription', () => {
         .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
 
-      const token = (res.body as Parameters).parameter?.[0]?.valueString as string;
+      const token = (res.body as FhirParameters).parameter?.[0]?.valueString as string;
 
       await request(server)
         .ws('/ws/subscriptions-r4')
@@ -548,8 +643,7 @@ describe('WebSocket Subscription', () => {
           let subActive = false;
           while (!subActive) {
             await sleep(0);
-            subActive =
-              (await isSubscriptionActive(project.id as string, 'Patient', `Subscription/${subscription.id}`)) === 1;
+            subActive = (await isSubscriptionActive(project.id, 'Patient', `Subscription/${subscription.id}`)) === 1;
           }
           // Publish a v1 payload (array of [resource, subscriptionId, options] tuples)
           const v1Payload = [[patient, subscription.id, { includeResource: true }]];
@@ -600,7 +694,7 @@ describe('WebSocket Subscription', () => {
         .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
 
-      const token = (res.body as Parameters).parameter?.[0]?.valueString as string;
+      const token = (res.body as FhirParameters).parameter?.[0]?.valueString as string;
 
       await request(server)
         .ws('/ws/subscriptions-r4')
@@ -616,8 +710,7 @@ describe('WebSocket Subscription', () => {
           let subActive = false;
           while (!subActive) {
             await sleep(0);
-            subActive =
-              (await isSubscriptionActive(project.id as string, 'Patient', `Subscription/${subscription.id}`)) === 1;
+            subActive = (await isSubscriptionActive(project.id, 'Patient', `Subscription/${subscription.id}`)) === 1;
           }
           // Publish a v2 payload ({ resource, events: [[subscriptionId, options]] })
           const v2Payload = { resource: patient, events: [[subscription.id, { includeResource: true }]] };
@@ -677,12 +770,12 @@ describe('WebSocket Subscription', () => {
       const res1 = await request(server)
         .get(`/fhir/R4/Subscription/${subscription1.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
-      const token1 = (res1.body as Parameters).parameter?.[0]?.valueString as string;
+      const token1 = (res1.body as FhirParameters).parameter?.[0]?.valueString as string;
 
       const res2 = await request(server)
         .get(`/fhir/R4/Subscription/${subscription2.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
-      const token2 = (res2.body as Parameters).parameter?.[0]?.valueString as string;
+      const token2 = (res2.body as FhirParameters).parameter?.[0]?.valueString as string;
 
       const receivedSubRefs: string[] = [];
 
@@ -712,10 +805,8 @@ describe('WebSocket Subscription', () => {
           let sub2Active = false;
           while (!sub1Active || !sub2Active) {
             await sleep(0);
-            sub1Active =
-              (await isSubscriptionActive(project.id as string, 'Patient', `Subscription/${subscription1.id}`)) === 1;
-            sub2Active =
-              (await isSubscriptionActive(project.id as string, 'Patient', `Subscription/${subscription2.id}`)) === 1;
+            sub1Active = (await isSubscriptionActive(project.id, 'Patient', `Subscription/${subscription1.id}`)) === 1;
+            sub2Active = (await isSubscriptionActive(project.id, 'Patient', `Subscription/${subscription2.id}`)) === 1;
           }
           // Publish a single v2 payload with both subscriptions in the events array
           const v2Payload = {
@@ -765,9 +856,10 @@ describe('WebSocket Subscription', () => {
         .expectClosed();
 
       // Verify both subscriptions received notifications
-      expect(receivedSubRefs.sort()).toEqual(
-        [`Subscription/${subscription1.id}`, `Subscription/${subscription2.id}`].sort()
-      );
+      expect(receivedSubRefs).toContainExactly([
+        `Subscription/${subscription1.id}`,
+        `Subscription/${subscription2.id}`,
+      ]);
     }));
 
   test('Attachments are rewritten', () =>
@@ -796,7 +888,7 @@ describe('WebSocket Subscription', () => {
         .set('Authorization', 'Bearer ' + accessToken);
 
       expect(res.body).toBeDefined();
-      const body = res.body as Parameters;
+      const body = res.body as FhirParameters;
       expect(body.resourceType).toStrictEqual('Parameters');
       expect(body.parameter?.[0]).toBeDefined();
       expect(body.parameter?.[0]?.name).toStrictEqual('token');
@@ -845,11 +937,7 @@ describe('WebSocket Subscription', () => {
           while (!subActive) {
             await sleep(0);
             subActive =
-              (await isSubscriptionActive(
-                project.id as string,
-                'DocumentReference',
-                `Subscription/${subscription.id}`
-              )) === 1;
+              (await isSubscriptionActive(project.id, 'DocumentReference', `Subscription/${subscription.id}`)) === 1;
           }
           expect(subActive).toStrictEqual(true);
         })
@@ -893,7 +981,7 @@ describe('WebSocket Subscription', () => {
       expect(subscription).toBeDefined();
 
       // Mock verifyJwt to return a payload without login_id
-      const verifyJwtSpy = jest.spyOn(keysModule, 'verifyJwt').mockImplementation(async () => {
+      const verifyJwtSpy = vi.spyOn(keysModule, 'verifyJwt').mockImplementation(async () => {
         return {
           payload: {
             subscription_id: subscription.id,
@@ -931,7 +1019,7 @@ describe('WebSocket Subscription', () => {
   test('Token failed to validate', () =>
     withTestContext(async () => {
       // Mock verifyJwt to throw an error
-      const verifyJwtSpy = jest.spyOn(keysModule, 'verifyJwt').mockImplementation(async () => {
+      const verifyJwtSpy = vi.spyOn(keysModule, 'verifyJwt').mockImplementation(async () => {
         throw new Error('Token validation failed');
       });
 
@@ -962,18 +1050,8 @@ describe('WebSocket Subscription', () => {
 
   test('Error while rewriting attachments', () =>
     withTestContext(async () => {
-      // Don't mock rewriteAttachments until after the handshake
-      const originalRewriteAttachments = rewriteModule.rewriteAttachments;
-      let mockRewriteAttachments = false;
-      const rewriteAttachmentsSpy = jest
-        .spyOn(rewriteModule, 'rewriteAttachments')
-        .mockImplementation(async (...args) => {
-          if (mockRewriteAttachments && args[0] === RewriteMode.PRESIGNED_URL) {
-            throw new Error('Error rewriting attachments');
-          }
-          return originalRewriteAttachments(...args);
-        });
-      const globalLoggerErrorSpy = jest.spyOn(globalLogger, 'error');
+      wsTestMocks.mockRewriteAttachments = false;
+      const globalLoggerErrorSpy = vi.spyOn(globalLogger, 'error');
 
       const binary = await repo.createResource<Binary>({
         resourceType: 'Binary',
@@ -999,7 +1077,7 @@ describe('WebSocket Subscription', () => {
         .set('Authorization', 'Bearer ' + accessToken);
 
       expect(res.body).toBeDefined();
-      const body = res.body as Parameters;
+      const body = res.body as FhirParameters;
       expect(body.resourceType).toStrictEqual('Parameters');
       expect(body.parameter?.[0]).toBeDefined();
       expect(body.parameter?.[0]?.name).toStrictEqual('token');
@@ -1032,7 +1110,7 @@ describe('WebSocket Subscription', () => {
         })
         // Add a new document reference for this project
         .exec(async () => {
-          mockRewriteAttachments = true;
+          wsTestMocks.mockRewriteAttachments = true;
 
           const documentRef = await repo.createResource<DocumentReference>({
             resourceType: 'DocumentReference',
@@ -1051,11 +1129,7 @@ describe('WebSocket Subscription', () => {
           while (!subActive) {
             await sleep(0);
             subActive =
-              (await isSubscriptionActive(
-                project.id as string,
-                'DocumentReference',
-                `Subscription/${subscription.id}`
-              )) === 1;
+              (await isSubscriptionActive(project.id, 'DocumentReference', `Subscription/${subscription.id}`)) === 1;
           }
           expect(subActive).toStrictEqual(true);
         })
@@ -1084,24 +1158,14 @@ describe('WebSocket Subscription', () => {
         }
       }
 
-      // Restore original implementations
-      rewriteAttachmentsSpy.mockRestore();
+      wsTestMocks.mockRewriteAttachments = false;
       globalLoggerErrorSpy.mockRestore();
     }));
 
   test('Undefined authState returned', () =>
     withTestContext(async () => {
-      const actualGetLoginForAccessToken = jest.requireActual('../oauth/utils').getLoginForAccessToken;
-      let mockGetLoginForAccessToken = false;
-      const getLoginForAccessTokenSpy = jest
-        .spyOn(oauthUtilsModule, 'getLoginForAccessToken')
-        .mockImplementation(async (...args) => {
-          if (mockGetLoginForAccessToken) {
-            return undefined;
-          }
-          return actualGetLoginForAccessToken(...args);
-        });
-      const globalLoggerInfoSpy = jest.spyOn(globalLogger, 'info');
+      wsTestMocks.mockGetLoginForAccessToken = false;
+      const globalLoggerInfoSpy = vi.spyOn(globalLogger, 'info');
 
       const binary = await repo.createResource<Binary>({
         resourceType: 'Binary',
@@ -1127,7 +1191,7 @@ describe('WebSocket Subscription', () => {
         .set('Authorization', 'Bearer ' + accessToken);
 
       expect(res.body).toBeDefined();
-      const body = res.body as Parameters;
+      const body = res.body as FhirParameters;
       expect(body.resourceType).toStrictEqual('Parameters');
       expect(body.parameter?.[0]).toBeDefined();
       expect(body.parameter?.[0]?.name).toStrictEqual('token');
@@ -1160,7 +1224,7 @@ describe('WebSocket Subscription', () => {
         })
         // Add a new document reference for this project
         .exec(async () => {
-          mockGetLoginForAccessToken = true;
+          wsTestMocks.mockGetLoginForAccessToken = true;
 
           const documentRef = await repo.createResource<DocumentReference>({
             resourceType: 'DocumentReference',
@@ -1198,23 +1262,13 @@ describe('WebSocket Subscription', () => {
         subscriptionId: expect.any(String),
       });
 
-      // Restore original implementations
-      getLoginForAccessTokenSpy.mockRestore();
+      wsTestMocks.mockGetLoginForAccessToken = false;
       globalLoggerInfoSpy.mockRestore();
     }));
 
   test('Dead subscription removed from active set when token fails to validate', () =>
     withTestContext(async () => {
-      const actualGetLoginForAccessToken = jest.requireActual('../oauth/utils').getLoginForAccessToken;
-      let mockGetLoginForAccessToken = false;
-      const getLoginForAccessTokenSpy = jest
-        .spyOn(oauthUtilsModule, 'getLoginForAccessToken')
-        .mockImplementation(async (...args) => {
-          if (mockGetLoginForAccessToken) {
-            return undefined;
-          }
-          return actualGetLoginForAccessToken(...args);
-        });
+      wsTestMocks.mockGetLoginForAccessToken = false;
 
       const binary = await repo.createResource<Binary>({
         resourceType: 'Binary',
@@ -1239,7 +1293,7 @@ describe('WebSocket Subscription', () => {
         .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
 
-      const body = res.body as Parameters;
+      const body = res.body as FhirParameters;
       const token = body.parameter?.[0]?.valueString as string;
 
       await request(server)
@@ -1261,7 +1315,7 @@ describe('WebSocket Subscription', () => {
           });
         })
         .exec(async () => {
-          mockGetLoginForAccessToken = true;
+          wsTestMocks.mockGetLoginForAccessToken = true;
 
           const docRef = await repo.createResource<DocumentReference>({
             resourceType: 'DocumentReference',
@@ -1277,11 +1331,7 @@ describe('WebSocket Subscription', () => {
           while (subActive) {
             await sleep(0);
             subActive =
-              (await isSubscriptionActive(
-                project.id as string,
-                'DocumentReference',
-                `Subscription/${subscription.id}`
-              )) === 1;
+              (await isSubscriptionActive(project.id, 'DocumentReference', `Subscription/${subscription.id}`)) === 1;
           }
           expect(subActive).toStrictEqual(false);
         })
@@ -1291,22 +1341,13 @@ describe('WebSocket Subscription', () => {
           await sleep(0);
         });
 
-      getLoginForAccessTokenSpy.mockRestore();
+      wsTestMocks.mockGetLoginForAccessToken = false;
     }));
 
   test('Dead subscription not notified on subsequent events after purge', () =>
     withTestContext(async () => {
-      const actualGetLoginForAccessToken = jest.requireActual('../oauth/utils').getLoginForAccessToken;
-      let mockGetLoginForAccessToken = false;
-      const getLoginForAccessTokenSpy = jest
-        .spyOn(oauthUtilsModule, 'getLoginForAccessToken')
-        .mockImplementation(async (...args) => {
-          if (mockGetLoginForAccessToken) {
-            return undefined;
-          }
-          return actualGetLoginForAccessToken(...args);
-        });
-      const globalLoggerInfoSpy = jest.spyOn(globalLogger, 'info');
+      wsTestMocks.mockGetLoginForAccessToken = false;
+      const globalLoggerInfoSpy = vi.spyOn(globalLogger, 'info');
 
       const binary = await repo.createResource<Binary>({
         resourceType: 'Binary',
@@ -1331,7 +1372,7 @@ describe('WebSocket Subscription', () => {
         .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
 
-      const body = res.body as Parameters;
+      const body = res.body as FhirParameters;
       const token = body.parameter?.[0]?.valueString as string;
 
       await request(server)
@@ -1353,7 +1394,7 @@ describe('WebSocket Subscription', () => {
           });
         })
         .exec(async () => {
-          mockGetLoginForAccessToken = true;
+          wsTestMocks.mockGetLoginForAccessToken = true;
 
           // First event: triggers the dead subscription path
           const docRef = await repo.createResource<DocumentReference>({
@@ -1369,11 +1410,7 @@ describe('WebSocket Subscription', () => {
           while (subActive) {
             await sleep(0);
             subActive =
-              (await isSubscriptionActive(
-                project.id as string,
-                'DocumentReference',
-                `Subscription/${subscription.id}`
-              )) === 1;
+              (await isSubscriptionActive(project.id, 'DocumentReference', `Subscription/${subscription.id}`)) === 1;
           }
 
           // Reset the spy call count
@@ -1400,7 +1437,7 @@ describe('WebSocket Subscription', () => {
           await sleep(0);
         });
 
-      getLoginForAccessTokenSpy.mockRestore();
+      wsTestMocks.mockGetLoginForAccessToken = false;
       globalLoggerInfoSpy.mockRestore();
     }));
 
@@ -1434,7 +1471,7 @@ describe('WebSocket Subscription', () => {
       const tokenRes = await request(server)
         .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + testAccessToken);
-      const token = (tokenRes.body as Parameters).parameter?.[0]?.valueString as string;
+      const token = (tokenRes.body as FhirParameters).parameter?.[0]?.valueString as string;
 
       let firstPatientId: string;
       await request(server)
@@ -1534,7 +1571,7 @@ describe('WebSocket Subscription', () => {
       const res = await request(server)
         .get(`/fhir/R4/Subscription/${sub.id}/$get-ws-binding-token`)
         .set('Authorization', 'Bearer ' + accessToken);
-      const token = (res.body as Parameters).parameter?.[0]?.valueString as string;
+      const token = (res.body as FhirParameters).parameter?.[0]?.valueString as string;
 
       // Subscriptions are only added to the user active set when bound, not when created
       let countAfterBind = 0;
@@ -1623,7 +1660,7 @@ describe('WebSocket Subscription', () => {
         )
         .exec(async () => {
           await sleep(1000);
-          const active = await isSubscriptionActive(project.id as string, 'Patient', `Subscription/${subscription.id}`);
+          const active = await isSubscriptionActive(project.id, 'Patient', `Subscription/${subscription.id}`);
           expect(active).toBe(0);
         })
         .expectClosed()
@@ -1867,7 +1904,7 @@ describe('WebSocket Subscription', () => {
         membershipId: randomUUID(),
       });
 
-      const cleanupSpy = jest.spyOn(pubsubModule, 'cleanupUserSubs');
+      const cleanupSpy = vi.spyOn(pubsubModule, 'cleanupUserSubs');
       try {
         await expect(
           limitRepo.createResource<Subscription>({
@@ -1960,6 +1997,12 @@ describe('Subscription Heartbeat', () => {
     await shutdownApp();
   });
 
+  beforeEach(() => {
+    // subscriptions.ts keeps a module-level pub/sub subscriber that outlives individual
+    // WebSocket connections. Reset it between tests so each test starts from a clean state.
+    cleanupR4SubscriptionResources();
+  });
+
   test('Heartbeat received after binding to token', () =>
     withTestContext(async () => {
       // Create subscription to watch patient
@@ -1980,7 +2023,7 @@ describe('Subscription Heartbeat', () => {
         .set('Authorization', 'Bearer ' + accessToken);
 
       expect(res.body).toBeDefined();
-      const body = res.body as Parameters;
+      const body = res.body as FhirParameters;
       expect(body.resourceType).toStrictEqual('Parameters');
       expect(body.parameter?.[0]).toBeDefined();
       expect(body.parameter?.[0]?.name).toStrictEqual('token');
@@ -2030,6 +2073,89 @@ describe('Subscription Heartbeat', () => {
         .expectClosed();
     }));
 
+  test('Recreates Redis subscriber when prior subscriber connection ends', () =>
+    withTestContext(async () => {
+      const subscriberSpy = vi.spyOn(redisModule, 'getPubSubRedisSubscriber');
+
+      try {
+        // First bind lazily creates the shared Redis subscriber for WebSocket fan-out.
+        const subscription = await repo.createResource<Subscription>({
+          resourceType: 'Subscription',
+          reason: 'test',
+          status: 'active',
+          criteria: 'Patient',
+          channel: {
+            type: 'websocket',
+          },
+        });
+
+        const res = await request(server)
+          .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
+          .set('Authorization', 'Bearer ' + accessToken);
+
+        const token = (res.body as FhirParameters).parameter?.[0]?.valueString as string;
+
+        await request(server)
+          .ws('/ws/subscriptions-r4')
+          .sendJson({ type: 'bind-with-token', payload: { token } })
+          .expectJson((actual) => {
+            expect(actual).toMatchObject({
+              resourceType: 'Bundle',
+              type: 'history',
+            });
+          })
+          .close()
+          .expectClosed();
+
+        expect(subscriberSpy).toHaveBeenCalledTimes(1);
+        const firstSubscriber = subscriberSpy.mock.results[0].value;
+
+        // Simulate the pub/sub connection dropping. The `end` listener in
+        // setupSubscriptionHandler should clear the module reference so the next bind
+        // can call getPubSubRedisSubscriber again.
+        await new Promise<void>((resolve) => {
+          firstSubscriber.once('end', resolve);
+          firstSubscriber.disconnect();
+        });
+
+        // Use a second subscription so the rebind has a fresh cache entry. Closing the
+        // first socket runs onDisconnect, which removes the binding token from Redis.
+        const secondSubscription = await repo.createResource<Subscription>({
+          resourceType: 'Subscription',
+          reason: 'test',
+          status: 'active',
+          criteria: 'Patient',
+          channel: {
+            type: 'websocket',
+          },
+        });
+
+        const secondRes = await request(server)
+          .get(`/fhir/R4/Subscription/${secondSubscription.id}/$get-ws-binding-token`)
+          .set('Authorization', 'Bearer ' + accessToken);
+
+        const secondToken = (secondRes.body as FhirParameters).parameter?.[0]?.valueString as string;
+
+        // A new WebSocket bind after the subscriber ended should recreate the connection.
+        await request(server)
+          .ws('/ws/subscriptions-r4')
+          .sendJson({ type: 'bind-with-token', payload: { token: secondToken } })
+          .expectJson((actual) => {
+            expect(actual).toMatchObject({
+              resourceType: 'Bundle',
+              type: 'history',
+            });
+          })
+          .close()
+          .expectClosed();
+
+        expect(subscriberSpy).toHaveBeenCalledTimes(2);
+        expect(firstSubscriber).not.toBe(subscriberSpy.mock.results[1].value);
+      } finally {
+        subscriberSpy.mockRestore();
+      }
+    }));
+
   test('Heartbeat not received before binding to token', () =>
     withTestContext(async () => {
       await request(server)
@@ -2047,5 +2173,149 @@ describe('Subscription Heartbeat', () => {
         })
         .close()
         .expectClosed();
+    }));
+
+  test('Logs and ignores a client message that is not valid JSON', () =>
+    withTestContext(async () => {
+      const errorSpy = vi.spyOn(globalLogger, 'error');
+      try {
+        await request(server)
+          .ws('/ws/subscriptions-r4')
+          // A malformed message must be logged and dropped; the connection stays usable
+          .sendText('{ not valid json')
+          .sendJson({ type: 'ping' })
+          .expectJson({ type: 'pong' })
+          .exec(() => {
+            expect(errorSpy).toHaveBeenCalledWith(
+              expect.stringContaining('Failed to parse client message'),
+              expect.objectContaining({ socketId: expect.any(String) })
+            );
+          })
+          .close()
+          .expectClosed();
+      } finally {
+        errorSpy.mockRestore();
+      }
+    }));
+
+  test('Logs and ignores a malformed redis subscription event payload', () =>
+    withTestContext(async () => {
+      const subscription = await repo.createResource<Subscription>({
+        resourceType: 'Subscription',
+        reason: 'test',
+        status: 'active',
+        criteria: 'Patient',
+        channel: { type: 'websocket' },
+      });
+
+      const res = await request(server)
+        .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
+        .set('Authorization', 'Bearer ' + accessToken);
+      const token = (res.body as FhirParameters).parameter?.[0]?.valueString as string;
+
+      const errorSpy = vi.spyOn(globalLogger, 'error');
+      try {
+        await request(server)
+          .ws('/ws/subscriptions-r4')
+          .sendJson({ type: 'bind-with-token', payload: { token } })
+          .expectJson((actual) => {
+            expect(actual).toMatchObject({ resourceType: 'Bundle', type: 'history' });
+          })
+          .exec(async () => {
+            // Wait until the subscription is active so the redis subscriber is listening
+            let subActive = false;
+            while (!subActive) {
+              await sleep(0);
+              subActive = (await isSubscriptionActive(project.id, 'Patient', `Subscription/${subscription.id}`)) === 1;
+            }
+            // A non-JSON payload must be logged and ignored, not crash the redis message handler
+            await publish(WEBSOCKET_SUB_PUBLISH_CHANNEL, 'not-valid-json{');
+            for (let i = 0; i < 25; i++) {
+              if (
+                errorSpy.mock.calls.some(
+                  (call) =>
+                    typeof call[0] === 'string' && call[0].includes('Failed to parse subscription event payload')
+                )
+              ) {
+                break;
+              }
+              await sleep(20);
+            }
+            expect(errorSpy).toHaveBeenCalledWith(
+              expect.stringContaining('Failed to parse subscription event payload'),
+              expect.objectContaining({ channel: WEBSOCKET_SUB_PUBLISH_CHANNEL })
+            );
+          })
+          .close()
+          .expectClosed();
+      } finally {
+        errorSpy.mockRestore();
+      }
+    }));
+
+  test('Recovers when the subscription handler fails to initialize', () =>
+    withTestContext(async () => {
+      const subscription = await repo.createResource<Subscription>({
+        resourceType: 'Subscription',
+        reason: 'test',
+        status: 'active',
+        criteria: 'Patient',
+        channel: { type: 'websocket' },
+      });
+
+      const res = await request(server)
+        .get(`/fhir/R4/Subscription/${subscription.id}/$get-ws-binding-token`)
+        .set('Authorization', 'Bearer ' + accessToken);
+      const token = (res.body as FhirParameters).parameter?.[0]?.valueString as string;
+
+      // Reset module state so the next bind triggers a fresh setupSubscriptionHandler
+      cleanupR4SubscriptionResources();
+
+      const errorSpy = vi.spyOn(globalLogger, 'error');
+      // Fail the first attempt to create the redis subscriber
+      const subscriberSpy = vi.spyOn(redisModule, 'getPubSubRedisSubscriber').mockImplementationOnce(() => {
+        throw new Error('Redis unavailable');
+      });
+
+      try {
+        // First bind: setup throws, the cached promise is reset, and the bind error is logged
+        await request(server)
+          .ws('/ws/subscriptions-r4')
+          .sendJson({ type: 'bind-with-token', payload: { token } })
+          .exec(async () => {
+            for (let i = 0; i < 25; i++) {
+              if (
+                errorSpy.mock.calls.some(
+                  (call) => typeof call[0] === 'string' && call[0].includes('Error while binding with token')
+                )
+              ) {
+                break;
+              }
+              await sleep(20);
+            }
+          })
+          .close()
+          .expectClosed();
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Error while binding with token'));
+
+        subscriberSpy.mockRestore();
+
+        // Second bind: with the failure cleared, setup retries and the handshake succeeds
+        await request(server)
+          .ws('/ws/subscriptions-r4')
+          .sendJson({ type: 'bind-with-token', payload: { token } })
+          .expectJson((actual) => {
+            expect(actual).toMatchObject({
+              resourceType: 'Bundle',
+              type: 'history',
+              entry: [{ resource: { resourceType: 'SubscriptionStatus', type: 'handshake' } }],
+            });
+          })
+          .close()
+          .expectClosed();
+      } finally {
+        subscriberSpy.mockRestore();
+        errorSpy.mockRestore();
+      }
     }));
 });

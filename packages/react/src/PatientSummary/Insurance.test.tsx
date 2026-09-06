@@ -5,7 +5,6 @@ import type { Coverage, Organization } from '@medplum/fhirtypes';
 import { HomerSimpson, MockClient } from '@medplum/mock';
 import { MedplumProvider } from '@medplum/react-hooks';
 import type { ReactNode } from 'react';
-import { MemoryRouter } from 'react-router';
 import { act, fireEvent, render, screen } from '../test-utils/render';
 import { CoverageItem, Insurance } from './Insurance';
 
@@ -39,23 +38,19 @@ const mockInsuranceOrg: Organization = {
 describe('PatientSummary - Insurance', () => {
   async function setup(children: ReactNode): Promise<void> {
     await act(async () => {
-      render(
-        <MemoryRouter>
-          <MedplumProvider medplum={medplum}>{children}</MedplumProvider>
-        </MemoryRouter>
-      );
+      render(<MedplumProvider medplum={medplum}>{children}</MedplumProvider>);
     });
   }
 
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(async () => {
     await act(async () => {
-      jest.runOnlyPendingTimers();
+      vi.runOnlyPendingTimers();
     });
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('Renders empty when no coverages', async () => {
@@ -249,7 +244,7 @@ describe('PatientSummary - Insurance', () => {
   });
 
   test('Calls onClickResource when coverage item is clicked', async () => {
-    const mockOnClickResource = jest.fn();
+    const mockOnClickResource = vi.fn();
     const activeCoverages: Coverage[] = [
       {
         resourceType: 'Coverage',

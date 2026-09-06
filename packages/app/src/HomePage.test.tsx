@@ -45,6 +45,12 @@ describe('HomePage', () => {
     expect(await screen.findByTestId('search-control')).toBeInTheDocument();
   });
 
+  test('Renders resource type header', async () => {
+    await setup('/Bot');
+    expect(await screen.findByTestId('search-control')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Bot' })).toBeInTheDocument();
+  });
+
   test('Next page button', async () => {
     await setup();
     expect(await screen.findByLabelText('Next page')).toBeInTheDocument();
@@ -78,7 +84,7 @@ describe('HomePage', () => {
       accessToken: '123',
       refreshToken: '456',
       profile: {
-        reference: 'Practitioner/123',
+        reference: 'Practitioner/124',
       },
       project: {
         reference: 'Project/123',
@@ -99,7 +105,7 @@ describe('HomePage', () => {
   });
 
   test('Delete button, cancel', async () => {
-    window.confirm = jest.fn(() => false);
+    window.confirm = vi.fn(() => false);
 
     await setup();
     expect(await screen.findByText('Delete...')).toBeInTheDocument();
@@ -119,7 +125,7 @@ describe('HomePage', () => {
       name: [{ family }],
     });
 
-    window.confirm = jest.fn(() => true);
+    window.confirm = vi.fn(() => true);
 
     await setup('/Patient', medplum);
 
@@ -141,8 +147,8 @@ describe('HomePage', () => {
   });
 
   test('Export CSV button', async () => {
-    window.URL.createObjectURL = jest.fn(() => 'blob:http://localhost/blob');
-    window.open = jest.fn();
+    window.URL.createObjectURL = vi.fn(() => 'blob:http://localhost/blob');
+    window.open = vi.fn();
 
     // Mock the export operation
     const medplum = new MockClient();
@@ -167,7 +173,7 @@ describe('HomePage', () => {
   test('Export Transaction Bundle button', async () => {
     const medplum = new MockClient();
     medplum.router.router.add('GET', ':resourceType/', async () => [allOk]);
-    HTMLAnchorElement.prototype.click = jest.fn();
+    HTMLAnchorElement.prototype.click = vi.fn();
 
     await setup('/Patient', medplum);
     expect(await screen.findByText('Export...')).toBeInTheDocument();
@@ -213,7 +219,7 @@ describe('HomePage', () => {
   });
 
   test('Left click on row', async () => {
-    window.open = jest.fn();
+    window.open = vi.fn();
 
     await setup('/Patient');
     expect(await screen.findByTestId('search-control')).toBeInTheDocument();
@@ -230,7 +236,7 @@ describe('HomePage', () => {
   });
 
   test('Middle click on row', async () => {
-    window.open = jest.fn();
+    window.open = vi.fn();
 
     await setup('/Patient');
     expect(await screen.findByTestId('search-control')).toBeInTheDocument();

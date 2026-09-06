@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
 import type { WithId } from '@medplum/core';
-import { ContentType, SNOMED } from '@medplum/core';
+import { ContentType, createReference, SNOMED } from '@medplum/core';
 import type { ConceptMap, OperationOutcome, Parameters } from '@medplum/fhirtypes';
 import { randomUUID } from 'crypto';
 import express from 'express';
@@ -13,7 +13,7 @@ import { DatabaseMode, getDatabasePool } from '../../database';
 import { createTestProject } from '../../test.setup';
 import type { Repository } from '../repo';
 import { Column, Condition, SelectQuery } from '../sql';
-import { importConceptMap } from './conceptmapimport';
+import { importConceptMapResource } from './conceptmapimport';
 
 const app = express();
 const ICD10 = 'http://hl7.org/fhir/sid/icd-10-us';
@@ -64,33 +64,30 @@ describe('importConceptMap()', () => {
 
     const pool = getDatabasePool(DatabaseMode.WRITER);
     const db = await pool.connect();
-    await importConceptMap(db, resource);
+    await importConceptMapResource(db, resource);
     db.release();
 
     const results = await getMappingRows(pool, resource);
-    expect(results).toHaveLength(2);
-    expect(results).toStrictEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          conceptMap: resource.id,
-          sourceSystem: SNOMED,
-          sourceCode: '263204007',
-          targetSystem: ICD10,
-          targetCode: 'S52.209A',
-          relationship: 'narrower',
-          comment: expect.stringContaining('subsequent'),
-        }),
-        expect.objectContaining({
-          conceptMap: resource.id,
-          sourceSystem: SNOMED,
-          sourceCode: '263204007',
-          targetSystem: ICD10,
-          targetCode: 'S52.209D',
-          relationship: 'narrower',
-          comment: expect.stringContaining('subsequent'),
-        }),
-      ])
-    );
+    expect(results).toContainExactly([
+      expect.objectContaining({
+        conceptMap: resource.id,
+        sourceSystem: SNOMED,
+        sourceCode: '263204007',
+        targetSystem: ICD10,
+        targetCode: 'S52.209A',
+        relationship: 'narrower',
+        comment: expect.stringContaining('subsequent'),
+      }),
+      expect.objectContaining({
+        conceptMap: resource.id,
+        sourceSystem: SNOMED,
+        sourceCode: '263204007',
+        targetSystem: ICD10,
+        targetCode: 'S52.209D',
+        relationship: 'narrower',
+        comment: expect.stringContaining('subsequent'),
+      }),
+    ]);
   });
 
   test('Imports mapping metadata', async () => {
@@ -132,63 +129,60 @@ describe('importConceptMap()', () => {
 
     const pool = getDatabasePool(DatabaseMode.WRITER);
     const db = await pool.connect();
-    await importConceptMap(db, resource);
+    await importConceptMapResource(db, resource);
     db.release();
 
     const results = await getMappingRows(pool, resource);
-    expect(results).toHaveLength(4);
-    expect(results).toStrictEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          conceptMap: resource.id,
-          sourceSystem: SNOMED,
-          sourceCode: '1003470004',
-          targetSystem: ICD10,
-          targetCode: 'Z12.9',
-          relationship: null,
-          uri: null,
-          type: null,
-          value: null,
-          kind: null,
-        }),
-        expect.objectContaining({
-          conceptMap: resource.id,
-          sourceSystem: SNOMED,
-          sourceCode: '1003470004',
-          targetSystem: ICD10,
-          targetCode: 'Z12.11',
-          relationship: null,
-          kind: 'dependsOn',
-          uri: 'context',
-          type: 'Coding',
-          value: `{"system":"${SNOMED}","code":"460591000124101"}`,
-        }),
-        expect.objectContaining({
-          conceptMap: resource.id,
-          sourceSystem: SNOMED,
-          sourceCode: '1003470004',
-          targetSystem: ICD10,
-          targetCode: 'Z12.72',
-          relationship: null,
-          kind: 'dependsOn',
-          uri: 'context',
-          type: 'Coding',
-          value: `{"system":"${SNOMED}","code":"146861000119102"}`,
-        }),
-        expect.objectContaining({
-          conceptMap: resource.id,
-          sourceSystem: SNOMED,
-          sourceCode: '1003470004',
-          targetSystem: ICD10,
-          targetCode: 'Z12.72',
-          relationship: null,
-          kind: 'product',
-          uri: 'http://hl7.org/fhir/StructureDefinition/Patient#gender',
-          type: 'code',
-          value: `"female"`,
-        }),
-      ])
-    );
+    expect(results).toContainExactly([
+      expect.objectContaining({
+        conceptMap: resource.id,
+        sourceSystem: SNOMED,
+        sourceCode: '1003470004',
+        targetSystem: ICD10,
+        targetCode: 'Z12.9',
+        relationship: null,
+        uri: null,
+        type: null,
+        value: null,
+        kind: null,
+      }),
+      expect.objectContaining({
+        conceptMap: resource.id,
+        sourceSystem: SNOMED,
+        sourceCode: '1003470004',
+        targetSystem: ICD10,
+        targetCode: 'Z12.11',
+        relationship: null,
+        kind: 'dependsOn',
+        uri: 'context',
+        type: 'Coding',
+        value: `{"system":"${SNOMED}","code":"460591000124101"}`,
+      }),
+      expect.objectContaining({
+        conceptMap: resource.id,
+        sourceSystem: SNOMED,
+        sourceCode: '1003470004',
+        targetSystem: ICD10,
+        targetCode: 'Z12.72',
+        relationship: null,
+        kind: 'dependsOn',
+        uri: 'context',
+        type: 'Coding',
+        value: `{"system":"${SNOMED}","code":"146861000119102"}`,
+      }),
+      expect.objectContaining({
+        conceptMap: resource.id,
+        sourceSystem: SNOMED,
+        sourceCode: '1003470004',
+        targetSystem: ICD10,
+        targetCode: 'Z12.72',
+        relationship: null,
+        kind: 'product',
+        uri: 'http://hl7.org/fhir/StructureDefinition/Patient#gender',
+        type: 'code',
+        value: `"female"`,
+      }),
+    ]);
   });
 });
 
@@ -220,6 +214,7 @@ describe('ConceptMap/$import', () => {
 
     const res = await request(app)
       .post(`/fhir/R4/ConceptMap/${conceptMap.id}/$import`)
+      .set('X-Medplum', 'extended')
       .set('Authorization', 'Bearer ' + accessToken)
       .set('Content-Type', ContentType.FHIR_JSON)
       .send({
@@ -257,7 +252,7 @@ describe('ConceptMap/$import', () => {
           },
         ],
       } satisfies Parameters);
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
 
     const pool = getDatabasePool(DatabaseMode.READER);
 
@@ -295,6 +290,7 @@ describe('ConceptMap/$import', () => {
 
     const res = await request(app)
       .post(`/fhir/R4/ConceptMap/${conceptMap.id}/$import`)
+      .set('X-Medplum', 'extended')
       .set('Authorization', 'Bearer ' + accessToken)
       .set('Content-Type', ContentType.FHIR_JSON)
       .send({
@@ -309,7 +305,49 @@ describe('ConceptMap/$import', () => {
           },
         ],
       } satisfies Parameters);
-    expect(res.status).toBe(403);
+    expect(res).toHaveStatus(403);
+  });
+
+  test('Prevents writes by Project admin to linked Project ConceptMap', async () => {
+    // ConceptMaps in linked Projects are readable, but their mappings are shared server-wide;
+    // importing into one by ID must not bypass the `ownProjectOnly` check.
+    const { project: linkedProject, repo: linkedRepo } = await createTestProject({
+      withRepo: true,
+      project: { exportedResourceType: ['ConceptMap'] },
+    });
+    const conceptMap = await linkedRepo.createResource<ConceptMap>({
+      resourceType: 'ConceptMap',
+      status: 'draft',
+      name: 'Linked Project ConceptMap',
+    });
+
+    const { accessToken: linkedAccessToken } = await createTestProject({
+      withAccessToken: true,
+      membership: { admin: true },
+      project: { link: [{ project: createReference(linkedProject) }] },
+    });
+
+    const res = await request(app)
+      .post(`/fhir/R4/ConceptMap/${conceptMap.id}/$import`)
+      .set('X-Medplum', 'extended')
+      .set('Authorization', 'Bearer ' + linkedAccessToken)
+      .set('Content-Type', ContentType.FHIR_JSON)
+      .send({
+        resourceType: 'Parameters',
+        parameter: [
+          {
+            name: 'mapping',
+            part: [
+              { name: 'source', valueCoding: { system: SNOMED, code: '10347006' } },
+              { name: 'target', valueCoding: { system: 'http://hl7.org/fhir/sid/icd-10-cm', code: 'T50.905' } },
+            ],
+          },
+        ],
+      } satisfies Parameters);
+    expect(res).toHaveStatus(403);
+
+    const results = await getMappingRows(getDatabasePool(DatabaseMode.READER), conceptMap);
+    expect(results).toHaveLength(0);
   });
 
   test('Allows selecting ConceptMap by URL', async () => {
@@ -323,6 +361,7 @@ describe('ConceptMap/$import', () => {
       .post(`/fhir/R4/ConceptMap/$import`)
       .set('Authorization', 'Bearer ' + accessToken)
       .set('Content-Type', ContentType.FHIR_JSON)
+      .set('X-Medplum', 'extended')
       .send({
         resourceType: 'Parameters',
         parameter: [
@@ -336,7 +375,7 @@ describe('ConceptMap/$import', () => {
           },
         ],
       } satisfies Parameters);
-    expect(res.status).toBe(200);
+    expect(res).toHaveStatus(200);
   });
 
   test('Requires ConceptMap to be specified', async () => {
@@ -356,7 +395,7 @@ describe('ConceptMap/$import', () => {
           },
         ],
       } satisfies Parameters);
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect(res.body).toMatchObject<OperationOutcome>({
       resourceType: 'OperationOutcome',
       issue: [expect.objectContaining({ details: { text: 'ConceptMap to import into must be specified' } })],
@@ -372,6 +411,7 @@ describe('ConceptMap/$import', () => {
 
     const res = await request(app)
       .post(`/fhir/R4/ConceptMap/${conceptMap.id}/$import`)
+      .set('X-Medplum', 'extended')
       .set('Authorization', 'Bearer ' + accessToken)
       .set('Content-Type', ContentType.FHIR_JSON)
       .send({
@@ -387,7 +427,7 @@ describe('ConceptMap/$import', () => {
           },
         ],
       } satisfies Parameters);
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect(res.body).toMatchObject<OperationOutcome>({
       resourceType: 'OperationOutcome',
       issue: [
@@ -405,6 +445,7 @@ describe('ConceptMap/$import', () => {
 
     const res = await request(app)
       .post(`/fhir/R4/ConceptMap/${conceptMap.id}/$import`)
+      .set('X-Medplum', 'extended')
       .set('Authorization', 'Bearer ' + accessToken)
       .set('Content-Type', ContentType.FHIR_JSON)
       .send({
@@ -419,7 +460,7 @@ describe('ConceptMap/$import', () => {
           },
         ],
       } satisfies Parameters);
-    expect(res.status).toBe(400);
+    expect(res).toHaveStatus(400);
     expect(res.body).toMatchObject<OperationOutcome>({
       resourceType: 'OperationOutcome',
       issue: [expect.objectContaining({ details: { text: 'Source code for mapping is required' } })],
@@ -467,6 +508,57 @@ describe('ConceptMap/$import', () => {
     const pool = getDatabasePool(DatabaseMode.READER);
     const results = await getMappingRows(pool, map);
     expect(results).toHaveLength(0);
+  });
+
+  test('Import does not clobber or duplicate inline mappings', async () => {
+    const resource: ConceptMap = {
+      resourceType: 'ConceptMap',
+      version: '4.0.1',
+      status: 'draft',
+      group: [
+        {
+          source: SNOMED,
+          target: ICD10,
+          element: [
+            {
+              code: '263204007',
+              target: [
+                { code: 'S52.209A', equivalence: 'equivalent' },
+                { code: 'S52.209D', equivalence: 'equivalent' },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const map = await repo.createResource(resource);
+    const pool = getDatabasePool(DatabaseMode.READER);
+
+    const initial = await getMappingRows(pool, map);
+    expect(initial).toHaveLength(2);
+
+    const res = await request(app)
+      .post(`/fhir/R4/ConceptMap/${map.id}/$import`)
+      .set('X-Medplum', 'extended')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Content-Type', ContentType.FHIR_JSON)
+      .send({
+        resourceType: 'Parameters',
+        parameter: [
+          {
+            name: 'mapping',
+            part: [
+              { name: 'source', valueCoding: { system: 'http://snomed.info/sct', code: '10347006' } },
+              { name: 'target', valueCoding: { system: 'http://hl7.org/fhir/sid/icd-10-cm', code: 'T50.905' } },
+            ],
+          },
+        ],
+      } satisfies Parameters);
+    expect(res).toHaveStatus(200);
+
+    const result = await getMappingRows(pool, map);
+    expect(result).toHaveLength(3);
   });
 });
 

@@ -2,46 +2,83 @@
 // SPDX-License-Identifier: Apache-2.0
 import { AppShell as MantineAppShell } from '@mantine/core';
 import { locationUtils } from '@medplum/core';
-import { MockClient } from '@medplum/mock';
+import { MockClient, TestProject } from '@medplum/mock';
 import { MedplumProvider } from '@medplum/react-hooks';
-import { MemoryRouter } from 'react-router';
 import { Logo } from '../Logo/Logo';
 import { act, fireEvent, render, screen } from '../test-utils/render';
 import { Header } from './Header';
 
 const medplum = new MockClient();
-const navigateMock = jest.fn();
-const closeMock = jest.fn();
+const navigateMock = vi.fn();
+const closeMock = vi.fn();
 
-async function setup(initialUrl = '/'): Promise<void> {
+async function setup(client?: MockClient): Promise<void> {
   await act(async () => {
     render(
-      <MemoryRouter initialEntries={[initialUrl]} initialIndex={0}>
-        <MedplumProvider medplum={medplum} navigate={navigateMock}>
-          <MantineAppShell>
-            <Header logo={<Logo size={24} />} version="test.version" navbarToggle={closeMock} />
-          </MantineAppShell>
-        </MedplumProvider>
-      </MemoryRouter>
+      <MedplumProvider medplum={client ?? medplum} navigate={navigateMock}>
+        <MantineAppShell>
+          <Header logo={<Logo size={24} />} version="test.version" navbarToggle={closeMock} />
+        </MantineAppShell>
+      </MedplumProvider>
     );
   });
 }
 
 describe('Header', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     navigateMock.mockClear();
     closeMock.mockClear();
   });
 
   afterEach(async () => {
     await act(async () => {
-      jest.runOnlyPendingTimers();
+      vi.runOnlyPendingTimers();
     });
-    jest.useRealTimers();
+    vi.useRealTimers();
+    window.localStorage.clear();
   });
 
   test('Renders', async () => {
+    await setup();
+    expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+  });
+
+  test('Renders active project name', async () => {
+    // Simulate state where `auth/me` has not finished and so the explicit
+    // project resource has not loaded. In that case, we read the active project
+    // name from localStorage via `getActiveLogin()`
+    const medplum = new MockClient({ project: null });
+    window.localStorage.setItem(
+      'activeLogin',
+      JSON.stringify({
+        accessToken: 'abc',
+        refreshToken: 'xyz',
+        profile: {
+          reference: 'Practitioner/124',
+          display: 'Alice Smith',
+        },
+        project: {
+          reference: 'Project/456',
+          display: 'My Project',
+        },
+      })
+    );
+
+    await setup(medplum);
+    expect(screen.getByText('My Project')).toBeInTheDocument();
+
+    // Simulate auth loading completing. The displayed active project name
+    // should now use the value from that result. These will usually match,
+    // but could differ if the project has been renamed since the local
+    // storage was last written to.
+    await act(() => medplum.mock.setProject(TestProject));
+    expect(screen.getByText(TestProject.name)).toBeInTheDocument();
+
+    window.localStorage.removeItem('activeLogin');
+  });
+
+  test('Renders user name', async () => {
     await setup();
     expect(screen.getByText('Alice Smith')).toBeInTheDocument();
   });
@@ -65,7 +102,7 @@ describe('Header', () => {
   });
 
   test('Switch profile', async () => {
-    const reloadSpy = jest.spyOn(locationUtils, 'reload').mockImplementation(() => {});
+    const reloadSpy = vi.spyOn(locationUtils, 'reload').mockImplementation(() => {});
 
     window.localStorage.setItem(
       'activeLogin',
@@ -73,7 +110,7 @@ describe('Header', () => {
         accessToken: 'abc',
         refreshToken: 'xyz',
         profile: {
-          reference: 'Practitioner/123',
+          reference: 'Practitioner/124',
           display: 'Alice Smith',
         },
         project: {
@@ -89,7 +126,7 @@ describe('Header', () => {
           accessToken: 'abc',
           refreshToken: 'xyz',
           profile: {
-            reference: 'Practitioner/123',
+            reference: 'Practitioner/124',
             display: 'Alice Smith',
           },
           project: {
@@ -119,7 +156,7 @@ describe('Header', () => {
       fireEvent.click(screen.getByText('Alice Smith'));
     });
 
-    expect(await screen.findByText('My Project')).toBeInTheDocument();
+    expect((await screen.findAllByText('Project 123')).length).toBeGreaterThan(0);
     expect(await screen.findByText('My Other Project')).toBeInTheDocument();
 
     // Click on other project to switch
@@ -153,7 +190,7 @@ describe('Header', () => {
       fireEvent.click(screen.getByText('Account settings'));
     });
 
-    expect(navigateMock).toHaveBeenCalledWith('/Practitioner/123');
+    expect(navigateMock).toHaveBeenCalledWith('/Practitioner/124');
   });
 
   test('Sign out', async () => {

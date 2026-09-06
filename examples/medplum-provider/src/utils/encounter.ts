@@ -1,7 +1,14 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
-import type { MedplumClient, WithId } from '@medplum/core';
-import { createReference, getExtension, getReferenceString, HTTP_HL7_ORG, isResource } from '@medplum/core';
+import type { MedplumClient, PatchOperation, WithId } from '@medplum/core';
+import {
+  createReference,
+  getExtension,
+  getReferenceString,
+  HTTP_HL7_ORG,
+  isReference,
+  isResource,
+} from '@medplum/core';
 import type {
   Appointment,
   ChargeItem,
@@ -22,11 +29,12 @@ export async function createAppointment(
   medplum: MedplumClient,
   start: Date,
   end: Date,
-  patient: Patient,
+  patient: Patient | Reference<Patient>,
   practitioner: Practitioner | Reference<Practitioner>,
   schedule?: Schedule
 ): Promise<Appointment> {
   const practitionerRef = isResource(practitioner) ? createReference(practitioner) : practitioner;
+  const patientRef = isResource(patient) ? createReference(patient) : patient;
 
   // If we have a schedule reference, add a busy slot to prevent future
   // scheduling operations (such as $find or $book) from thinking this
@@ -50,7 +58,7 @@ export async function createAppointment(
     slot: slot ? [createReference(slot)] : undefined,
     participant: [
       {
-        actor: createReference(patient),
+        actor: patientRef,
         status: 'accepted',
       },
       {
@@ -66,20 +74,22 @@ export async function createAppointment(
 export async function createEncounter(
   medplum: MedplumClient,
   classification: Coding,
-  patient: Patient,
-  planDefinition: PlanDefinition,
+  patient: Patient | Reference<Patient>,
+  planDefinition: PlanDefinition | undefined,
   appointment: Appointment,
   practitioner: Practitioner | Reference<Practitioner>
-): Promise<Encounter> {
+): Promise<WithId<Encounter>> {
   const practitionerRef = isResource(practitioner) ? createReference(practitioner) : practitioner;
+  const patientRef = isResource(patient) ? createReference(patient) : patient;
 
-  const encounter: Encounter = await medplum.createResource({
+  const encounter = await medplum.createResource<Encounter>({
     resourceType: 'Encounter',
     status: 'planned',
     statusHistory: [],
     classHistory: [],
     class: classification,
-    subject: createReference(patient),
+    type: planDefinition?.title ? [{ text: planDefinition.title }] : undefined,
+    subject: patientRef,
     appointment: [createReference(appointment)],
     participant: [{ individual: practitionerRef }],
   });
@@ -88,24 +98,27 @@ export async function createEncounter(
     resourceType: 'ClinicalImpression',
     status: 'in-progress',
     description: 'Initial clinical impression',
-    subject: createReference(patient),
+    subject: patientRef,
     encounter: createReference(encounter),
     date: new Date().toISOString(),
   };
 
   await medplum.createResource(clinicalImpressionData);
 
-  await medplum.post(medplum.fhirUrl('PlanDefinition', planDefinition.id as string, '$apply'), {
-    resourceType: 'Parameters',
-    parameter: [
-      { name: 'subject', valueString: getReferenceString(patient) },
-      { name: 'encounter', valueString: getReferenceString(encounter) },
-      { name: 'practitioner', valueString: getReferenceString(practitioner) },
-    ],
-  });
+  if (planDefinition) {
+    await medplum.post(medplum.fhirUrl('PlanDefinition', planDefinition.id as string, '$apply'), {
+      resourceType: 'Parameters',
+      parameter: [
+        { name: 'subject', valueString: getReferenceString(patient) },
+        { name: 'encounter', valueString: getReferenceString(encounter) },
+        { name: 'practitioner', valueString: getReferenceString(practitioner) },
+      ],
+    });
 
-  await createChargeItemFromPlanDefinition(medplum, encounter, patient, planDefinition);
-  await handleChargeItemsFromTasks(medplum, encounter, patient);
+    await createChargeItemFromPlanDefinition(medplum, encounter, patientRef, planDefinition);
+  }
+
+  await handleChargeItemsFromTasks(medplum, encounter, patientRef);
 
   return encounter;
 }
@@ -113,7 +126,7 @@ export async function createEncounter(
 async function createChargeItemFromPlanDefinition(
   medplum: MedplumClient,
   encounter: Encounter,
-  patient: Patient,
+  patient: Reference<Patient>,
   planDefinition: PlanDefinition
 ): Promise<void> {
   const serviceBillingCodeExtension = getExtension(
@@ -142,7 +155,7 @@ async function createChargeItemFromPlanDefinition(
   const chargeItem: ChargeItem = {
     resourceType: 'ChargeItem',
     status: 'planned',
-    subject: createReference(patient),
+    subject: patient,
     context: createReference(encounter),
     occurrenceDateTime: new Date().toISOString(),
     code: serviceBillingCodeExtension.valueCodeableConcept,
@@ -159,7 +172,7 @@ async function createChargeItemFromPlanDefinition(
 async function handleChargeItemsFromTasks(
   medplum: MedplumClient,
   encounter: Encounter,
-  patient: Patient
+  patient: Reference<Patient>
 ): Promise<void> {
   const tasks = await medplum.search('Task', {
     encounter: getReferenceString(encounter),
@@ -192,7 +205,7 @@ async function handleChargeItemsFromTasks(
 
 async function createChargeItemFromServiceRequest(
   medplum: MedplumClient,
-  patient: Patient,
+  patient: Reference<Patient>,
   serviceRequest: ServiceRequest
 ): Promise<void> {
   const chargeDefinitionExtension = getExtension(
@@ -218,7 +231,7 @@ async function createChargeItemFromServiceRequest(
         reference: `ServiceRequest/${serviceRequest.id}`,
       },
     ],
-    subject: createReference(patient),
+    subject: patient,
     context: serviceRequest.encounter,
     occurrenceDateTime: serviceRequest.occurrenceDateTime || new Date().toISOString(),
     code: serviceRequest.code || { coding: [] },
@@ -231,51 +244,55 @@ async function createChargeItemFromServiceRequest(
   await medplum.createResource(chargeItem);
 }
 
+const APPOINTMENT_STATUS_BY_ENCOUNTER_STATUS: Partial<Record<NonNullable<Encounter['status']>, Appointment['status']>> =
+  {
+    cancelled: 'cancelled',
+    finished: 'fulfilled',
+    'in-progress': 'checked-in',
+    arrived: 'arrived',
+  };
+
 export async function updateEncounterStatus(
   medplum: MedplumClient,
   encounter: WithId<Encounter>,
   appointment: WithId<Appointment> | undefined,
   newStatus: Encounter['status']
 ): Promise<WithId<Encounter>> {
-  const updatedEncounter: WithId<Encounter> = {
-    ...encounter,
-    status: newStatus,
-    ...(newStatus === 'in-progress' &&
-      !encounter.period?.start && {
-        period: {
-          ...encounter.period,
-          start: new Date().toISOString(),
-        },
-      }),
-    ...(newStatus === 'finished' &&
-      !encounter.period?.end && {
-        period: {
-          ...encounter.period,
-          end: new Date().toISOString(),
-        },
-      }),
-  };
+  const ops: PatchOperation[] = [{ op: 'replace', path: '/status', value: newStatus }];
 
-  if (appointment) {
-    const updatedAppointment: Appointment = appointment;
-    switch (newStatus) {
-      case 'cancelled':
-        updatedAppointment.status = 'cancelled';
-        break;
-      case 'finished':
-        updatedAppointment.status = 'fulfilled';
-        break;
-      case 'in-progress':
-        updatedAppointment.status = 'checked-in';
-        break;
-      case 'arrived':
-        updatedAppointment.status = 'arrived';
-        break;
-      default:
-        break;
-    }
-    await medplum.updateResource(updatedAppointment);
+  if (newStatus === 'in-progress' && !encounter.period?.start) {
+    ops.push(
+      encounter.period
+        ? { op: 'add', path: '/period/start', value: new Date().toISOString() }
+        : { op: 'add', path: '/period', value: { start: new Date().toISOString() } }
+    );
   }
 
-  return medplum.updateResource(updatedEncounter);
+  if (newStatus === 'finished' && !encounter.period?.end) {
+    ops.push(
+      encounter.period
+        ? { op: 'add', path: '/period/end', value: new Date().toISOString() }
+        : { op: 'add', path: '/period', value: { end: new Date().toISOString() } }
+    );
+  }
+
+  const appointmentStatus = newStatus && APPOINTMENT_STATUS_BY_ENCOUNTER_STATUS[newStatus];
+  if (appointment && appointmentStatus) {
+    await medplum.patchResource('Appointment', appointment.id, [
+      { op: 'replace', path: '/status', value: appointmentStatus },
+    ]);
+  }
+
+  return medplum.patchResource('Encounter', encounter.id, ops);
+}
+
+export function encounterUrl(encounter: WithId<Encounter>): string {
+  // If the encounter subject is a Patient, deep link to the encounter
+  // inside that patient's context
+  if (isReference(encounter.subject, 'Patient')) {
+    return `/${encounter.subject.reference}/${getReferenceString(encounter)}`;
+  }
+
+  // Otherwise, link to the ResourcePage to show basic info
+  return `/Encounter/${encounter.id}`;
 }

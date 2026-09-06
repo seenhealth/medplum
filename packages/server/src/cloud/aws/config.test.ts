@@ -4,7 +4,6 @@ import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-sec
 import { GetParametersByPathCommand, SSMClient } from '@aws-sdk/client-ssm';
 import type { AwsClientStub } from 'aws-sdk-client-mock';
 import { mockClient } from 'aws-sdk-client-mock';
-import 'aws-sdk-client-mock-jest';
 import { getConfig, loadConfig } from '../../config/loader';
 
 describe('Config', () => {
@@ -31,6 +30,7 @@ describe('Config', () => {
         { Name: 'botCustomFunctionsEnabled', Value: 'true' },
         { Name: 'logAuditEvents', Value: 'true' },
         { Name: 'registerEnabled', Value: 'false' },
+        { Name: 'requireVerifiedEmailForProjectCreation', Value: 'false' },
         {
           Name: 'defaultProjectSystemSetting',
           Value: '[{"name":"someSetting","valueString":"someValue"},{"name":"secondSetting","valueInteger":5}]',
@@ -52,6 +52,7 @@ describe('Config', () => {
     expect(config.botCustomFunctionsEnabled).toStrictEqual(true);
     expect(config.logAuditEvents).toStrictEqual(true);
     expect(config.registerEnabled).toStrictEqual(false);
+    expect(config.requireVerifiedEmailForProjectCreation).toStrictEqual(false);
     expect(config.defaultProjectSystemSetting).toStrictEqual([
       { name: 'someSetting', valueString: 'someValue' },
       { name: 'secondSetting', valueInteger: 5 },
@@ -62,7 +63,7 @@ describe('Config', () => {
     expect(config.database.ssl?.rejectUnauthorized).toStrictEqual(true);
     expect(config.database.ssl?.ca).toStrictEqual('DatabaseSslCa');
     expect(getConfig()).toBe(config);
-    expect(mockSSMClient).toReceiveCommand(GetParametersByPathCommand);
+    expect(mockSSMClient.commandCalls(GetParametersByPathCommand).length).toBeGreaterThan(0);
   });
 
   test('Load region AWS config', async () => {
@@ -71,12 +72,16 @@ describe('Config', () => {
     expect(config.baseUrl).toBeDefined();
     expect(config.port).toStrictEqual(8080);
     expect(getConfig()).toBe(config);
-    expect(mockSecretsManagerClient).toReceiveCommand(GetSecretValueCommand);
-    expect(mockSecretsManagerClient).toReceiveCommandWith(GetSecretValueCommand, {
-      SecretId: 'DatabaseSecretsArn',
-    });
-    expect(mockSecretsManagerClient).toReceiveCommandWith(GetSecretValueCommand, {
-      SecretId: 'RedisSecretsArn',
-    });
+    expect(mockSecretsManagerClient.commandCalls(GetSecretValueCommand).length).toBeGreaterThan(0);
+    expect(
+      mockSecretsManagerClient.commandCalls(GetSecretValueCommand, {
+        SecretId: 'DatabaseSecretsArn',
+      })
+    ).toHaveLength(1);
+    expect(
+      mockSecretsManagerClient.commandCalls(GetSecretValueCommand, {
+        SecretId: 'RedisSecretsArn',
+      })
+    ).toHaveLength(1);
   });
 });

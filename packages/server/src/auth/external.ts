@@ -13,7 +13,6 @@ import {
 } from '@medplum/core';
 import type { ClientApplication, DomainConfiguration, IdentityProvider, Project } from '@medplum/fhirtypes';
 import type { Request, Response } from 'express';
-import fetch from 'node-fetch';
 import { randomUUID } from 'node:crypto';
 import { getConfig } from '../config/loader';
 import { sendOutcome } from '../fhir/outcomes';
@@ -22,6 +21,7 @@ import { getLogger, globalLogger } from '../logger';
 import { getClientRedirectUri } from '../oauth/clients';
 import type { CodeChallengeMethod } from '../oauth/utils';
 import { getClientApplication, tryLogin } from '../oauth/utils';
+import { safeFetch } from '../util/url';
 import { getDomainConfiguration } from './method';
 
 /*
@@ -260,8 +260,13 @@ async function verifyExternalCode(
   code: string,
   codeVerifier: string | undefined
 ): Promise<Record<string, unknown>> {
+  if (!idp.tokenUrl) {
+    throw new OperationOutcomeError(badRequest('Missing token URL for external identity provider'));
+  }
+
   const headers: HeadersInit = {
     Accept: ContentType.JSON,
+    'Accept-Encoding': 'identity',
     'Content-Type': ContentType.FORM_URL_ENCODED,
   };
 
@@ -275,6 +280,10 @@ async function verifyExternalCode(
   }
 
   if (idp.tokenAuthMethod === OAuthTokenAuthMethod.ClientSecretPost) {
+    if (!idp.clientId || !idp.clientSecret) {
+      throw new OperationOutcomeError(badRequest('Missing client ID or client secret for external identity provider'));
+    }
+
     params.append('client_id', idp.clientId);
     params.append('client_secret', idp.clientSecret);
   } else {
@@ -283,7 +292,7 @@ async function verifyExternalCode(
   }
 
   try {
-    const response = await fetch(idp.tokenUrl, {
+    const response = await safeFetch(idp.tokenUrl, {
       method: 'POST',
       headers,
       body: params.toString(),

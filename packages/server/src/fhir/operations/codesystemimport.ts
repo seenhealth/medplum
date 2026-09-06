@@ -1,11 +1,19 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
 import type { WithId } from '@medplum/core';
-import { OperationOutcomeError, allOk, badRequest, forbidden, normalizeOperationOutcome } from '@medplum/core';
+import {
+  AccessPolicyInteraction,
+  OperationOutcomeError,
+  allOk,
+  badRequest,
+  forbidden,
+  normalizeOperationOutcome,
+} from '@medplum/core';
 import type { FhirRequest, FhirResponse } from '@medplum/fhir-router';
 import type { CodeSystem, CodeSystemProperty, Coding, OperationDefinitionParameter } from '@medplum/fhirtypes';
-import type { PoolClient } from 'pg';
 import { getAuthenticatedContext } from '../../context';
+import { repoAccess } from '../repository/access-tracker';
+import type { PgQueryable } from '../sql';
 import { Condition, InsertQuery, SelectQuery } from '../sql';
 import { makeOperationDefinition } from './definitions';
 import { buildOutputParameters, parseInputParameters } from './utils/parameters';
@@ -20,7 +28,7 @@ function makeCodeAttributeParameter(
     use: 'in',
     name: paramName,
     min: 0,
-    max: '*',
+    max: '1000',
     part: [
       { use: 'in', name: 'code', type: 'code', min: 1, max: '1' },
       { use: 'in', ...attributeParam },
@@ -36,7 +44,7 @@ const operation = makeOperationDefinition(
     code: 'import',
     parameter: [
       { use: 'in', name: 'system', type: 'uri', min: 0, max: '1' },
-      { use: 'in', name: 'concept', type: 'Coding', min: 0, max: '*' },
+      { use: 'in', name: 'concept', type: 'Coding', min: 0, max: '1000' },
       makeCodeAttributeParameter('property', {
         name: 'property',
         type: 'code',
@@ -94,6 +102,9 @@ export async function codeSystemImportHandler(req: FhirRequest): Promise<FhirRes
   let codeSystem: WithId<CodeSystem>;
   if (req.params.id) {
     codeSystem = await repo.readResource<CodeSystem>('CodeSystem', req.params.id);
+    if (!repo.canPerformInteraction(AccessPolicyInteraction.UPDATE, codeSystem)) {
+      return [forbidden];
+    }
   } else if (params.system) {
     codeSystem = await findTerminologyResource<CodeSystem>(repo, 'CodeSystem', params.system, {
       ownProjectOnly: !isSuperAdmin,
@@ -103,9 +114,16 @@ export async function codeSystemImportHandler(req: FhirRequest): Promise<FhirRes
   }
 
   try {
-    await repo.withTransaction(async (db) => {
-      await importCodeSystem(db, codeSystem, params.concept, params.property, params.designation);
-    });
+    await repo.withTransaction(
+      async (txRepo) => {
+        // `importCodeSystem` operates only on CodeSystem derivative tables
+        const db = txRepo.getDatabaseClient(
+          repoAccess.sqlWrite('CodeSystem', { source: 'codeSystemImportHandler.client' })
+        );
+        await importCodeSystem(db, codeSystem, params.concept, params.property, params.designation);
+      },
+      { resourceTypes: ['CodeSystem'], source: 'codeSystemImportHandler' }
+    );
   } catch (err) {
     return [normalizeOperationOutcome(err)];
   }
@@ -113,7 +131,7 @@ export async function codeSystemImportHandler(req: FhirRequest): Promise<FhirRes
 }
 
 export async function importCodeSystem(
-  db: PoolClient,
+  db: PgQueryable,
   codeSystem: WithId<CodeSystem>,
   concepts?: Coding[],
   properties?: ImportedProperty[],
@@ -123,7 +141,7 @@ export async function importCodeSystem(
     const rows = uniqueOn(concepts, (c) => c.code as string).map((c) => ({
       system: codeSystem.id,
       code: c.code,
-      display: c.display,
+      display: c.display?.normalize('NFC'),
       isSynonym: false,
     }));
     const query = new InsertQuery('Coding', rows).mergeOnConflict(
@@ -140,7 +158,9 @@ export async function importCodeSystem(
   if (designations?.length) {
     const lookupCodes = new Set<string>(designations.map((d) => d.code));
     // Batch lookup all Codings with associated properties
-    const codingIds = await selectCoding(codeSystem.id, ...lookupCodes).execute(db);
+    const codingIds = await selectCoding(codeSystem.id, ...lookupCodes)
+      .where('synonymOf', '=', null)
+      .execute(db);
     const synonyms: Record<string, any>[] = [];
     for (const designation of designations) {
       // Add synonym row
@@ -151,7 +171,7 @@ export async function importCodeSystem(
       synonyms.push({
         system: codeSystem.id,
         code: designation.code,
-        display: designation.value,
+        display: designation.value.normalize('NFC'),
         isSynonym: true,
         synonymOf: sourceCodingId,
         language: designation.language,
@@ -165,7 +185,7 @@ export async function importCodeSystem(
 async function processProperties(
   importedProperties: ImportedProperty[],
   codeSystem: WithId<CodeSystem>,
-  db: PoolClient
+  db: PgQueryable
 ): Promise<void> {
   const cache: Record<string, { id: number; property: CodeSystemProperty }> = Object.create(null);
   const lookupCodes = new Set<string>();
@@ -185,7 +205,9 @@ async function processProperties(
   }
 
   // Batch lookup all Codings with associated properties
-  const codingIds = await selectCoding(codeSystem.id, ...lookupCodes).execute(db);
+  const codingIds = await selectCoding(codeSystem.id, ...lookupCodes)
+    .where('synonymOf', '=', null)
+    .execute(db);
   const rows: Record<string, any>[] = [];
   const synonyms: Record<string, any>[] = [];
   for (const imported of importedProperties) {
@@ -207,7 +229,7 @@ async function processProperties(
       synonyms.push({
         system: codeSystem.id,
         code: imported.code,
-        display: imported.value,
+        display: imported.value.normalize('NFC'),
         isSynonym: true,
         synonymOf: sourceCodingId,
       });
@@ -226,7 +248,7 @@ async function processProperties(
 async function resolveProperty(
   codeSystem: CodeSystem,
   code: string,
-  db: PoolClient
+  db: PgQueryable
 ): Promise<[number, CodeSystemProperty]> {
   let prop = codeSystem.property?.find((p) => p.code === code);
   if (!prop) {

@@ -8,7 +8,10 @@ import type {
   Condition,
   Coverage,
   DiagnosticReport,
+  Goal,
+  Immunization,
   MedicationRequest,
+  MedicationStatement,
   Observation,
   ServiceRequest,
 } from '@medplum/fhirtypes';
@@ -22,6 +25,8 @@ import {
 } from '@tabler/icons-react';
 import type { ComponentType } from 'react';
 import { Allergies } from './Allergies';
+import { Goals } from './Goals';
+import { Immunizations } from './Immunizations';
 import { Insurance } from './Insurance';
 import { Labs } from './Labs';
 import { Medications } from './Medications';
@@ -141,17 +146,41 @@ export const ProblemListSection: PatientSummarySectionConfig = {
   ),
 };
 
-/** Medications section — searches for MedicationRequest resources. */
+/** Medications section — searches for MedicationRequest and MedicationStatement resources. */
 export const MedicationsSection: PatientSummarySectionConfig = {
   key: 'medications',
   title: 'Medications',
-  searches: [{ key: 'medications', resourceType: 'MedicationRequest', patientParam: 'subject' }],
+  searches: [
+    { key: 'medicationRequests', resourceType: 'MedicationRequest', patientParam: 'subject' },
+    { key: 'medicationStatements', resourceType: 'MedicationStatement', patientParam: 'subject' },
+  ],
   component: ({ results, patient, onClickResource }: SectionRenderContext) => (
     <Medications
       patient={patient}
-      medicationRequests={(results['medications'] as MedicationRequest[]) || []}
+      medicationRequests={(results['medicationRequests'] as MedicationRequest[]) || []}
+      medicationStatements={(results['medicationStatements'] as MedicationStatement[]) || []}
       onClickResource={onClickResource}
     />
+  ),
+};
+
+/** Immunizations section — searches for Immunization resources. */
+export const ImmunizationsSection: PatientSummarySectionConfig = {
+  key: 'immunizations',
+  title: 'Immunizations',
+  searches: [{ key: 'immunizations', resourceType: 'Immunization', patientParam: 'patient' }],
+  component: ({ results, patient }: SectionRenderContext) => (
+    <Immunizations patient={patient} immunizations={(results['immunizations'] as Immunization[]) || []} />
+  ),
+};
+
+/** Goals section — searches for Goal resources. */
+export const GoalsSection: PatientSummarySectionConfig = {
+  key: 'goals',
+  title: 'Goals',
+  searches: [{ key: 'goals', resourceType: 'Goal', patientParam: 'patient' }],
+  component: ({ results, patient }: SectionRenderContext) => (
+    <Goals patient={patient} goals={(results['goals'] as Goal[]) || []} />
   ),
 };
 
@@ -260,10 +289,12 @@ export function getDefaultSections(onRequestLabs?: () => void): PatientSummarySe
     AllergiesSection,
     ProblemListSection,
     MedicationsSection,
+    ImmunizationsSection,
     createLabsSection(onRequestLabs),
     SexualOrientationSection,
     SmokingStatusSection,
     VitalsSection,
+    GoalsSection,
     PharmaciesSection,
   ];
 }

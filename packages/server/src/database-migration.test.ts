@@ -3,16 +3,18 @@
 import type { WithId } from '@medplum/core';
 import { allOk, badRequest, createReference, getReferenceString, parseSearchRequest } from '@medplum/core';
 import type { AsyncJob, Login, Practitioner, Project, ProjectMembership, User } from '@medplum/fhirtypes';
-import type { Queue } from 'bullmq';
+import type { Job, Queue } from 'bullmq';
 import { randomUUID } from 'crypto';
 import express from 'express';
-import type { Pool, PoolClient } from 'pg';
 import request from 'supertest';
+import type { MockedFunction, MockInstance } from 'vitest';
+import { vi } from 'vitest';
 import { initApp, initAppServices, shutdownApp } from './app';
 import { getConfig, loadTestConfig } from './config/loader';
 import { DatabaseMode, getDatabasePool } from './database';
 import type { SystemRepository } from './fhir/repo';
 import { getGlobalSystemRepo } from './fhir/repo';
+import type { PgQueryable } from './fhir/sql';
 import { globalLogger } from './logger';
 import * as migrationSql from './migration-sql';
 import type {
@@ -20,13 +22,22 @@ import type {
   CustomPostDeployMigrationJobData,
   PostDeployJobData,
 } from './migrations/data/types';
+import type * as MigrationDataV1 from './migrations/data/v1';
 import * as migrateModule from './migrations/migrate';
-import { getPendingPostDeployMigration, maybeStartPostDeployMigration } from './migrations/migration-utils';
+import * as migrationUtils from './migrations/migration-utils';
+import {
+  getPendingPostDeployMigration,
+  maybeStartPostDeployMigration,
+  MigrationDefinitionNotFoundError,
+} from './migrations/migration-utils';
+import * as migrationVersions from './migrations/migration-versions';
 import { getLatestPostDeployMigrationVersion, MigrationVersion } from './migrations/migration-versions';
-import type { MigrationAction, MigrationActionResult } from './migrations/types';
+import type { MigrationAction } from './migrations/types';
 import { generateAccessToken } from './oauth/keys';
 import { createTestProject, withTestContext } from './test.setup';
 import * as version from './util/version';
+import * as workers from './workers';
+import type * as PostDeployMigration from './workers/post-deploy-migration';
 import { PostDeployMigrationQueueName, prepareCustomMigrationJobData } from './workers/post-deploy-migration';
 import type { ReindexJobData } from './workers/reindex';
 import { getReindexQueue, prepareReindexJobData, ReindexJob } from './workers/reindex';
@@ -40,61 +51,79 @@ const mockValues = {
   postDeployVersion: DEFAULT_POST_DEPLOY_VERSION,
 };
 
-const mockGetPostDeployVersion = jest
-  .fn<ReturnType<typeof migrationSql.getPostDeployVersion>, Parameters<typeof migrationSql.getPostDeployVersion>>()
-  .mockImplementation(async () => {
-    return mockValues.postDeployVersion;
-  });
+const mockGetPostDeployVersion = vi.fn<typeof migrationSql.getPostDeployVersion>().mockImplementation(async () => {
+  return mockValues.postDeployVersion;
+});
 
-const mockMarkPostDeployMigrationCompleted = jest
-  .fn<
-    ReturnType<typeof migrationSql.markPostDeployMigrationCompleted>,
-    Parameters<typeof migrationSql.markPostDeployMigrationCompleted>
-  >()
-  .mockImplementation(async (_pool: Pool | PoolClient, dataVersion: number) => {
+const mockMarkPostDeployMigrationCompleted = vi
+  .fn<typeof migrationSql.markPostDeployMigrationCompleted>()
+  .mockImplementation(async (_client: PgQueryable, dataVersion: number) => {
     if (!Number.isInteger(dataVersion)) {
       throw new Error('Invalid data version in mocked markPostDeployMigrationCompleted: ' + dataVersion);
     }
     return dataVersion;
   });
 
-jest.mock('./migrations/data/v1', () => {
-  const { prepareCustomMigrationJobData, runCustomMigration } = jest.requireActual('./workers/post-deploy-migration');
-  const migration: CustomPostDeployMigration = {
+const migrationMocks = vi.hoisted(() => ({
+  customMigration: undefined as CustomPostDeployMigration | undefined,
+}));
+
+vi.mock('./migrations/data/v1', async () => {
+  const { prepareCustomMigrationJobData, runCustomMigration } = await vi.importActual<typeof PostDeployMigration>(
+    './workers/post-deploy-migration'
+  );
+  migrationMocks.customMigration = {
     type: 'custom',
     prepareJobData: (asyncJob) => prepareCustomMigrationJobData(asyncJob),
-    run: function (repo, jobData) {
-      return runCustomMigration(repo, jobData, async () => {
-        const results: MigrationActionResult[] = [];
+    run: function (repo, job, jobData) {
+      return runCustomMigration(repo, job, jobData, async (_client, results) => {
         results.push({ name: 'nothing', durationMs: 5 });
-        return results;
       });
     },
   };
 
-  return { migration };
+  return { migration: migrationMocks.customMigration };
 });
 
-jest.mock('./migrations/data/index', () => {
-  return {
-    v1: jest.requireMock('./migrations/data/v1'),
-  };
+vi.mock('./migrations/data/index', async () => {
+  const v1 = await vi.importMock<typeof MigrationDataV1>('./migrations/data/v1');
+  return { v1 };
 });
 
-function getQueueAddSpy(): jest.MockedFunctionDeep<Queue<PostDeployJobData>['add']> {
+function mockQueueAddImplementation(queue: Queue | undefined): void {
+  if (!queue) {
+    return;
+  }
+  vi.mocked(queue.add).mockImplementation(
+    async (jobName, jobData, options) =>
+      ({
+        id: '123',
+        name: jobName,
+        data: jobData,
+        opts: options,
+      }) as Job
+  );
+}
+
+function restoreWorkerQueueMocks(): void {
+  mockQueueAddImplementation(queueRegistry.get(PostDeployMigrationQueueName));
+  mockQueueAddImplementation(getReindexQueue());
+}
+
+function getQueueAddSpy(): MockedFunction<Queue<PostDeployJobData>['add']> {
   const queue = queueRegistry.get<PostDeployJobData>(PostDeployMigrationQueueName);
   if (!queue) {
     throw new Error(`Job queue ${PostDeployMigrationQueueName} not available`);
   }
-  return jest.mocked(queue.add);
+  return vi.mocked(queue.add);
 }
 
-function getReindexQueueAddSpy(): jest.MockedFunctionDeep<Queue<ReindexJobData>['add']> {
+function getReindexQueueAddSpy(): MockedFunction<Queue<ReindexJobData>['add']> {
   const queue = getReindexQueue();
   if (!queue) {
     throw new Error(`Reindex job queue not available`);
   }
-  return jest.mocked(queue.add);
+  return vi.mocked(queue.add);
 }
 
 function setMigrationsConfig(preDeploy: boolean, postDeploy: boolean): void {
@@ -115,13 +144,36 @@ describe('Database migrations', () => {
   let systemRepo: SystemRepository;
 
   beforeAll(async () => {
-    jest.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
+    const { prepareCustomMigrationJobData, runCustomMigration } = await import('./workers/post-deploy-migration');
+    migrationMocks.customMigration = {
+      type: 'custom',
+      prepareJobData: (asyncJob) => prepareCustomMigrationJobData(asyncJob),
+      run: function (repo, job, jobData) {
+        return runCustomMigration(repo, job, jobData, async (_client, results) => {
+          results.push({ name: 'nothing', durationMs: 5 });
+        });
+      },
+    };
 
-    jest.spyOn(migrationSql, 'getPostDeployVersion').mockImplementation(mockGetPostDeployVersion);
-    jest
-      .spyOn(migrationSql, 'markPostDeployMigrationCompleted')
-      .mockImplementation(mockMarkPostDeployMigrationCompleted);
-    jest.spyOn(version, 'getServerVersion').mockImplementation(() => mockValues.serverVersion);
+    vi.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
+
+    vi.spyOn(migrationSql, 'getPostDeployVersion').mockImplementation(mockGetPostDeployVersion);
+    vi.spyOn(migrationSql, 'markPostDeployMigrationCompleted').mockImplementation(mockMarkPostDeployMigrationCompleted);
+    vi.spyOn(version, 'getServerVersion').mockImplementation(() => mockValues.serverVersion);
+    vi.spyOn(migrationVersions, 'getPostDeployMigrationVersions').mockReturnValue([1]);
+    vi.spyOn(migrationVersions, 'getLatestPostDeployMigrationVersion').mockReturnValue(1);
+    vi.spyOn(migrationUtils, 'getPostDeployMigration').mockImplementation((migrationNumber) => {
+      if (migrationNumber === 1 && migrationMocks.customMigration) {
+        return migrationMocks.customMigration;
+      }
+      throw new MigrationDefinitionNotFoundError(migrationNumber);
+    });
+
+    const originalInitWorkers = workers.initWorkers;
+    vi.spyOn(workers, 'initWorkers').mockImplementation(async (config) => {
+      await originalInitWorkers(config);
+      restoreWorkerQueueMocks();
+    });
 
     systemRepo = getGlobalSystemRepo();
     await loadTestConfig();
@@ -133,7 +185,18 @@ describe('Database migrations', () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    vi.spyOn(migrationSql, 'getPostDeployVersion').mockImplementation(mockGetPostDeployVersion);
+    vi.spyOn(migrationSql, 'markPostDeployMigrationCompleted').mockImplementation(mockMarkPostDeployMigrationCompleted);
+    vi.spyOn(version, 'getServerVersion').mockImplementation(() => mockValues.serverVersion);
+    vi.spyOn(migrationVersions, 'getPostDeployMigrationVersions').mockReturnValue([1]);
+    vi.spyOn(migrationVersions, 'getLatestPostDeployMigrationVersion').mockReturnValue(1);
+    vi.spyOn(migrationUtils, 'getPostDeployMigration').mockImplementation((migrationNumber) => {
+      if (migrationNumber === 1 && migrationMocks.customMigration) {
+        return migrationMocks.customMigration;
+      }
+      throw new MigrationDefinitionNotFoundError(migrationNumber);
+    });
 
     // By default, disable both pre-deploy and post-deploy migrations
     setMigrationsConfig(false, false);
@@ -173,12 +236,12 @@ describe('Database migrations', () => {
       'Current version greater than or equal to required version and less than `requiredBefore` -- version %s',
       async (serverVersion) =>
         withTestContext(async () => {
-          const loggerInfoSpy = jest.spyOn(globalLogger, 'info');
+          const loggerInfoSpy = vi.spyOn(globalLogger, 'info');
 
           mockValues.serverVersion = serverVersion;
           mockValues.postDeployVersion = 0;
 
-          jest.spyOn(process, 'exit').mockImplementation(() => {
+          vi.spyOn(process, 'exit').mockImplementation(() => {
             throw new Error('Process exited with exit code 1');
           });
 
@@ -231,12 +294,13 @@ describe('Database migrations', () => {
   });
 
   describe('maybeStartPostDeployMigration -- pre-deploy migrations ran', () => {
-    let queueAddSpy: jest.SpyInstance;
+    let queueAddSpy: MockInstance;
 
     beforeEach(async () => {
       setMigrationsConfig(true, false);
 
       await initAppServices(getConfig());
+      restoreWorkerQueueMocks();
 
       queueAddSpy = getQueueAddSpy();
       queueAddSpy.mockClear();
@@ -268,7 +332,8 @@ describe('Database migrations', () => {
 
         const expectedJobData = prepareCustomMigrationJobData(asyncJob);
         expect(queueAddSpy).toHaveBeenCalledTimes(1);
-        expect(queueAddSpy.mock.lastCall[1]).toEqual(expectedJobData);
+        expect(queueAddSpy.mock.lastCall?.[1]).toEqual(expectedJobData);
+        expect(queueAddSpy.mock.lastCall?.[2]).toEqual({ deduplication: { id: 'v1' } });
       }));
 
     test('No pending data migration', () =>
@@ -299,7 +364,7 @@ describe('Database migrations', () => {
 
         const expectedJobData = prepareCustomMigrationJobData(asyncJob);
         expect(queueAddSpy).toHaveBeenCalledTimes(1);
-        expect(queueAddSpy.mock.lastCall[1]).toEqual(expectedJobData);
+        expect(queueAddSpy.mock.lastCall?.[1]).toEqual(expectedJobData);
       }));
 
     test('Existing data migration job in a project is ignored', () =>
@@ -338,7 +403,7 @@ describe('Database migrations', () => {
 
         const expectedJobData = prepareCustomMigrationJobData(asyncJob);
         expect(queueAddSpy).toHaveBeenCalledTimes(1);
-        expect(queueAddSpy.mock.lastCall[1]).toEqual(expectedJobData);
+        expect(queueAddSpy.mock.lastCall?.[1]).toEqual(expectedJobData);
 
         // The project AsyncJob should not be found/returned
         expect(asyncJob.id).toBeDefined();
@@ -413,6 +478,7 @@ describe('Database migrations', () => {
       setMigrationsConfig(true, false);
 
       await initAppServices(getConfig());
+      restoreWorkerQueueMocks();
     });
 
     afterEach(async () => {
@@ -518,18 +584,16 @@ describe('Database migrations', () => {
       });
 
       const reindexJob = new ReindexJob(systemRepo);
-      const searchSpy = jest.spyOn(systemRepo, 'search').mockResolvedValueOnce({
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [],
-      });
+      const processIterationSpy = vi
+        .spyOn(reindexJob, 'processIteration')
+        .mockResolvedValueOnce({ count: 0, durationMs: 0 });
       await expect(reindexJob.execute(undefined, jobData)).resolves.toBe('finished');
 
       asyncJob = await systemRepo.readResource('AsyncJob', asyncJob.id);
       if (firstBootMode && dataVersion) {
         expect(asyncJob.status).toStrictEqual('completed');
         expect(asyncJob.output?.parameter).toEqual([{ name: 'skipped', valueString: 'In firstBoot mode' }]);
-        expect(searchSpy).not.toHaveBeenCalled();
+        expect(processIterationSpy).not.toHaveBeenCalled();
       } else {
         expect(asyncJob.status).toStrictEqual('completed');
         expect(asyncJob.output?.parameter).toEqual([
@@ -541,7 +605,8 @@ describe('Database migrations', () => {
             ]),
           },
         ]);
-        expect(searchSpy).toHaveBeenCalledTimes(1);
+        expect(processIterationSpy).toHaveBeenCalledTimes(1);
+        processIterationSpy.mockRestore();
       }
     });
   });
@@ -597,8 +662,22 @@ describe('Database migrations', () => {
       });
     });
 
-    beforeEach(async () => {
-      jest.clearAllMocks();
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.spyOn(migrationSql, 'getPostDeployVersion').mockImplementation(mockGetPostDeployVersion);
+      vi.spyOn(migrationSql, 'markPostDeployMigrationCompleted').mockImplementation(
+        mockMarkPostDeployMigrationCompleted
+      );
+      vi.spyOn(version, 'getServerVersion').mockImplementation(() => mockValues.serverVersion);
+      vi.spyOn(migrationVersions, 'getPostDeployMigrationVersions').mockReturnValue([1]);
+      vi.spyOn(migrationVersions, 'getLatestPostDeployMigrationVersion').mockReturnValue(1);
+      vi.spyOn(migrationUtils, 'getPostDeployMigration').mockImplementation((migrationNumber) => {
+        if (migrationNumber === 1 && migrationMocks.customMigration) {
+          return migrationMocks.customMigration;
+        }
+        throw new MigrationDefinitionNotFoundError(migrationNumber);
+      });
+      restoreWorkerQueueMocks();
     });
 
     afterEach(async () => {
@@ -634,12 +713,12 @@ describe('Database migrations', () => {
           const queueAdd = getQueueAddSpy();
 
           if (expectedToFailOrPass === 'pass') {
-            expect(res2.status).toStrictEqual(202);
+            expect(res2).toHaveStatus(202);
             expect(res2.headers['content-location']).toBeDefined();
 
             expect(queueAdd).toHaveBeenCalledTimes(1);
           } else {
-            expect(res2.status).toStrictEqual(400);
+            expect(res2).toHaveStatus(400);
 
             const queueAdd = getQueueAddSpy();
             expect(queueAdd).not.toHaveBeenCalled();
@@ -657,7 +736,7 @@ describe('Database migrations', () => {
             .type('json')
             .send({ dataVersion });
 
-          expect(res1.status).toStrictEqual(400);
+          expect(res1).toHaveStatus(400);
           expect(res1.headers['content-location']).not.toBeDefined();
           expect(res1.body).toMatchObject(badRequest('dataVersion must be an integer'));
         }
@@ -677,14 +756,14 @@ describe('Database migrations', () => {
         // nothing to do, so no AsyncJob was created and no content-location header
         // should be set
         expect(res1.body).toMatchObject(allOk);
-        expect(res1.status).toStrictEqual(200);
+        expect(res1).toHaveStatus(200);
         expect(res1.headers['content-location']).not.toBeDefined();
       });
     });
 
     describe('Set data version', () => {
       beforeAll(async () => {
-        jest.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
+        vi.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
       });
 
       test('Set data version -- Valid dataVersion', async () => {
@@ -695,7 +774,7 @@ describe('Database migrations', () => {
           .type('json')
           .send({ dataVersion: 1337 });
 
-        expect(res1.status).toStrictEqual(200);
+        expect(res1).toHaveStatus(200);
         expect(res1.body).toMatchObject(allOk);
         expect(mockMarkPostDeployMigrationCompleted).toHaveBeenCalledTimes(1);
       });
@@ -707,16 +786,16 @@ describe('Database migrations', () => {
           .type('json')
           .send({ dataVersion });
 
-        expect(res1.status).toStrictEqual(400);
+        expect(res1).toHaveStatus(400);
         expect(res1.body).toMatchObject(badRequest('dataVersion must be an integer'));
       });
     });
 
     describe('Reconcile schema drift', () => {
-      let generateMigrationActionsSpy: jest.SpyInstance<ReturnType<typeof migrateModule.generateMigrationActions>>;
+      let generateMigrationActionsSpy: MockInstance<typeof migrateModule.generateMigrationActions>;
 
       beforeEach(() => {
-        generateMigrationActionsSpy = jest.spyOn(migrateModule, 'generateMigrationActions');
+        generateMigrationActionsSpy = vi.spyOn(migrateModule, 'generateMigrationActions');
       });
 
       afterEach(() => {
@@ -734,7 +813,7 @@ describe('Database migrations', () => {
           .type('json');
 
         expect(queueAddSpy).toHaveBeenCalledTimes(0);
-        expect(res1.status).toStrictEqual(200);
+        expect(res1).toHaveStatus(200);
         expect(res1.headers['content-location']).not.toBeDefined();
       });
 
@@ -764,9 +843,156 @@ describe('Database migrations', () => {
             postDeploy: [],
           },
         });
+        expect(queueAddSpy.mock.calls[0][2]).toBeUndefined();
 
-        expect(res1.status).toStrictEqual(202);
+        expect(res1).toHaveStatus(202);
         expect(res1.headers['content-location']).toBeDefined();
+      });
+    });
+
+    describe('Rebuild index', () => {
+      test('Queues one or more concurrent reindex actions', async () => {
+        const targets = [{ index: 'Patient_name_idx' }, { table: 'Observation' }];
+        const queueAddSpy = getQueueAddSpy();
+
+        const res = await request(app)
+          .post('/admin/super/rebuild-index')
+          .set('Authorization', 'Bearer ' + adminAccessToken)
+          .set('Prefer', 'respond-async')
+          .type('json')
+          .send({ targets });
+
+        expect(res).toHaveStatus(202);
+        expect(res.headers['content-location']).toBeDefined();
+        expect(queueAddSpy).toHaveBeenCalledTimes(1);
+        const jobData = queueAddSpy.mock.calls[0][1];
+        expect(jobData).toMatchObject({
+          type: 'dynamic',
+          migrationActions: {
+            preDeploy: [],
+            postDeploy: [
+              { type: 'REINDEX_CONCURRENTLY', target: 'INDEX', name: 'Patient_name_idx' },
+              { type: 'REINDEX_CONCURRENTLY', target: 'TABLE', name: 'Observation' },
+            ],
+          },
+        });
+        const asyncJob = await systemRepo.readResource<AsyncJob>('AsyncJob', jobData.asyncJobId);
+        expect(asyncJob.request).toBe('/admin/super/rebuild-index?index=Patient_name_idx&table=Observation');
+        expect(asyncJob.meta?.project).toBeUndefined();
+      });
+
+      test.each([
+        {},
+        { targets: [] },
+        { targets: Array.from({ length: 11 }, (_, index) => ({ table: `Table${index}` })) },
+        { targets: 'Patient_name_idx' },
+        { targets: [123] },
+        { targets: [{}] },
+        { targets: [{ table: 'Patient', index: 'Patient_id_idx' }] },
+        { targets: [{ schema: 'public' }] },
+        { targets: [{ table: 123 }] },
+        { targets: [{ index: 123 }] },
+        { targets: [{ table: 'Patient History' }] },
+        { targets: [{ index: 'Patient_id_idx; DROP TABLE Patient' }] },
+      ])('Rejects invalid input: %j', async (body) => {
+        const queueAddSpy = getQueueAddSpy();
+
+        const res = await request(app)
+          .post('/admin/super/rebuild-index')
+          .set('Authorization', 'Bearer ' + adminAccessToken)
+          .set('Prefer', 'respond-async')
+          .type('json')
+          .send(body);
+
+        expect(res).toHaveStatus(400);
+        expect(queueAddSpy).not.toHaveBeenCalled();
+      });
+
+      test('Rejects unexpected request properties', async () => {
+        const queueAddSpy = getQueueAddSpy();
+
+        const res = await request(app)
+          .post('/admin/super/rebuild-index')
+          .set('Authorization', 'Bearer ' + adminAccessToken)
+          .set('Prefer', 'respond-async')
+          .type('json')
+          .send({ targets: [{ index: 'Patient_name_idx' }], otherSql: 'DROP TABLE Patient' });
+
+        expect(res).toHaveStatus(400);
+        expect(queueAddSpy).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Drop invalid indexes', () => {
+      test('Queues explicitly selected invalid index cleanup actions', async () => {
+        const targets = [
+          { schema: 'public', index: 'AuditEvent_References_pkey_ccnew' },
+          { schema: 'pg_toast', index: 'pg_toast_2539493_index_ccnew' },
+        ];
+        const queueAddSpy = getQueueAddSpy();
+
+        const res = await request(app)
+          .post('/admin/super/drop-invalid-indexes')
+          .set('Authorization', 'Bearer ' + adminAccessToken)
+          .set('Prefer', 'respond-async')
+          .type('json')
+          .send({ targets });
+
+        expect(res).toHaveStatus(202);
+        expect(res.headers['content-location']).toBeDefined();
+        expect(queueAddSpy).toHaveBeenCalledTimes(1);
+        const jobData = queueAddSpy.mock.calls[0][1];
+        expect(jobData).toMatchObject({
+          type: 'dynamic',
+          migrationActions: {
+            preDeploy: [],
+            postDeploy: [
+              {
+                type: 'DROP_INVALID_INDEX',
+                schemaName: 'public',
+                indexName: 'AuditEvent_References_pkey_ccnew',
+              },
+              {
+                type: 'DROP_INVALID_INDEX',
+                schemaName: 'pg_toast',
+                indexName: 'pg_toast_2539493_index_ccnew',
+              },
+            ],
+          },
+        });
+        const asyncJob = await systemRepo.readResource<AsyncJob>('AsyncJob', jobData.asyncJobId);
+        expect(asyncJob.request).toBe(
+          '/admin/super/drop-invalid-indexes?index=public.AuditEvent_References_pkey_ccnew&index=pg_toast.pg_toast_2539493_index_ccnew'
+        );
+        expect(asyncJob.meta?.project).toBeUndefined();
+      });
+
+      test.each([
+        {},
+        { targets: [] },
+        { targets: Array.from({ length: 11 }, (_, index) => ({ schema: 'public', index: `Index${index}` })) },
+        { targets: 'AuditEvent_References_pkey_ccnew' },
+        { targets: [123] },
+        { targets: [{}] },
+        { targets: [{ schema: 'public' }] },
+        { targets: [{ index: 'AuditEvent_References_pkey_ccnew' }] },
+        { targets: [{ schema: 'public', index: 'AuditEvent_References_pkey_ccnew', extra: true }] },
+        { targets: [{ schema: 123, index: 'AuditEvent_References_pkey_ccnew' }] },
+        { targets: [{ schema: 'schema; DROP SCHEMA public', index: 'AuditEvent_References_pkey_ccnew' }] },
+        { targets: [{ schema: 'public', index: 123 }] },
+        { targets: [{ schema: 'public', index: 'index; DROP TABLE Patient' }] },
+      ])('Rejects invalid input: %j', async (body) => {
+        const queueAddSpy = getQueueAddSpy();
+
+        const res = await request(app)
+          .post('/admin/super/drop-invalid-indexes')
+          .set('Authorization', 'Bearer ' + adminAccessToken)
+          .set('Prefer', 'respond-async')
+          .type('json')
+          .send(body);
+
+        expect(res).toHaveStatus(400);
+        expect(queueAddSpy).not.toHaveBeenCalled();
       });
     });
   });
