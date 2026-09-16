@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "leadDays": 30,
+    "owner": "#team-tech"
+  },
+  "items": [
+    {
+      "id": "fork-behind-upstream",
+      "title": "main is 614 commits behind a sync branch that already exists",
+      "expires": "2026-09-16",
+      "every": "quarterly",
+      "owner": "#team-tech",
+      "location": "package.json:3 (5.1.17, tagged 2026-06-09); origin/cursor/update-medplum-v5-1-37-1c0d (5.1.37, 2026-09-05)",
+      "action": "Someone already did the pull; it was never merged. Land it or close it deliberately, then write down the sync procedure, which does not exist anywhere in this repo: there is no upstream remote, no CONTRIBUTING.md, and no CLAUDE.md. Whoever refreshes this next will otherwise rediscover the same steps."
+    },
+    {
+      "id": "unmerged-shadcn-migration",
+      "title": "The shadcn migration branch is drifting from main",
+      "expires": "2026-10-01",
+      "every": "quarterly",
+      "owner": "#team-tech",
+      "location": "origin/cursor/react-shadcn-phase0-a44b, last commit 2026-09-03",
+      "action": "This is the only real Seen customization in the fork: 2,698 files porting @medplum/react from Mantine to shadcn, unmerged. Every upstream sync makes it harder to rebase. Merge it, rebase it onto the current sync branch, or park it in writing so the cost is a decision rather than an accident."
+    },
+    {
+      "id": "inherited-upstream-workflows",
+      "title": "Upstream workflows and release secrets inherited by the fork",
+      "expires": "2027-01-15",
+      "every": "annual",
+      "owner": "#team-tech",
+      "location": ".github/workflows/{upgrade-dependencies,codeql-analysis,scorecard}.yml scheduled weekly; publish.yml and deploy.yml reference roughly 45 secrets including MEDPLUM_RELEASE_GPG_KEY, DockerHub, staging AWS role ARNs, and SLACK_WEBHOOK_URL",
+      "action": "These came with the fork and target Medplum's own npm namespace, DockerHub, and medplum.dev staging. Confirm which schedules are actually enabled here and that no secret is populated that would let this repo publish or deploy on Medplum's behalf. Disable what the fork does not need rather than leaving it dormant."
+    }
+  ]
+}
