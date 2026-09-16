@@ -1,0 +1,35 @@
+name: Expiry Check
+
+on:
+  schedule:
+    # 16:00 UTC is 09:00 Pacific during daylight saving, 08:00 otherwise.
+    - cron: '0 16 * * *'
+  workflow_dispatch: null
+  pull_request:
+    paths:
+      - '.expirations.json'
+      - '.github/workflows/expiry-check.yml'
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  expiry-check:
+    name: Report expiring configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # The checker lives in seen-ehr so there is one implementation rather than
+      # six copies. On a pull request the Slack token is withheld, so review
+      # validates the registry without paging the channel.
+      - name: Check expiring configuration
+        uses: seenhealth/seen-ehr/.github/actions/check-expirations@main
+        with:
+          slack-bot-token: ${{ github.event_name == 'pull_request' && '' || secrets.SLACK_BOT_TOKEN }}
