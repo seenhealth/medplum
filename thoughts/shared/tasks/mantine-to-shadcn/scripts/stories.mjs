@@ -13,7 +13,12 @@ function walk(dir) {
   return out;
 }
 
-const sanitize = (s) => s.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+const sanitize = (s) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
 const startCase = (s) =>
   s
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -31,7 +36,9 @@ for (const f of files.sort()) {
   const src = readFileSync(f, 'utf8');
   const title = src.match(/title:\s*['"]([^'"]+)['"]/)?.[1];
   if (!title) continue;
-  const exportsFound = [...src.matchAll(/^export\s+(?:const|function)\s+([A-Za-z0-9_]+)/gm)].map((m) => m[1]).filter((n) => n !== 'default');
+  const exportsFound = [...src.matchAll(/^export\s+(?:const|function)\s+([A-Za-z0-9_]+)/gm)]
+    .map((m) => m[1])
+    .filter((n) => n !== 'default');
   const dir = relative(ROOT, f).split('/')[0];
   for (const ex of exportsFound) {
     const id = `${sanitize(title)}--${sanitize(startCase(ex))}`;

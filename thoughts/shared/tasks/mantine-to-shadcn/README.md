@@ -2,6 +2,8 @@
 
 Research and plan for re-implementing `@medplum/react` (Mantine 8) as a shadcn/ui registry with behavior parity, verified per component against the upstream test suite and `storybook.medplum.com`.
 
+**Status:** the plan's v1 scope (Phases 0–7) is implemented in `packages/react-shadcn` on `cursor/react-shadcn-phase0-a44b` ([PR #3](https://github.com/seenhealth/medplum/pull/3)); plan §13 records the outcome, the decisions made during execution, and the follow-ups (restack after the fork syncs to v5.1.37, Phase 8 as v2). This folder is the design record and does not change the code in this repository.
+
 | File | What it is |
 |---|---|
 | `01-research-medplum-react-shadcn-migration.md` | Findings: pinned sources, anatomy of `@medplum/react@5.1.36`, Mantine coupling profile, shadcn state of the world (Sept 2026), seen-ehr as first consumer, prior art, risks |

@@ -20,7 +20,11 @@ function parseImports(src, pkg) {
   let m;
   while ((m = re.exec(src))) {
     for (const raw of m[2].split(',')) {
-      const name = raw.trim().split(/\s+as\s+/)[0].replace(/^type\s+/, '').trim();
+      const name = raw
+        .trim()
+        .split(/\s+as\s+/)[0]
+        .replace(/^type\s+/, '')
+        .trim();
       if (name) names.add(name);
     }
   }
@@ -55,7 +59,14 @@ for (const dir of readdirSync(ROOT)) {
     for (const n of parseImports(s, '@medplum/react-hooks')) reactHooks.add(n);
     for (const m of s.matchAll(/from\s+['"]([^'".][^'"]*)['"]/g)) {
       const p = m[1];
-      if (p.startsWith('@mantine/') || p.startsWith('@medplum/') || p === 'react' || p === 'react-dom' || p.startsWith('react/')) continue;
+      if (
+        p.startsWith('@mantine/') ||
+        p.startsWith('@medplum/') ||
+        p === 'react' ||
+        p === 'react-dom' ||
+        p.startsWith('react/')
+      )
+        continue;
       otherDeps.add(p);
     }
   }
@@ -79,8 +90,14 @@ for (const dir of readdirSync(ROOT)) {
 
 rows.sort((a, b) => a.dir.localeCompare(b.dir));
 const totals = rows.reduce(
-  (acc, r) => ({ loc: acc.loc + r.loc, testLoc: acc.testLoc + r.testLoc, stories: acc.stories + r.stories, tests: acc.tests + r.tests, css: acc.css + r.css }),
-  { loc: 0, testLoc: 0, stories: 0, tests: 0, css: 0 },
+  (acc, r) => ({
+    loc: acc.loc + r.loc,
+    testLoc: acc.testLoc + r.testLoc,
+    stories: acc.stories + r.stories,
+    tests: acc.tests + r.tests,
+    css: acc.css + r.css,
+  }),
+  { loc: 0, testLoc: 0, stories: 0, tests: 0, css: 0 }
 );
 
 let md = `# @medplum/react inventory (upstream/main)\n\n`;
@@ -92,7 +109,9 @@ for (const r of rows) {
 md += `\n## Mantine core component usage (number of component dirs using it)\n\n| Mantine component | dirs |\n|---|---|\n`;
 for (const [n, c] of [...mantineTotals.entries()].sort((a, b) => b[1] - a[1])) md += `| ${n} | ${c} |\n`;
 
-const noMantine = rows.filter((r) => r.mantineCore.length === 0 && r.mantineHooks.length === 0 && r.mantineOther.length === 0);
+const noMantine = rows.filter(
+  (r) => r.mantineCore.length === 0 && r.mantineHooks.length === 0 && r.mantineOther.length === 0
+);
 md += `\n## Dirs with zero Mantine imports (${noMantine.length})\n\n${noMantine.map((r) => r.dir).join(', ')}\n`;
 const noStories = rows.filter((r) => r.stories === 0);
 md += `\n## Dirs with no stories (${noStories.length})\n\n${noStories.map((r) => r.dir).join(', ')}\n`;

@@ -1,6 +1,6 @@
 # Plan: `@medplum/react` → shadcn/ui registry (`medplum-shadcn`)
 
-Date: 2026-09-03. Companion to `01-research-medplum-react-shadcn-migration.md` (read it first). Roles: Fable 5.1 = architect (owns decisions, Phase 0, reviews, ledger audits); Grok 4.6 fast / GPT 5.6 sol medium fast = executors (one work unit each, as subagents or cloud agents).
+Date: 2026-09-03; execution status appended 2026-09-20 (§13). Companion to `01-research-medplum-react-shadcn-migration.md` (read it first). Roles: Fable 5.1 = architect (owns decisions, Phase 0, reviews, ledger audits); Grok 4.6 fast / GPT 5.6 sol medium fast = executors (one work unit each, as subagents or cloud agents).
 
 ## 1. Goal and non-goals
 
@@ -90,7 +90,7 @@ Never import `radix-ui`/`@base-ui/react`/`cmdk` directly in `components/medplum/
   "description": "Edit a FHIR HumanName (use, prefix, given, family, suffix) with OperationOutcome error mapping.",
   "files": [{ "path": "packages/react-shadcn/src/components/medplum/human-name-input.tsx", "type": "registry:component", "target": "components/medplum/human-name-input.tsx" }],
   "dependencies": ["@medplum/core@5.1.36", "@medplum/fhirtypes@5.1.36"],
-  "registryDependencies": ["input", "native-select", "field", "seenhealth/medplum/form-section", "seenhealth/medplum/elements-context", "seenhealth/medplum/outcomes"],
+  "registryDependencies": ["input", "native-select", "field", "seenhealth/medplum/form-section", "seenhealth/medplum/elements-input-utils", "seenhealth/medplum/outcomes"],
   "categories": ["fhir", "input", "datatype"],
   "meta": { "upstreamDir": "HumanNameInput", "storyIds": ["medplum-humannameinput--basic", "medplum-humannameinput--disabled", "medplum-humannameinput--partially-disabled"] }
 }
@@ -366,3 +366,33 @@ Kept here so the sizing and design notes are not lost; not part of v1's ledger t
 | Icons, theme, hooks, tooling | As recommended (D7–D10). |
 
 Nothing is blocked on the user. Phase 0 starts on `cursor/react-shadcn-phase0-a44b` (off the sync branch).
+
+## 13. Execution status (2026-09-20)
+
+Phases 0–7 were executed on 2026-09-03 exactly as laid out above, on `cursor/react-shadcn-phase0-a44b` ([PR #3](https://github.com/seenhealth/medplum/pull/3), based on the sync branch). The live evidence is `packages/react-shadcn/MIGRATION_STATUS.md` on that branch; this section records the outcome and what changed against the plan.
+
+| Measure | Plan target | Result |
+|---|---|---|
+| Registry items (root `registry.json`) | — | 145 (110 `registry:component`, 15 `registry:block`, 14 `registry:lib`, 4 `registry:hook`, 2 `registry:ui`) |
+| v1 upstream directories `done` | 120 | 119; `Modal` is `in-progress` (see below) |
+| Upstream unit tests ported | ≥ 1,042 of 1,097 (95%) | 1,144 passing, 9 skipped, 0 failing (138 files) |
+| Upstream stories under original IDs | 283 | 283/283 render in Chromium; all IDs present in the live `storybook.medplum.com/index.json` |
+| Hygiene, typecheck, lint, `registry:build --check`, parity docs | clean | clean |
+| Registry install smoke (fresh Vite app, `shadcn add`, `tsc`) | passes | passes for `human-name-input`, `resource-form`, `search-control` (60+ transitive files each) |
+
+**Decisions made during execution (binding, supersede the sections above where they differ):**
+
+- **Item names must not collide with official shadcn item names.** The CLI resolves imports by item name, so our `pagination` lib item made an installed `search-control` import from the official `ui/pagination` file. Renamed `pagination` → `pagination-controls` and `form` → `medplum-form`; `scripts/registry-lib.mjs` rejects any name in the official index. Update the example in §3.3 accordingly.
+- **No `index.ts` barrels in multi-file items.** Consumers install only the listed files, so every import names a file (`@/components/medplum/form/form`). Two barrels executors had added were removed; the rule is in `docs/work-unit-checklist.md`.
+- **Per-work-unit registry item files** (`registry/items/wu-XX.mjs`, aggregated by `registry/items.mjs`) so parallel executors never edit the same file; `registry/items/pending.mjs` parks items whose imports point at a later unit.
+- **Test-adaptation rule applied uniformly**: Mantine-DOM assertions were translated, not skipped — `.checked` → `toBeChecked()`, `mantine-Badge-label` → `data-slot="badge"`, palette `--badge-color` checks → badge presence (colours are a cva decision, §D8). The 9 remaining skips are Modal's 8 prop-bag tests and one Mantine inline-style assertion in `ResourcePropertyDisplay`.
+- **`Modal` accepted below the 95% floor** (6/14). Upstream `Modal` is a thin Mantine passthrough and 8 of its tests assert `classNames`/`styles`/`bodyHeight`/`closeButtonProps` bags that the Dialog composition deliberately does not have; reasons are in the test names and `docs/migration/modal.md`.
+- **Executor discipline**: the checklist gained an explicit "git is off-limits" rule after one executor committed to its own branch, and orchestrator-only ownership of `registry/items.mjs`, `ledger.json`, `registry.json` and the guide docs.
+
+**Open follow-ups, in order:**
+
+1. The fork's default branch is still at v5.1.17 while [PR #4](https://github.com/seenhealth/medplum/pull/4) fast-forwards it to upstream v5.1.37 (`cac541186`). Between the plan's pin (v5.1.36 `0e501215d`) and v5.1.37 only `packages/react/src/stories/MockDateWrapper.utils.ts` changed (+7/−1), so the research and the ported components stay valid. Once PR #4 merges, restack `cursor/react-shadcn-phase0-a44b` onto `main` and run `npm run upstream:diff -- 0e501215d cac541186` per §10.
+2. WU-42 (stack assembly onto `main`) — still deferred to the user's go, per D12.
+3. Phase 8 (`AppShell`, `NotificationIcon`, `auth/*`, `GoogleButton`, `chat/*`) as v2; sizing and design notes in §8.
+4. The seen-ehr adoption track (§11) has not started.
+5. [PR #5](https://github.com/seenhealth/medplum/pull/5) registers the unmerged shadcn branch in `.expirations.json` for a quarterly review; this document is the place to record the review's decision.
