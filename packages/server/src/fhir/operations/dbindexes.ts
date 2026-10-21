@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 import { allOk, badRequest, EMPTY, OperationOutcomeError } from '@medplum/core';
 import type { FhirRequest, FhirResponse } from '@medplum/fhir-router';
-import type { Pool, PoolClient } from 'pg';
-import { requireSuperAdmin } from '../../admin/super';
+import { requireSuperAdmin } from '../../context';
 import { DatabaseMode, getDatabasePool } from '../../database';
 import { escapeUnicode } from '../../migrations/migrate-utils';
-import { isValidTableName, replaceNullWithUndefinedInRows, SqlBuilder } from '../sql';
+import type { PgQueryable } from '../sql';
+import { isValidPostgresIdentifier, replaceNullWithUndefinedInRows, SqlBuilder } from '../sql';
 import { makeOperationDefinition } from './definitions';
 import {
   buildOutputParameters,
+  getShardIdParam,
   makeOperationDefinitionParameter as param,
   parseInputParameters,
 } from './utils/parameters';
@@ -20,6 +21,7 @@ const operation = makeOperationDefinition(
     name: 'db-indexes',
     code: 'db-indexes',
     parameter: [
+      param('in', 'shardId', 'string', 0, '1'),
       param('in', 'tableName', 'string', 0, '*'),
       param('out', 'defaultGinPendingListLimit', 'integer', 1, '1'),
       param('out', 'index', undefined, 0, '*', [
@@ -46,22 +48,23 @@ interface GinIndexInfo {
 export async function dbIndexesHandler(req: FhirRequest): Promise<FhirResponse> {
   requireSuperAdmin();
 
-  const params = parseInputParameters<{ tableName?: string }>(operation, req);
+  const params = parseInputParameters<{ shardId?: string; tableName?: string }>(operation, req);
+  const shardId = getShardIdParam(params);
 
   const tableNames = [];
   for (const tableName of params.tableName?.split(',').map((name) => name.trim()) ?? EMPTY) {
-    if (!isValidTableName(tableName)) {
+    if (!isValidPostgresIdentifier(tableName)) {
       throw new OperationOutcomeError(badRequest('Invalid tableName'));
     }
     tableNames.push(tableName);
   }
 
-  const defaultGinPendingListLimit = await getDefaultGinPendingListLimit();
-  const client = getDatabasePool(DatabaseMode.WRITER);
+  const pool = getDatabasePool(DatabaseMode.WRITER, shardId);
+  const defaultGinPendingListLimit = await getDefaultGinPendingListLimit(pool);
 
   let index: GinIndexInfo[] | undefined;
   if (tableNames.length > 0) {
-    index = await getGinIndexInfo(client, tableNames);
+    index = await getGinIndexInfo(pool, tableNames);
   }
   const output: { defaultGinPendingListLimit: number; index?: GinIndexInfo[] } = {
     defaultGinPendingListLimit,
@@ -71,15 +74,14 @@ export async function dbIndexesHandler(req: FhirRequest): Promise<FhirResponse> 
   return [allOk, buildOutputParameters(operation, output)];
 }
 
-async function getDefaultGinPendingListLimit(): Promise<number> {
-  const client = getDatabasePool(DatabaseMode.WRITER);
+async function getDefaultGinPendingListLimit(client: PgQueryable): Promise<number> {
   const defaultStatisticsTarget = await client.query('SELECT setting FROM pg_settings WHERE name = $1', [
     'gin_pending_list_limit',
   ]);
   return Number(defaultStatisticsTarget.rows[0].setting);
 }
 
-async function getGinIndexInfo(client: PoolClient | Pool, tableNames: string[]): Promise<GinIndexInfo[]> {
+async function getGinIndexInfo(client: PgQueryable, tableNames: string[]): Promise<GinIndexInfo[]> {
   const schemaName = 'public';
   const builder = new SqlBuilder();
   const sql = `SELECT

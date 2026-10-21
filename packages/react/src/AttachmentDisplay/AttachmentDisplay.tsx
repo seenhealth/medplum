@@ -14,12 +14,14 @@ export interface AttachmentDisplayProps {
 }
 
 export function AttachmentDisplay(props: AttachmentDisplayProps): JSX.Element | null {
-  const { contentType, url: uncachedUrl, title } = props.value ?? {};
-  const url = useCachedBinaryUrl(uncachedUrl);
+  const { contentType, data, url: uncachedUrl, title } = props.value ?? {};
+  const cachedUrl = useCachedBinaryUrl(uncachedUrl);
 
-  if (!url) {
+  if (!cachedUrl && !data) {
     return null;
   }
+
+  const url = cachedUrl ?? `data:${contentType};base64,${data}`;
 
   return (
     <div data-testid="attachment-display">
@@ -30,6 +32,11 @@ export function AttachmentDisplay(props: AttachmentDisplayProps): JSX.Element | 
         <video data-testid="attachment-video" style={{ maxWidth: props.maxWidth }} controls={true}>
           <source type={contentType} src={url} />
         </video>
+      )}
+      {contentType?.startsWith('audio/') && (
+        <audio data-testid="attachment-audio" style={{ maxWidth: props.maxWidth }} controls={true}>
+          <source type={contentType} src={url} />
+        </audio>
       )}
       {(contentType?.startsWith('text/') ||
         contentType === 'application/json' ||

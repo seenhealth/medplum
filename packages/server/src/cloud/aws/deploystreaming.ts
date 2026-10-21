@@ -3,14 +3,14 @@
 import type { Bot } from '@medplum/fhirtypes';
 import { CREATE_PDF_CODE, createBotZipFile, deployLambdaInternal } from './deploy';
 
-const CJS_PREFIX = `const { ContentType, Hl7Message, MedplumClient } = require("@medplum/core");
+const CJS_PREFIX = `const { ContentType, Hl7Message, MedplumClient, getStatus, OperationOutcomeError, isOperationOutcome, normalizeOperationOutcome } = require("@medplum/core");
 const PdfPrinter = require("pdfmake");
 const userCode = require("./user.cjs");
 
 exports.handler = awslambda.streamifyResponse(async (event, responseStream) => {
 `;
 
-const ESM_PREFIX = `import { ContentType, Hl7Message, MedplumClient } from '@medplum/core';
+const ESM_PREFIX = `import { ContentType, Hl7Message, MedplumClient, getStatus, OperationOutcomeError, isOperationOutcome, normalizeOperationOutcome } from '@medplum/core';
 import PdfPrinter from 'pdfmake';
 import * as userCode from './user.mjs';
 
@@ -19,13 +19,15 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
 
 const WRAPPER_CODE =
   `
-  const { bot, baseUrl, accessToken, requester, contentType, secrets, traceId, headers, streaming } = event;
+  const { bot, baseUrl, accessToken, requester, contentType, secrets, traceId, traceparent, headers, streaming } = event;
   const medplum = new MedplumClient({
     baseUrl,
     fetch: function (url, options = {}) {
       options.headers ||= {};
       options.headers['X-Trace-Id'] = traceId;
-      options.headers['traceparent'] = traceId;
+      if (traceparent) {
+        options.headers['traceparent'] = traceparent;
+      }
       return fetch(url, options);
     },
     createPdf,
@@ -50,6 +52,14 @@ const WRAPPER_CODE =
       writeResponse(responseStream, 200, result);
     }
   } catch (err) {
+    if (err instanceof OperationOutcomeError || isOperationOutcome(err)) {
+      const outcome = normalizeOperationOutcome(err);
+      if (!streaming || !botResponseStream?.streamStarted) {
+        writeResponse(responseStream, getStatus(outcome), outcome);
+      }
+      return;
+    }
+
     let errorResponse;
     if (err instanceof Error) {
       console.log("Unhandled error: " + err.message + "\\n" + err.stack);
@@ -84,6 +94,7 @@ class BotResponseStream {
   constructor(responseStream) {
     this.wrappedStream = responseStream;
     this.streamStarted = false;
+    this.streamEnded = false;
   }
   startStreaming(statusCode, headers) {
     if (this.streamStarted) {
@@ -105,6 +116,10 @@ class BotResponseStream {
     }
   }
   end(chunk) {
+    if (this.streamEnded) {
+      return;
+    }
+    this.streamEnded = true;
     if (chunk !== undefined) {
       this.wrappedStream.write(chunk);
     }
@@ -128,6 +143,7 @@ class BotResponseStream {
   `
 function writeResponse(responseStream, statusCode, body) {
   responseStream.write(JSON.stringify({
+    nonStreamingResponse: true,
     statusCode,
     headers: { 'Content-Type': 'application/json' } }) + "\\n");
   if (body !== undefined) {

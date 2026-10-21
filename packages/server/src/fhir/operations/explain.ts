@@ -1,11 +1,13 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
-import { allOk, parseSearchRequest } from '@medplum/core';
+import { allOk, forbidden, getSearchResourceTypes, OperationOutcomeError, parseSearchRequest } from '@medplum/core';
 import type { FhirRequest, FhirResponse } from '@medplum/fhir-router';
 import { RepositoryMode } from '@medplum/fhir-router';
 import type { Project, Reference } from '@medplum/fhirtypes';
-import { requireSuperAdmin } from '../../admin/super';
+import type { AuthenticatedRequestContext } from '../../context';
+import { getAuthenticatedContext, requireSuperAdmin } from '../../context';
 import { escapeUnicode } from '../../migrations/migrate-utils';
+import { repoAccess } from '../repository/access-tracker';
 import { getCount, getSelectQueryForSearch } from '../search';
 import { SqlBuilder } from '../sql';
 import { makeOperationDefinition } from './definitions';
@@ -35,7 +37,7 @@ const operation = makeOperationDefinition(
 );
 
 export async function dbExplainHandler(req: FhirRequest): Promise<FhirResponse> {
-  const ctx = requireSuperAdmin();
+  const ctx = requireExplainAccess();
   const params = parseInputParameters<{
     query: string;
     project?: Reference<Project>;
@@ -65,11 +67,18 @@ export async function dbExplainHandler(req: FhirRequest): Promise<FhirResponse> 
     selectQuery.explain.push('format json');
   }
 
-  const { result, countResult } = await repo.withStatementTimeout({ timeoutMs: 0 }, async (client) => {
-    const result = await selectQuery.execute(client);
-    const countResult = params.count ? await getCount(repo, searchReq, { forceAccurate: true }) : undefined;
-    return { result, countResult };
-  });
+  const searchResourceTypes = getSearchResourceTypes(searchReq);
+  const { result, countResult } = await repo.withStatementTimeout(
+    { timeoutMs: 0, resourceTypes: searchResourceTypes },
+    async () => {
+      const result = await repo.executeSql<{ 'QUERY PLAN': string[] }>(
+        selectQuery,
+        repoAccess.sqlRead(searchResourceTypes, { source: 'dbExplainHandler' })
+      );
+      const countResult = params.count ? await getCount(repo, searchReq, { forceAccurate: true }) : undefined;
+      return { result, countResult };
+    }
+  );
 
   let explain: string;
   if (params.format === 'json') {
@@ -82,7 +91,7 @@ export async function dbExplainHandler(req: FhirRequest): Promise<FhirResponse> 
   const output = buildOutputParameters(operation, {
     query,
     parameters,
-    explain,
+    explain: escapeUnicode(explain),
     countEstimate: countResult?.estimate,
     countAccurate: countResult?.accurate,
   });
@@ -100,4 +109,26 @@ function formatQueryParam(param: any): string {
     return param.toString();
   }
   return `'${typeof param === 'string' ? escapeUnicode(param) : param}'`;
+}
+
+/**
+ * Requires a super-admin caller while preserving the effective repository for delegated requests.
+ * Unlike other privileged operations, $explain intentionally uses On-Behalf-Of to show the query
+ * plan produced by the delegated user's access policy.
+ * @returns The authenticated request context.
+ */
+function requireExplainAccess(): AuthenticatedRequestContext {
+  const ctx = getAuthenticatedContext();
+
+  if (ctx.authState.onBehalfOfMembership) {
+    // if onBehalfOf, must check if the actor's project is a super admin
+    if (!ctx.authState.project.superAdmin) {
+      throw new OperationOutcomeError(forbidden);
+    }
+  } else {
+    // if no onBehalfOfMembership, just check for super admin
+    return requireSuperAdmin();
+  }
+
+  return ctx;
 }

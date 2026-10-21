@@ -28,14 +28,14 @@ export const LAMBDA_MEMORY = 1024;
 export const DEFAULT_LAMBDA_TIMEOUT = 10;
 export const MAX_LAMBDA_TIMEOUT = 900; // 60 * 15 (15 mins)
 
-const CJS_PREFIX = `const { ContentType, Hl7Message, MedplumClient } = require("@medplum/core");
+const CJS_PREFIX = `const { ContentType, Hl7Message, MedplumClient, OperationOutcomeError, isOperationOutcome, normalizeOperationOutcome } = require("@medplum/core");
 const PdfPrinter = require("pdfmake");
 const userCode = require("./user.cjs");
 
 exports.handler = async (event, context) => {
 `;
 
-const ESM_PREFIX = `import { ContentType, Hl7Message, MedplumClient } from '@medplum/core';
+const ESM_PREFIX = `import { ContentType, Hl7Message, MedplumClient, OperationOutcomeError, isOperationOutcome, normalizeOperationOutcome } from '@medplum/core';
 import PdfPrinter from 'pdfmake';
 import * as userCode from './user.mjs';
 
@@ -77,13 +77,15 @@ function createPdf(docDefinition, tableLayouts, fonts) {
 
 const WRAPPER_CODE =
   `
-  const { bot, baseUrl, accessToken, requester, contentType, secrets, traceId, headers } = event;
+  const { bot, baseUrl, accessToken, requester, contentType, secrets, traceId, traceparent, headers } = event;
   const medplum = new MedplumClient({
     baseUrl,
     fetch: function(url, options = {}) {
       options.headers ||= {};
       options.headers['X-Trace-Id'] = traceId;
-      options.headers['traceparent'] = traceId;
+      if (traceparent) {
+        options.headers['traceparent'] = traceparent;
+      }
       return fetch(url, options);
     },
     createPdf,
@@ -100,6 +102,10 @@ const WRAPPER_CODE =
     }
     return result;
   } catch (err) {
+    if (err instanceof OperationOutcomeError || isOperationOutcome(err)) {
+      return normalizeOperationOutcome(err);
+    }
+
     if (err instanceof Error) {
       console.log("Unhandled error: " + err.message + "\\n" + err.stack);
     } else if (typeof err === "object") {

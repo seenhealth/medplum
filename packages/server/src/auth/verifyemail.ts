@@ -6,10 +6,17 @@ import type { User, UserSecurityRequest } from '@medplum/fhirtypes';
 import type { Request, Response } from 'express';
 import { body } from 'express-validator';
 import { sendOutcome } from '../fhir/outcomes';
+import type { SystemRepository } from '../fhir/repo';
 import { getGlobalSystemRepo } from '../fhir/repo';
 import { generateSecret } from '../oauth/keys';
 import { timingSafeEqualStr } from '../oauth/utils';
 import { makeValidationMiddleware } from '../util/validator';
+import {
+  consumeSecurityRequest,
+  getSecurityRequestExpiration,
+  isSecurityRequestExpired,
+  supersedePriorSecurityRequests,
+} from './securityrequest';
 
 export const verifyEmailValidator = makeValidationMiddleware([
   body('id').isUUID().withMessage('Invalid request ID'),
@@ -30,17 +37,29 @@ export async function verifyEmailHandler(req: Request, res: Response): Promise<v
     return;
   }
 
+  if (isSecurityRequestExpired(securityRequest)) {
+    sendOutcome(res, badRequest('Expired'));
+    return;
+  }
+
   if (!timingSafeEqualStr(securityRequest.secret, req.body.secret)) {
     sendOutcome(res, badRequest('Incorrect secret'));
     return;
   }
 
-  const user = await systemRepo.readReference(securityRequest.user);
-
-  await systemRepo.withTransaction(async () => {
-    await systemRepo.updateResource<User>({ ...user, emailVerified: true });
-    await systemRepo.updateResource<UserSecurityRequest>({ ...securityRequest, used: true });
-  });
+  await systemRepo.withTransaction(
+    async (txRepo) => {
+      // Consume the request first, so that concurrent requests carrying the same token
+      // cannot both get through
+      await consumeSecurityRequest(txRepo, securityRequest);
+      // Patch so that only this field is written: the User is read inside the transaction,
+      // so a concurrent change elsewhere on the resource is not reverted by a stale copy.
+      await txRepo.patchResource<User>('User', resolveId(securityRequest.user) as string, [
+        { op: 'add', path: '/emailVerified', value: true },
+      ]);
+    },
+    { resourceTypes: ['User', 'UserSecurityRequest'], source: 'verifyEmailHandler' }
+  );
 
   if (securityRequest.redirectUri) {
     // Send a "redirect", but don't actually follow it, because the client may want to handle the redirect themselves (e.g. in a React app).
@@ -53,19 +72,27 @@ export async function verifyEmailHandler(req: Request, res: Response): Promise<v
 /**
  * Creates a "verify email" request for the user.
  * Returns the created UserSecurityRequest, which contains the secret that should be sent in the verification email.
+ * @param systemRepo - The system repository to use for creating the request.
  * @param user - The user to create the request for.
  * @param redirectUri - Optional URI for redirection to the client application.
  * @returns The created UserSecurityRequest.
  */
-export async function verifyEmail(user: User, redirectUri?: string): Promise<WithId<UserSecurityRequest>> {
+export async function verifyEmail(
+  systemRepo: SystemRepository,
+  user: WithId<User>,
+  redirectUri?: string
+): Promise<WithId<UserSecurityRequest>> {
+  // Invalidate any prior verification requests, so that only the newest link works
+  await supersedePriorSecurityRequests(systemRepo, user, 'verify-email');
+
   // Create the email verification request
-  const systemRepo = getGlobalSystemRepo();
   return systemRepo.createResource<UserSecurityRequest>({
     resourceType: 'UserSecurityRequest',
     meta: { project: resolveId(user.project) },
     type: 'verify-email',
     user: createReference(user),
     secret: generateSecret(16),
+    expiresAt: getSecurityRequestExpiration('verify-email'),
     redirectUri,
   });
 }

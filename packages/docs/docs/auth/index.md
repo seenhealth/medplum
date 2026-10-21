@@ -5,6 +5,10 @@ tags: [auth]
 
 # Authentication
 
+:::tip[Choosing an authentication approach?]
+The [Authentication Decision Guide](/docs/decision-guides/authentication) helps you compare identity providers, account matching, and token-flow architectures.
+:::
+
 This page helps you choose the correct authentication method for your application, whether it's a browser, a server, or a device. The primary goal is to guide you to the right documentation page based on your use case.
 
 For **user-facing applications (web or mobile apps)**, use [_browser-based authentication_](#browser-based-authentication).
@@ -25,6 +29,12 @@ This category is for user-facing applications that connect directly to Medplum. 
 | [External IDP](/docs/auth/external-identity-providers.mdx)     | Connect to an external IDP, like [Google Auth](/docs/auth/google-auth), Auth0, or AWS Cognito.      |
 | [Domain-level IDP](/docs/auth/domain-level-identity-providers) | Use your enterprise, domain-level **corporate identity solution.**                                  |
 | [Direct External Auth](/docs/auth/direct-external-auth)        | Authenticate directly with an external IDP token, without a token exchange flow (self-hosted only). |
+
+### Mobile activation before account creation
+
+Some mobile apps need to verify an activation code before the patient or user account exists. For example, a clinic may create a `Patient`, send an activation code, and ask the patient to finish account setup in an iOS or Android app.
+
+Do not embed a long-lived `client_secret` in a mobile binary. Treat native mobile apps as public clients. Use a short-lived, narrowly scoped activation credential that can only call the activation workflow. The activation workflow should validate the code, expiration, intended patient, and retry limits before creating or linking the Medplum user account. After activation, use the normal authentication flow for future sessions.
 
 ## Server-side Authentication
 

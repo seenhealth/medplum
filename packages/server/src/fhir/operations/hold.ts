@@ -2,27 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 import { created } from '@medplum/core';
 import type { FhirRequest, FhirResponse } from '@medplum/fhir-router';
-import type { Appointment, OperationDefinition } from '@medplum/fhirtypes';
+import type { Appointment } from '@medplum/fhirtypes';
 import { getAuthenticatedContext } from '../../context';
 import { withPath } from '../../util/withpath';
+import { makeOperationDefinition } from './definitions';
 import { buildOutputParameters, parseInputParameters } from './utils/parameters';
-import { createProposedAppointment } from './utils/scheduling';
+import { expandRecurrence } from './utils/recurrence';
+import { createProposedAppointments } from './utils/scheduling';
 
-const holdOperation = {
-  resourceType: 'OperationDefinition',
-  name: 'hold',
-  status: 'active',
-  kind: 'operation',
-  code: 'hold',
-  resource: ['Appointment'],
-  system: false,
-  type: true,
-  instance: false,
-  parameter: [
-    { use: 'in', name: 'appointment', type: 'Appointment', min: 1, max: '1' },
-    { use: 'out', name: 'return', type: 'Bundle', min: 0, max: '1' },
-  ],
-} as const satisfies OperationDefinition;
+const holdOperation = makeOperationDefinition(
+  { scope: 'type', resource: 'Appointment' },
+  {
+    name: 'hold',
+    code: 'hold',
+    parameter: [
+      { use: 'in', name: 'appointment', type: 'Appointment', min: 1, max: '1' },
+      { use: 'out', name: 'return', type: 'Bundle', min: 0, max: '1' },
+    ],
+  }
+);
 
 type HoldParameters = {
   appointment: Appointment;
@@ -31,18 +29,21 @@ type HoldParameters = {
 /**
  * Handles HTTP requests for the Appointment $hold operation.
  *
+ * Holds one appointment or, given a weekly `recurrenceTemplate`, all or none of its series.
+ *
  * Endpoints:
  *   [fhir base]/Appointment/$hold
  *
+ * @experimental - Scheduling Beta API
  * @param req - The FHIR request.
  * @returns The FHIR response.
  */
 export async function appointmentHoldHandler(req: FhirRequest): Promise<FhirResponse> {
   const ctx = getAuthenticatedContext();
   const params = parseInputParameters<HoldParameters>(holdOperation, req);
-  const bundle = await createProposedAppointment(
+  const bundle = await createProposedAppointments(
     ctx.repo,
-    withPath(params.appointment, 'Parameters.appointment'),
+    expandRecurrence(withPath(params.appointment, 'Parameters.appointment')),
     (appointment, slots) => {
       // Create appointment with "pending" status
       appointment.status = 'pending';

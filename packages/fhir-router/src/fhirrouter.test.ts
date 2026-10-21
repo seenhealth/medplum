@@ -202,6 +202,25 @@ describe('FHIR Router', () => {
     expect(res2).toMatchObject(preconditionFailed);
   });
 
+  test('Delete with precondition', async () => {
+    const patient = await repo.createResource<Patient>({ resourceType: 'Patient' });
+
+    const [res1] = await router.handleRequest(
+      { ...makeSimpleRequest('DELETE', `/Patient/${patient.id}`), headers: { 'if-match': 'W/"incorrect"' } },
+      repo
+    );
+    expect(res1).toMatchObject(preconditionFailed);
+
+    const [res2] = await router.handleRequest(
+      {
+        ...makeSimpleRequest('DELETE', `/Patient/${patient.id}`),
+        headers: { 'if-match': `W/"${patient.meta?.versionId}"` },
+      },
+      repo
+    );
+    expect(res2).toMatchObject(allOk);
+  });
+
   test('Search by post', async () => {
     const [res, bundle] = await router.handleRequest(
       makeSimpleRequest('POST', '/Patient/_search', { name: 'Simpson' }),
@@ -296,7 +315,7 @@ describe('FHIR Router', () => {
       makeSimpleRequest('PATCH', `/Patient/${patient?.id}`, { foo: 'bar' }),
       repo
     );
-    expect(res4).toMatchObject(badRequest('Patch body must be an array'));
+    expect(res4).toMatchObject(badRequest('Invalid patch body'));
     expect(patient4).toBeUndefined();
   });
 
@@ -440,14 +459,14 @@ describe('FHIR Router', () => {
         body: patient,
         params: {},
         query: {
-          _account: 'Organization/123',
+          _account: 'Organization/125',
         },
       },
       repo
     );
     expect(res).toMatchObject(created);
     expect(resource).toMatchObject(patient);
-    expect(resource?.meta?.account?.reference).toStrictEqual('Organization/123');
+    expect(resource?.meta?.account?.reference).toStrictEqual('Organization/125');
   });
 
   test('Custom system-level operation returns not found', async () => {

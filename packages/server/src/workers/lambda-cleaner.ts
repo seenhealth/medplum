@@ -5,7 +5,7 @@ import { ListFunctionsCommand } from '@aws-sdk/client-lambda';
 import type { WithId } from '@medplum/core';
 import { EMPTY } from '@medplum/core';
 import type { AsyncJob, Parameters, ParametersParameter } from '@medplum/fhirtypes';
-import type { Job, QueueBaseOptions } from 'bullmq';
+import type { Job } from 'bullmq';
 import { Queue, Worker } from 'bullmq';
 import type { DeleteLambdaVersionOptions, DeleteOldLambdaVersionStats } from '../cloud/aws/lambda';
 import {
@@ -14,12 +14,17 @@ import {
   getBotManagementLambdaClient,
 } from '../cloud/aws/lambda';
 import { tryRunInRequestContext } from '../context';
-import { AsyncJobExecutor } from '../fhir/operations/utils/asyncjobexecutor';
-import { getShardSystemRepo } from '../fhir/repo';
-import { PLACEHOLDER_SHARD_ID } from '../fhir/sharding';
 import { globalLogger } from '../logger';
+import type { AsyncJobTracking } from './base';
+import { getTrackingAsyncJobExecutor } from './base';
 import type { WorkerInitializer, WorkerInitializerOptions } from './utils';
-import { addVerboseQueueLogging, getBullmqRedisConnectionOptions, getWorkerBullmqConfig, queueRegistry } from './utils';
+import {
+  addVerboseQueueLogging,
+  defaultQueueOptions,
+  getWorkerBullmqConfig,
+  queueRegistry,
+  trackJobMetrics,
+} from './utils';
 
 export interface LambdaCleanerOptions {
   readonly nameRegex: string;
@@ -33,7 +38,7 @@ interface ResolvedLambdaCleanerOptions extends LambdaCleanerOptions, DeleteLambd
 }
 
 export interface LambdaCleanerJobData {
-  readonly asyncJob: WithId<AsyncJob>;
+  readonly tracking: AsyncJobTracking;
   readonly options: LambdaCleanerOptions;
   readonly requestId?: string;
   readonly traceId?: string;
@@ -49,28 +54,28 @@ export interface LambdaCleanerSummary extends DeleteOldLambdaVersionStats {
 export const LambdaCleanerQueueName = 'LambdaCleanerQueue';
 
 export const initLambdaCleanerWorker: WorkerInitializer = (config, options?: WorkerInitializerOptions) => {
-  const defaultOptions: QueueBaseOptions = {
-    connection: getBullmqRedisConnectionOptions(config),
-  };
-
+  const queueOptions = defaultQueueOptions(config);
   const queue = new Queue<LambdaCleanerJobData>(LambdaCleanerQueueName, {
-    ...defaultOptions,
-    defaultJobOptions: { attempts: 1 },
+    ...queueOptions,
+    defaultJobOptions: { ...queueOptions.defaultJobOptions, attempts: 1 },
   });
 
   let worker: Worker<LambdaCleanerJobData> | undefined;
   if (options?.workerEnabled !== false) {
-    const workerConfig = getWorkerBullmqConfig(config, 'lambda-cleaner');
     worker = new Worker<LambdaCleanerJobData>(
       LambdaCleanerQueueName,
-      (job) => tryRunInRequestContext(job.data.requestId, job.data.traceId, () => lambdaCleanerJobProcessor(job)),
-      { ...defaultOptions, concurrency: 1, ...workerConfig }
+      trackJobMetrics('lambda-cleaner', (job) =>
+        tryRunInRequestContext(job.data.requestId, job.data.traceId, () => lambdaCleanerJobProcessor(job))
+      ),
+      getWorkerBullmqConfig(config, 'lambda-cleaner', queueOptions, { concurrency: 1 })
     );
-    addVerboseQueueLogging<LambdaCleanerJobData>(queue, worker, (job) => ({
-      asyncJob: `AsyncJob/${job.data.asyncJob.id}`,
-      nameRegex: job.data.options.nameRegex,
-      dryRun: job.data.options.dryRun,
-    }));
+    addVerboseQueueLogging<LambdaCleanerJobData>(queue, worker, (job) => {
+      return {
+        asyncJob: `AsyncJob/${job.data.tracking.asyncJobId}`,
+        nameRegex: job.data.options.nameRegex,
+        dryRun: job.data.options.dryRun,
+      };
+    });
   }
 
   return { queue, worker, name: LambdaCleanerQueueName };
@@ -89,8 +94,7 @@ export async function addLambdaCleanerJobData(jobData: LambdaCleanerJobData): Pr
 }
 
 export async function lambdaCleanerJobProcessor(job: Job<LambdaCleanerJobData>): Promise<WithId<AsyncJob>> {
-  const systemRepo = getShardSystemRepo(PLACEHOLDER_SHARD_ID);
-  const exec = new AsyncJobExecutor(systemRepo, job.data.asyncJob);
+  const exec = await getTrackingAsyncJobExecutor(job.data.tracking);
   return exec.startAsync(async () => {
     const summary = await execLambdaCleanerJob(job.data.options);
     return formatSummary(summary);

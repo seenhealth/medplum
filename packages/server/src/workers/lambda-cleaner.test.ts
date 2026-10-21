@@ -11,22 +11,24 @@ import {
 } from '@aws-sdk/client-lambda';
 import type { AwsClientStub } from 'aws-sdk-client-mock';
 import { mockClient } from 'aws-sdk-client-mock';
-import 'aws-sdk-client-mock-jest';
 import type { Job } from 'bullmq';
 import assert from 'node:assert';
 import { initAppServices, shutdownApp } from '../app';
 import { loadTestConfig } from '../config/loader';
+import type { ServerConfig } from '../config/utils';
 import { AsyncJobExecutor } from '../fhir/operations/utils/asyncjobexecutor';
-import { getShardSystemRepo } from '../fhir/repo';
-import { PLACEHOLDER_SHARD_ID } from '../fhir/sharding';
+import { createTestProject } from '../test.setup';
+import { getAsyncJobTracking } from './base';
 import type { LambdaCleanerJobData } from './lambda-cleaner';
-import { execLambdaCleanerJob, lambdaCleanerJobProcessor } from './lambda-cleaner';
+import { execLambdaCleanerJob, initLambdaCleanerWorker, lambdaCleanerJobProcessor } from './lambda-cleaner';
+import * as workerUtils from './utils';
 
 describe('Lambda version cleanup worker', () => {
   let mockLambdaClient: AwsClientStub<LambdaClient>;
+  let config: ServerConfig;
 
   beforeAll(async () => {
-    const config = await loadTestConfig();
+    config = await loadTestConfig();
     await initAppServices(config);
   });
   afterAll(async () => {
@@ -87,14 +89,15 @@ describe('Lambda version cleanup worker', () => {
       return {};
     });
 
-    const systemRepo = getShardSystemRepo(PLACEHOLDER_SHARD_ID);
-    const exec = new AsyncJobExecutor(systemRepo);
+    const { repo } = await createTestProject({ withRepo: true });
+    const exec = new AsyncJobExecutor(repo);
     const asyncJob = await exec.init('/some-url');
+    const jobData: LambdaCleanerJobData = {
+      tracking: getAsyncJobTracking(asyncJob),
+      options: { nameRegex: '^medplum-bot-lambda-*', keepLatest: 1, deleteConcurrency: 2, dryRun: false },
+    };
     const job = {
-      data: {
-        asyncJob,
-        options: { nameRegex: '^medplum-bot-lambda-*', keepLatest: 1, deleteConcurrency: 2, dryRun: false },
-      },
+      data: jobData,
     } as unknown as Job<LambdaCleanerJobData>;
     const updatedAsyncJob = await lambdaCleanerJobProcessor(job);
 
@@ -104,16 +107,20 @@ describe('Lambda version cleanup worker', () => {
     expect(output.parameter?.find((p) => p.name === 'versionsNotFound')?.valueInteger).toBe(1);
     expect(output.parameter?.find((p) => p.name === 'versionsHasAlias')?.valueInteger).toBe(1);
 
-    expect(mockLambdaClient).toHaveReceivedCommandTimes(ListAliasesCommand, 0);
-    expect(mockLambdaClient).toHaveReceivedCommandTimes(DeleteFunctionCommand, 4);
-    expect(mockLambdaClient).toHaveReceivedCommandWith(DeleteFunctionCommand, {
-      FunctionName: 'medplum-bot-lambda-a',
-      Qualifier: '1',
-    });
-    expect(mockLambdaClient).toHaveReceivedCommandWith(DeleteFunctionCommand, {
-      FunctionName: 'medplum-bot-lambda-b',
-      Qualifier: '1',
-    });
+    expect(mockLambdaClient.commandCalls(ListAliasesCommand)).toHaveLength(0);
+    expect(mockLambdaClient.commandCalls(DeleteFunctionCommand)).toHaveLength(4);
+    expect(
+      mockLambdaClient.commandCalls(DeleteFunctionCommand, {
+        FunctionName: 'medplum-bot-lambda-a',
+        Qualifier: '1',
+      })
+    ).toHaveLength(1);
+    expect(
+      mockLambdaClient.commandCalls(DeleteFunctionCommand, {
+        FunctionName: 'medplum-bot-lambda-b',
+        Qualifier: '1',
+      })
+    ).toHaveLength(1);
   });
 
   test('cleanupLambdaVersions dry run does not delete', async () => {
@@ -155,6 +162,36 @@ describe('Lambda version cleanup worker', () => {
 
     // expect(summary.versionsPlanned).toBe(1);
     // expect(summary.versionsDeleted).toBe(0);
-    expect(mockLambdaClient).toHaveReceivedCommandTimes(DeleteFunctionCommand, 0);
+    expect(mockLambdaClient.commandCalls(DeleteFunctionCommand)).toHaveLength(0);
+  });
+
+  test('Processes async job data', async () => {
+    mockLambdaClient.on(ListFunctionsCommand).resolves({ Functions: [] });
+    const { repo } = await createTestProject({ withRepo: true });
+    const exec = new AsyncJobExecutor(repo);
+    const asyncJob = await exec.init('/some-url');
+    const jobData: LambdaCleanerJobData = {
+      tracking: getAsyncJobTracking(asyncJob),
+      options: { nameRegex: '^medplum-bot-lambda-' },
+    };
+
+    const updatedAsyncJob = await lambdaCleanerJobProcessor({ data: jobData } as Job<LambdaCleanerJobData>);
+
+    expect(updatedAsyncJob.status).toBe('completed');
+    expect(updatedAsyncJob.output?.parameter).toContainEqual({ name: 'functionsScanned', valueInteger: 0 });
+  });
+
+  test('Logs async job data', () => {
+    const loggingSpy = vi.spyOn(workerUtils, 'addVerboseQueueLogging');
+    initLambdaCleanerWorker(config);
+    const logFields = loggingSpy.mock.calls.at(-1)?.[2] as (job: Job<LambdaCleanerJobData>) => Record<string, unknown>;
+    const options = { nameRegex: '^medplum-bot-lambda-', dryRun: true };
+    const jobData = { tracking: { owner: 'system' as const, asyncJobId: 'tracked-job' }, options };
+
+    expect(logFields({ data: jobData } as unknown as Job<LambdaCleanerJobData>)).toEqual({
+      asyncJob: 'AsyncJob/tracked-job',
+      nameRegex: options.nameRegex,
+      dryRun: true,
+    });
   });
 });

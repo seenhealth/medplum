@@ -109,40 +109,10 @@
       "dist": "dist/epic/epic-query-patient.js"
     },
     {
-      "name": "metriport-patient-bot",
-      "id": "",
-      "source": "src/metriport-bots/metriport-patient-bot.ts",
-      "dist": "dist/metriport-bots/metriport-patient-bot.js"
-    },
-    {
-      "name": "metriport-consolidated-data-webhook",
-      "id": "",
-      "source": "src/metriport-bots/metriport-consolidated-data-webhook.ts",
-      "dist": "dist/metriport-bots/metriport-consolidated-data-webhook.js"
-    },
-    {
       "name": "twilio-voice-webhook",
       "id": "",
       "source": "src/twilio/voice-webhook.ts",
       "dist": "dist/twilio/voice-webhook.js"
-    },
-    {
-      "name": "ai-fhir-request-tools",
-      "id": "",
-      "source": "src/spaces-bots/fhir-translator-bot.ts",
-      "dist": "dist/spaces-bots/fhir-translator-bot.js"
-    },
-    {
-      "name": "ai-resource-summary-sse",
-      "id": "",
-      "source": "src/spaces-bots/fhir-summary-bot.ts",
-      "dist": "dist/spaces-bots/fhir-summary-bot.js"
-    },
-    {
-      "name": "ai-component-generator-sse",
-      "id": "",
-      "source": "src/spaces-bots/fhir-visualizer-bot.ts",
-      "dist": "dist/spaces-bots/fhir-visualizer-bot.js"
     },
     {
       "name": "nppes-lookup",

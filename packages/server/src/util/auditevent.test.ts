@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
 import type { WithId } from '@medplum/core';
-import type { AuditEvent, Bot, Observation, ProjectMembership } from '@medplum/fhirtypes';
-import 'aws-sdk-client-mock-jest';
+import type { AuditEvent, Bot, Observation, Project, ProjectMembership } from '@medplum/fhirtypes';
 import { randomUUID } from 'node:crypto';
+import type { MockInstance } from 'vitest';
 import type { BotExecutionRequest } from '../bots/types';
 import { loadTestConfig } from '../config/loader';
 import { globalLogger } from '../logger';
@@ -16,13 +16,19 @@ import {
   logAuditEvent,
   ReadInteraction,
   RestfulOperationType,
+  SearchInteraction,
 } from './auditevent';
 
 describe('AuditEvent utils', () => {
-  let writeSpy: jest.SpyInstance;
+  const project: WithId<Project> = { resourceType: 'Project', id: randomUUID() };
+  const redactingProject: WithId<Project> = {
+    ...project,
+    setting: [{ name: 'redactAuditEvents', valueBoolean: true }],
+  };
+  let writeSpy: MockInstance;
 
   beforeEach(() => {
-    writeSpy = jest.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
+    writeSpy = vi.spyOn(globalLogger, 'write' as any).mockImplementation(() => undefined);
   });
 
   afterEach(() => {
@@ -65,7 +71,7 @@ describe('AuditEvent utils', () => {
     const auditEvent = createAuditEvent(
       RestfulOperationType,
       CreateInteraction,
-      randomUUID(),
+      project,
       { reference: 'Practitioner/123', display: 'Test User' },
       undefined,
       AuditEventOutcome.Success,
@@ -82,13 +88,88 @@ describe('AuditEvent utils', () => {
     expect(auditLog).not.toContain('User');
   });
 
+  test("Redacts display text when the AuditEvent's project redacts AuditEvents", async () => {
+    const config = await loadTestConfig();
+    config.redactAuditEvents = false;
+
+    const auditEvent = createAuditEvent(
+      RestfulOperationType,
+      CreateInteraction,
+      redactingProject,
+      { reference: 'Practitioner/123', display: 'Test User' },
+      undefined,
+      AuditEventOutcome.Success,
+      { resource: { reference: 'Patient/123', display: 'Alice Smith' } }
+    );
+    expect(auditEvent.meta?.project).toBe(project.id);
+    expect(auditEvent.agent?.[0].who).toMatchObject({ reference: 'Practitioner/123', display: undefined });
+    expect(auditEvent.entity?.[0].what).toMatchObject({ reference: 'Patient/123', display: undefined });
+  });
+
+  test('Includes entityDetail on the search entity', async () => {
+    await loadTestConfig();
+
+    const auditEvent = createAuditEvent(
+      RestfulOperationType,
+      SearchInteraction,
+      project,
+      { reference: 'Practitioner/123', display: 'Test User' },
+      undefined,
+      AuditEventOutcome.Success,
+      { searchQuery: 'Patient?name=foo', entityDetail: [{ type: 'numResults', valueString: '42' }] }
+    );
+
+    expect(auditEvent.entity).toStrictEqual([
+      { query: 'Patient?name=foo', detail: [{ type: 'numResults', valueString: '42' }] },
+    ]);
+  });
+
+  test('Includes entityDetail on a resource entity', async () => {
+    await loadTestConfig();
+
+    const resource: Observation = { resourceType: 'Observation', id: randomUUID(), status: 'final', code: {} };
+
+    const auditEvent = createAuditEvent(
+      RestfulOperationType,
+      CreateInteraction,
+      project,
+      { reference: 'Practitioner/123', display: 'Test User' },
+      undefined,
+      AuditEventOutcome.Success,
+      { resource, entityDetail: [{ type: 'reason', valueString: 'backfill' }] }
+    );
+
+    expect(auditEvent.entity).toStrictEqual([
+      {
+        what: { reference: `Observation/${resource.id}` },
+        detail: [{ type: 'reason', valueString: 'backfill' }],
+      },
+    ]);
+  });
+
+  test('Omits detail when entityDetail is not provided', async () => {
+    await loadTestConfig();
+
+    const auditEvent = createAuditEvent(
+      RestfulOperationType,
+      SearchInteraction,
+      project,
+      { reference: 'Practitioner/123', display: 'Test User' },
+      undefined,
+      AuditEventOutcome.Success,
+      { searchQuery: 'Patient?name=foo' }
+    );
+
+    expect(auditEvent.entity).toStrictEqual([{ query: 'Patient?name=foo' }]);
+  });
+
   test('Appends authenticating client as a non-requestor agent', async () => {
     await loadTestConfig();
 
     const auditEvent = createAuditEvent(
       RestfulOperationType,
       ReadInteraction,
-      randomUUID(),
+      project,
       { reference: 'Practitioner/user-123' },
       undefined,
       AuditEventOutcome.Success,
@@ -115,7 +196,7 @@ describe('AuditEvent utils', () => {
     const auditEvent = createAuditEvent(
       RestfulOperationType,
       ReadInteraction,
-      randomUUID(),
+      project,
       clientRef,
       undefined,
       AuditEventOutcome.Success,
@@ -132,7 +213,7 @@ describe('AuditEvent utils', () => {
     const auditEvent = createAuditEvent(
       RestfulOperationType,
       ReadInteraction,
-      randomUUID(),
+      project,
       { reference: 'Practitioner/user-123' },
       undefined,
       AuditEventOutcome.Success
@@ -160,7 +241,13 @@ describe('AuditEvent utils', () => {
       const req: BotExecutionRequest = { bot, runAs, input: 'foo', contentType: 'text/plain' };
 
       // Successful execution with no output won't trigger on-error or on-output
-      await createBotAuditEvent(req, new Date().toISOString(), AuditEventOutcome.Success, '');
+      await createBotAuditEvent(
+        req,
+        { resourceType: 'Project' },
+        new Date().toISOString(),
+        AuditEventOutcome.Success,
+        ''
+      );
       expect(writeSpy).not.toHaveBeenCalled();
     }
   );
@@ -184,7 +271,40 @@ describe('AuditEvent utils', () => {
     };
     const req: BotExecutionRequest = { bot, runAs, input: 'foo', contentType: 'text/plain' };
 
-    await createBotAuditEvent(req, new Date().toISOString(), AuditEventOutcome.Success, 'foo');
+    await createBotAuditEvent(
+      req,
+      { resourceType: 'Project' },
+      new Date().toISOString(),
+      AuditEventOutcome.Success,
+      'foo'
+    );
     expect(writeSpy).toHaveBeenCalledWith(expect.stringContaining(`,"outcomeDesc":"foo"`));
+  });
+
+  test("Redacts Bot AuditEvent display text when the bot's project redacts AuditEvents", async () => {
+    const config = await loadTestConfig();
+    config.logAuditEvents = true;
+    config.redactAuditEvents = false;
+
+    const bot: WithId<Bot> = {
+      resourceType: 'Bot',
+      id: randomUUID(),
+      name: 'Test Bot',
+      auditEventDestination: ['log'],
+    };
+    const runAs: WithId<ProjectMembership> = {
+      resourceType: 'ProjectMembership',
+      id: randomUUID(),
+      project: { reference: `Project/${randomUUID()}` },
+      user: { reference: `User/${randomUUID()}` },
+      profile: { reference: `Practitioner/${randomUUID()}`, display: 'Alice Smith' },
+    };
+    const req: BotExecutionRequest = { bot, runAs, input: 'foo', contentType: 'text/plain' };
+
+    await createBotAuditEvent(req, redactingProject, new Date().toISOString(), AuditEventOutcome.Success, 'foo');
+    const logged = writeSpy.mock.calls[0][0] as string;
+    expect(logged).toContain(runAs.profile.reference);
+    expect(logged).not.toContain('Alice Smith');
+    expect(logged).not.toContain('Test Bot');
   });
 });

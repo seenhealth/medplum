@@ -3,8 +3,8 @@
 import { Button, Card, Flex, Group, Menu, Skeleton, Stack, Tooltip } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 import { notifications, showNotification } from '@mantine/notifications';
-import type { WithId } from '@medplum/core';
-import { CPT, getReferenceString } from '@medplum/core';
+import type { PatchOperation, WithId } from '@medplum/core';
+import { CPT, createReference, getReferenceString } from '@medplum/core';
 import type {
   ChargeItem,
   Claim,
@@ -14,6 +14,7 @@ import type {
   Encounter,
   EncounterDiagnosis,
   Media,
+  Organization,
   Patient,
   Practitioner,
   Reference,
@@ -21,14 +22,20 @@ import type {
 import { useMedplum } from '@medplum/react';
 import { IconCircleOff, IconDownload, IconFileText, IconSend } from '@tabler/icons-react';
 import type { JSX } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { SAVE_TIMEOUT_MS } from '../../config/constants';
-import { useDebouncedUpdateResource } from '../../hooks/useDebouncedUpdateResource';
 import { ChartNoteStatus } from '../../types/encounter';
+import { BILLING_ORGANIZATION_IDENTIFIER } from '../../utils/billing';
+import { refreshCandidClaimResponse } from '../../utils/candid';
 import { getChargeItemsForEncounter } from '../../utils/chargeitems';
 import { buildClaimFromEncounter } from '../../utils/claims';
 import { createSelfPayCoverage, isSelfPayCoverage } from '../../utils/coverage';
 import { showErrorNotification } from '../../utils/notifications';
+import {
+  CANDID_SUBMIT_CLAIM_OPERATION,
+  isCustomOperationAvailable,
+  STEDI_SUBMIT_CLAIM_OPERATION,
+} from '../../utils/operations';
 import { ChargeItemList } from '../ChargeItem/ChargeItemList';
 import { ConditionList } from '../Conditions/ConditionList';
 import { ClaimSubmittedPanel } from './ClaimSubmittedPanel';
@@ -39,13 +46,15 @@ export interface BillingTabProps {
   patient: WithId<Patient>;
   encounter: WithId<Encounter>;
   setEncounter: (encounter: WithId<Encounter>) => void;
+  /** Fired only after an encounter change is persisted (unlike setEncounter, which may be optimistic). */
+  onEncounterSaved?: (encounter: WithId<Encounter>) => void;
   practitioner: WithId<Practitioner> | undefined;
   setPractitioner: (practitioner: WithId<Practitioner>) => void;
   chartNoteStatus: ChartNoteStatus;
 }
 
 export const BillingTab = (props: BillingTabProps): JSX.Element => {
-  const { encounter, setEncounter, patient, practitioner, setPractitioner, chartNoteStatus } = props;
+  const { encounter, setEncounter, onEncounterSaved, patient, practitioner, setPractitioner, chartNoteStatus } = props;
   const medplum = useMedplum();
   const [claim, setClaim] = useState<WithId<Claim> | undefined>();
   const [chargeItems, setChargeItems] = useState<WithId<ChargeItem>[]>([]);
@@ -56,8 +65,18 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [claimResponse, setClaimResponse] = useState<WithId<ClaimResponse> | null | undefined>(undefined);
   const [claimResponseLoading, setClaimResponseLoading] = useState(false);
+  const [billingOrganization, setBillingOrganization] = useState<Reference<Organization> | undefined>();
+  // Which claim submission operations are deployed in this project; undefined until resolved.
+  const [submitOperations, setSubmitOperations] = useState<{ candid: boolean; stedi: boolean } | undefined>();
 
-  const debouncedUpdateResource = useDebouncedUpdateResource(medplum);
+  useEffect(() => {
+    Promise.all([
+      isCustomOperationAvailable(medplum, CANDID_SUBMIT_CLAIM_OPERATION),
+      isCustomOperationAvailable(medplum, STEDI_SUBMIT_CLAIM_OPERATION),
+    ])
+      .then(([candid, stedi]) => setSubmitOperations({ candid, stedi }))
+      .catch(showErrorNotification);
+  }, [medplum]);
 
   useEffect(() => {
     const fetchClaim = async (): Promise<void> => {
@@ -106,6 +125,34 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
     fetchCoverage().catch((err) => showErrorNotification(err));
   }, [medplum, patient]);
 
+  // Default the billing organization: an existing draft claim records the previous choice;
+  // otherwise use the billing organization on the practitioner's active PractitionerRole, looked up
+  // the same way the visit's insurance eligibility check does. The picker stays editable either way.
+  useEffect(() => {
+    const resolveBillingOrganization = async (): Promise<Reference<Organization> | undefined> => {
+      if (claim?.provider?.reference?.startsWith('Organization/')) {
+        return claim.provider as Reference<Organization>;
+      }
+      if (!practitioner) {
+        return undefined;
+      }
+      const role = await medplum.searchOne('PractitionerRole', {
+        practitioner: getReferenceString(practitioner),
+        active: 'true',
+        'organization.identifier': BILLING_ORGANIZATION_IDENTIFIER,
+      });
+      return role?.organization;
+    };
+
+    resolveBillingOrganization()
+      .then((organization) => {
+        if (organization) {
+          setBillingOrganization(organization);
+        }
+      })
+      .catch((err) => showErrorNotification(err));
+  }, [claim, practitioner, medplum]);
+
   const fetchClaimResponse = useCallback(async (): Promise<void> => {
     if (!claim?.id) {
       setClaimResponse(null);
@@ -113,6 +160,13 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
     }
     setClaimResponseLoading(true);
     try {
+      // Candid claims are refreshed on load: the claim carries the Candid encounter id, so the
+      // get-encounter bot can pull the latest state onto the stored ClaimResponse
+      try {
+        await refreshCandidClaimResponse(medplum, claim);
+      } catch (err) {
+        showErrorNotification(err);
+      }
       const result = await medplum.searchOne(
         'ClaimResponse',
         { request: getReferenceString(claim) },
@@ -131,13 +185,23 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
     fetchClaimResponse().catch((err) => showErrorNotification(err));
   }, [fetchClaimResponse]);
 
+  const debouncedPatchDiagnosis = useDebouncedCallback(async (diagnosis: EncounterDiagnosis[]): Promise<void> => {
+    try {
+      const savedEncounter = await medplum.patchResource('Encounter', encounter.id, [
+        { op: 'add', path: '/diagnosis', value: diagnosis },
+      ]);
+      onEncounterSaved?.(savedEncounter);
+    } catch (err) {
+      showErrorNotification(err);
+    }
+  }, SAVE_TIMEOUT_MS);
+
   const handleDiagnosisChange = useCallback(
     async (diagnosis: EncounterDiagnosis[]): Promise<void> => {
-      const updatedEncounter = { ...encounter, diagnosis };
-      setEncounter(updatedEncounter);
-      await debouncedUpdateResource(updatedEncounter);
+      setEncounter({ ...encounter, diagnosis });
+      debouncedPatchDiagnosis(diagnosis);
     },
-    [encounter, setEncounter, debouncedUpdateResource]
+    [encounter, setEncounter, debouncedPatchDiagnosis]
   );
 
   const generateClaim = useCallback(
@@ -153,6 +217,7 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
         chargeItems,
         conditions,
         insurance,
+        billingOrganization,
       });
 
       const existingClaim = await medplum.searchOne(
@@ -172,13 +237,32 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
       setClaim(saved);
       return saved;
     },
-    [patient, encounter, practitioner, chargeItems, conditions, coverage, medplum, setClaim]
+    [patient, encounter, practitioner, chargeItems, conditions, coverage, billingOrganization, medplum, setClaim]
   );
 
-  const handleEncounterChange = useDebouncedCallback(async (updatedEncounter: Encounter): Promise<void> => {
+  // Visit-details edits accumulate here (keyed by path, latest edit per field wins) so rapid
+  // multi-field changes merge into one patch instead of the debounce dropping all but the last.
+  const pendingEncounterOpsRef = useRef(new Map<string, PatchOperation>());
+
+  const flushEncounterOps = useDebouncedCallback(async (): Promise<void> => {
+    // A remove on a missing path is rejected, and so is an empty location list, so clearing a service
+    // facility the encounter never had (or one selected and cleared within a single debounce) is a no-op.
+    const ops = [...pendingEncounterOpsRef.current.values()].filter(
+      (op) => !(op.op === 'remove' && op.path === '/location' && !encounter.location)
+    );
+    pendingEncounterOpsRef.current.clear();
+    if (ops.length === 0) {
+      return;
+    }
+    // Nested period ops can only apply once the period object exists on the resource.
+    if (!encounter.period && ops.some((op) => op.path.startsWith('/period/'))) {
+      ops.unshift({ op: 'add', path: '/period', value: {} });
+    }
+
     try {
-      const savedEncounter = await medplum.updateResource(updatedEncounter);
+      const savedEncounter = await medplum.patchResource('Encounter', encounter.id, ops);
       setEncounter(savedEncounter);
+      onEncounterSaved?.(savedEncounter);
 
       if (savedEncounter?.participant?.[0]?.individual) {
         const practitionerResult = await medplum.readReference(savedEncounter.participant[0].individual);
@@ -188,6 +272,16 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
       showErrorNotification(err);
     }
   }, SAVE_TIMEOUT_MS);
+
+  const handleEncounterChange = useCallback(
+    (ops: PatchOperation[]): void => {
+      for (const op of ops) {
+        pendingEncounterOpsRef.current.set(op.path, op);
+      }
+      flushEncounterOps();
+    },
+    [flushEncounterOps]
+  );
 
   const exportClaimAsCMS1500 = useCallback(async (): Promise<void> => {
     try {
@@ -281,6 +375,7 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
   }, [coverages, medplum, patient]);
 
   const LOCKED_TOOLTIP = 'Sign and Lock the encounter in order to enable this action';
+  const NO_SUBMIT_OPERATION_TOOLTIP = 'Claim submission is not enabled for this project';
 
   const exportClaimMenu = (disabled?: boolean): JSX.Element => (
     <Menu shadow="md" width={200}>
@@ -369,10 +464,18 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
     if (claimResponse) {
       return <ClaimSubmittedPanel claimResponse={claimResponse} exportMenu={exportClaimMenu()} />;
     }
+    const isLocked = chartNoteStatus === ChartNoteStatus.SignedAndLocked;
+    const canSubmitClaim = Boolean(submitOperations?.candid || submitOperations?.stedi);
+    let submitTooltip: string | undefined;
+    if (!isLocked) {
+      submitTooltip = LOCKED_TOOLTIP;
+    } else if (!canSubmitClaim) {
+      submitTooltip = NO_SUBMIT_OPERATION_TOOLTIP;
+    }
     return (
       <Card withBorder shadow="sm">
         <Flex justify="space-between">
-          {exportClaimMenu(chartNoteStatus !== ChartNoteStatus.SignedAndLocked)}
+          {exportClaimMenu(!isLocked)}
 
           <SubmitClaimModal
             opened={confirmModalOpen}
@@ -382,19 +485,19 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
             conditions={conditions}
             practitioner={practitioner}
             onClose={() => setConfirmModalOpen(false)}
-            onSubmitClaim={submitToCandid}
-            onSubmitToStedi={submitToStedi}
+            onSubmitClaim={submitOperations?.candid ? submitToCandid : undefined}
+            onSubmitToStedi={submitOperations?.stedi ? submitToStedi : undefined}
             ensureSelfPayCoverage={ensureSelfPayCoverage}
           />
-          <Tooltip label={LOCKED_TOOLTIP} disabled={chartNoteStatus === ChartNoteStatus.SignedAndLocked}>
+          <Tooltip label={submitTooltip} disabled={!submitTooltip}>
             <Button
               component="div"
               variant="outline"
               leftSection={<IconSend size={16} />}
               loading={submitting}
-              onClick={chartNoteStatus === ChartNoteStatus.SignedAndLocked ? handleSubmitClaimClick : undefined}
-              disabled={chartNoteStatus !== ChartNoteStatus.SignedAndLocked || submitting}
-              data-disabled={chartNoteStatus !== ChartNoteStatus.SignedAndLocked || undefined}
+              onClick={isLocked && canSubmitClaim ? handleSubmitClaimClick : undefined}
+              disabled={!isLocked || !canSubmitClaim || submitting}
+              data-disabled={!isLocked || !canSubmitClaim || undefined}
             >
               Submit Claim
             </Button>
@@ -412,7 +515,11 @@ export const BillingTab = (props: BillingTabProps): JSX.Element => {
         <VisitDetailsPanel
           practitioner={practitioner}
           encounter={encounter}
+          billingOrganization={billingOrganization}
           onEncounterChange={handleEncounterChange}
+          onBillingOrganizationChange={(organization) =>
+            setBillingOrganization(organization ? createReference(organization) : undefined)
+          }
         />
       </Group>
 

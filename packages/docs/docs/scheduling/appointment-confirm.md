@@ -1,8 +1,8 @@
 # Appointment $confirm
 
-:::info[Alpha]
+:::info[Beta]
 
-The `$confirm` operation is currently in alpha.
+The `$confirm` operation is currently in [beta](/docs/compliance/alpha-beta).
 
 :::
 
@@ -62,7 +62,7 @@ This operation takes no input parameters. The appointment to confirm is identifi
 
 ### Constraints
 
-- The Appointment must have `status: pending` or `status: proposed`. All other statuses are rejected with HTTP 409 Conflict.
+- The Appointment must have `status: pending` or `status: proposed`. All other statuses are rejected with HTTP 400 Bad Request.
 - All `Slot` resources referenced by `Appointment.slot` must exist and be readable by the caller.
 
 ## Output
@@ -109,16 +109,15 @@ Returns `200 OK` with a `Bundle` of all updated resources:
 
 ## Confirmation Logic
 
-`$confirm` performs the following steps atomically inside a database transaction:
+`$confirm` performs the following steps atomically inside a database transaction, ensuring safety when concurrent scheduling requests are received.
 
 1. Reads the Appointment identified by the URL `id`
 2. Validates that the Appointment's `status` is `pending` or `proposed`
-3. Loads all `Slot` resources listed in `Appointment.slot`
-4. Updates any `busy-tentative` Slots to `busy`
-5. Sets the Appointment's `status` to `booked` and saves it
-6. Returns the updated Appointment and Slots in a Bundle
-
-The transaction uses serializable isolation for safety when there are concurrent scheduling operations affecting the same appointment.
+3. Loads any `HealthcareService` referenced by `Appointment.serviceType` and validates that it is not inactive
+4. Loads all `Slot` resources listed in `Appointment.slot`
+5. Updates any `busy-tentative` Slots to `busy`
+6. Sets the Appointment's `status` to `booked` and saves it
+7. Returns the updated Appointment and Slots in a Bundle
 
 ## Error Responses
 
@@ -143,6 +142,32 @@ HTTP status: `404`
 ```
 
 HTTP status: `409`
+
+### HealthcareService Inactive
+
+A `HealthcareService` with `active: false` cannot be scheduled against. Appointments already booked for the service can still be canceled.
+
+```json
+{
+  "resourceType": "OperationOutcome",
+  "issue": [{ "severity": "error", "code": "invalid", "details": { "text": "HealthcareService is inactive" } }]
+}
+```
+
+HTTP status: `400`
+
+### Referenced HealthcareService Not Found
+
+Returned when a `HealthcareService` referenced by `Appointment.serviceType` has been deleted, or is not readable by the caller's access policy.
+
+```json
+{
+  "resourceType": "OperationOutcome",
+  "issue": [{ "severity": "error", "code": "invalid", "details": { "text": "Loading HealthcareService failed" } }]
+}
+```
+
+HTTP status: `400`
 
 ### Referenced Slot Not Found
 

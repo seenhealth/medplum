@@ -6,20 +6,25 @@ import type { NextFunction, Request, Response } from 'express';
 import { json } from 'express';
 import { JSON_TYPE, runMiddleware } from './app';
 import { getConfig } from './config/loader';
-import type { MedplumServerConfig } from './config/types';
+import type { ServerConfig } from './config/utils';
 import { getAuthenticatedContext } from './context';
 import { AsyncJobExecutor } from './fhir/operations/utils/asyncjobexecutor';
 import { sendOutcome } from './fhir/outcomes';
+import { getProjectScopedUrl } from './util/url';
 import { queueBatchProcessing } from './workers/batch';
 
 export function asyncBatchHandler(
-  config: MedplumServerConfig
+  config: ServerConfig
 ): (req: Request, res: Response, next: NextFunction) => Promise<any> {
   return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
     const { repo, project } = getAuthenticatedContext();
     if (req.get('prefer') !== 'respond-async') {
       next();
       return;
+    }
+
+    if (!project.features?.includes('async-batch')) {
+      throw new OperationOutcomeError(badRequest('Async Batch feature not available'));
     }
 
     await runMiddleware(req, res, json({ type: JSON_TYPE, limit: config.maxBatchSize }));
@@ -41,6 +46,6 @@ export function asyncBatchHandler(
     });
 
     const { baseUrl } = getConfig();
-    sendOutcome(res, accepted(exec.getContentLocation(baseUrl)));
+    sendOutcome(res, accepted(exec.getContentLocation(getProjectScopedUrl(req.originalUrl, baseUrl))));
   };
 }

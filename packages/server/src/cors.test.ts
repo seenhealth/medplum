@@ -3,6 +3,7 @@
 import type { Request } from 'express';
 import express from 'express';
 import request from 'supertest';
+import { vi } from 'vitest';
 import { initApp, shutdownApp } from './app';
 import { getConfig, loadTestConfig } from './config/loader';
 import { corsOptions } from './cors';
@@ -17,7 +18,7 @@ describe('CORS', () => {
       header: () => undefined,
       path: '/',
     } as unknown as Request;
-    const callback = jest.fn();
+    const callback = vi.fn();
     corsOptions(req, callback);
     expect(callback).toHaveBeenCalledWith(null, { origin: false });
   });
@@ -27,7 +28,7 @@ describe('CORS', () => {
       header: () => undefined,
       path: '/fhir/R4/Patient',
     } as unknown as Request;
-    const callback = jest.fn();
+    const callback = vi.fn();
     corsOptions(req, callback);
     expect(callback).toHaveBeenCalledWith(null, { origin: false });
   });
@@ -37,7 +38,7 @@ describe('CORS', () => {
       header: () => 'http://localhost:3000',
       path: '/fhir/R4/Patient',
     } as unknown as Request;
-    const callback = jest.fn();
+    const callback = vi.fn();
     corsOptions(req, callback);
     expect(callback).toHaveBeenCalledWith(
       null,
@@ -50,7 +51,7 @@ describe('CORS', () => {
       header: () => 'http://localhost:3000',
       path: '/fhir/R4/Patient',
     } as unknown as Request;
-    const callback = jest.fn();
+    const callback = vi.fn();
     corsOptions(req, callback);
     expect(callback).toHaveBeenCalledWith(
       null,
@@ -64,7 +65,7 @@ describe('CORS', () => {
       header: () => 'https://example.com',
       path: '/fhir/R4/Patient',
     } as unknown as Request;
-    const callback = jest.fn();
+    const callback = vi.fn();
     corsOptions(req, callback);
     expect(callback).toHaveBeenCalledWith(
       null,
@@ -78,7 +79,7 @@ describe('CORS', () => {
       header: () => 'https://example.com',
       path: '/fhir/R4/Patient',
     } as unknown as Request;
-    const callback = jest.fn();
+    const callback = vi.fn();
     corsOptions(req, callback);
     expect(callback).toHaveBeenCalledWith(null, { origin: false });
   });
@@ -89,7 +90,7 @@ describe('CORS', () => {
       header: () => 'https://example.com',
       path: '/fhir/R4/Patient',
     } as unknown as Request;
-    const callback = jest.fn();
+    const callback = vi.fn();
     corsOptions(req, callback);
     expect(callback).toHaveBeenCalledWith(
       null,
@@ -103,10 +104,41 @@ describe('CORS', () => {
       header: () => 'https://example.com',
       path: '/fhir/R4/Patient',
     } as unknown as Request;
-    const callback = jest.fn();
+    const callback = vi.fn();
     corsOptions(req, callback);
     expect(callback).toHaveBeenCalledWith(null, { origin: false });
   });
+
+  test('Allow FHIRcast hub alias', () => {
+    for (const path of ['/hub', '/api/hub', '/api/hub/.well-known/fhircast-configuration']) {
+      const req = {
+        header: () => 'http://localhost:3000',
+        path,
+      } as unknown as Request;
+      const callback = vi.fn();
+      corsOptions(req, callback);
+      expect(callback).toHaveBeenCalledWith(
+        null,
+        expect.objectContaining({ credentials: true, origin: 'http://localhost:3000' })
+      );
+    }
+  });
+
+  test.each(['/api/fhir/R4/Patient', '/projects/123/fhir/R4/Patient', '/api/projects/123/fhir/R4/Patient'])(
+    'Allow mounted FHIR path %s',
+    (path) => {
+      const req = {
+        header: () => 'http://localhost:3000',
+        path,
+      } as unknown as Request;
+      const callback = vi.fn();
+      corsOptions(req, callback);
+      expect(callback).toHaveBeenCalledWith(
+        null,
+        expect.objectContaining({ credentials: true, origin: 'http://localhost:3000' })
+      );
+    }
+  );
 
   test('FHIR response includes RateLimit in Access-Control-Expose-Headers', async () => {
     const app = express();

@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 import { allOk, badRequest, OperationOutcomeError } from '@medplum/core';
 import type { FhirRequest, FhirResponse } from '@medplum/fhir-router';
-import type { Client, Pool } from 'pg';
-import { requireSuperAdmin } from '../../admin/super';
+import { requireSuperAdmin } from '../../context';
 import { DatabaseMode, getDatabasePool } from '../../database';
 import { escapeUnicode } from '../../migrations/migrate-utils';
-import { isValidTableName } from '../sql';
+import type { PgQueryable } from '../sql';
+import { isValidPostgresIdentifier } from '../sql';
 import { makeOperationDefinition } from './definitions';
 import {
   buildOutputParameters,
+  getShardIdParam,
   makeOperationDefinitionParameter as param,
   parseInputParameters,
 } from './utils/parameters';
@@ -20,6 +21,7 @@ const LookupOperation = makeOperationDefinition(
     name: 'db-column-statistics',
     code: 'db-column-statistics',
     parameter: [
+      param('in', 'shardId', 'string', 0, '1'),
       param('in', 'tableName', 'string', 0, '1'),
       param('out', 'defaultStatisticsTarget', 'integer', 1, '1'),
       param('out', 'table', undefined, 0, '1', [
@@ -51,21 +53,22 @@ const LookupOperation = makeOperationDefinition(
 export async function getColumnStatisticsHandler(req: FhirRequest): Promise<FhirResponse> {
   requireSuperAdmin();
 
-  const params = parseInputParameters<{ tableName?: string }>(LookupOperation, req);
+  const params = parseInputParameters<{ shardId?: string; tableName?: string }>(LookupOperation, req);
+  const shardId = getShardIdParam(params);
 
-  if (params.tableName && !isValidTableName(params.tableName)) {
+  if (params.tableName && !isValidPostgresIdentifier(params.tableName)) {
     throw new OperationOutcomeError(badRequest('Invalid tableName'));
   }
 
-  const defaultStatisticsTarget = await getDefaultStatisticsTarget();
-  const client = getDatabasePool(DatabaseMode.WRITER);
+  const pool = getDatabasePool(DatabaseMode.WRITER, shardId);
+  const defaultStatisticsTarget = await getDefaultStatisticsTarget(pool);
   let columns: ColumnInfo[] | undefined;
   const output: { defaultStatisticsTarget: number; table?: { tableName: string; column: ColumnInfo[] } } = {
     defaultStatisticsTarget,
   };
 
   if (params.tableName) {
-    columns = await getTableColumns(client, params.tableName);
+    columns = await getTableColumns(pool, params.tableName);
     output.table = {
       tableName: params.tableName,
       column: columns,
@@ -75,8 +78,7 @@ export async function getColumnStatisticsHandler(req: FhirRequest): Promise<Fhir
   return [allOk, buildOutputParameters(LookupOperation, output)];
 }
 
-async function getDefaultStatisticsTarget(): Promise<number> {
-  const client = getDatabasePool(DatabaseMode.WRITER);
+async function getDefaultStatisticsTarget(client: PgQueryable): Promise<number> {
   const defaultStatisticsTarget = await client.query('SELECT setting FROM pg_settings WHERE name = $1', [
     'default_statistics_target',
   ]);
@@ -127,7 +129,7 @@ interface ColumnInfo {
   elemCountHistogram: string | undefined;
 }
 
-async function getTableColumns(db: Client | Pool, tableName: string): Promise<ColumnInfo[]> {
+async function getTableColumns(db: PgQueryable, tableName: string): Promise<ColumnInfo[]> {
   const rs = await db.query<RawColumnInfo>(
     `SELECT
       n.nspname as "schemaName",

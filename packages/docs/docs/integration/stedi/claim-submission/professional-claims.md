@@ -19,10 +19,9 @@ Configure these secrets on the Medplum project that runs the bot:
 | Secret | Type | Required | Description |
 |--------|------|----------|-------------|
 | `STEDI_CLAIM_API_KEY` | string | Yes | Stedi API key with permission to submit professional claims |
-| `STEDI_CLAIM_TEST_MODE` | boolean | No | When `true`, sets Stedi `usageIndicator` to `T` (test). Default is `P` (production) |
 
 :::note[]
-Stedi's [test claims workflow](https://www.stedi.com/docs/healthcare/test-claims-workflow) uses a **production** API key. It does not use Stedi test API keys (prefix `test_`) the same way eligibility sandbox checks do.
+The API key selects the mode. Use a Stedi test API key (prefix `test_`) for test claims and a production API key for production claims. See [Stedi test mode](https://www.stedi.com/docs/healthcare/test-mode).
 :::
 
 ## Resource model
@@ -535,25 +534,27 @@ flowchart TD
 
     PayerOrg["<div style='text-align: center;'><strong>Organization (Payer)</strong></div>"]
 
-    Responses["<div style='text-align: center;'><strong>ClaimResponse</strong> (277CA / 835)</div><em>created later by the claim-response flow</em>"]
+    Reports["<div style='text-align: center;'><strong>DocumentReference</strong> (277CA / 835 reports)</div><em>stored later by the claim-response flow</em>"]
 
     ClaimResponse -->|request| Claim
     ClaimResponse -->|patient| Patient
     ClaimResponse -->|insurer| PayerOrg
-    Responses -.->|request| Claim
+    ClaimResponse -.->|"best-effort report link"| Reports
 
     classDef claim fill:#8B57C4,stroke:#333,stroke-width:2px,color:#fff
     classDef response fill:#90CAF9,stroke:#333,stroke-width:2px
+    classDef document fill:#A5D6A7,stroke:#333,stroke-width:2px
     classDef organization fill:#B088E1,stroke:#333,stroke-width:2px,color:#fff
     classDef patient fill:#D4BCF2,stroke:#333,stroke-width:2px
 
     class Claim claim
-    class ClaimResponse,Responses response
+    class ClaimResponse response
+    class Reports document
     class PayerOrg organization
     class Patient patient
 ```
 
-The submission `ClaimResponse` (solid) is created immediately by the bot. Acknowledgment (277CA) and remittance (835) responses (dashed) are created **later** by the [claim-response flow](/docs/integration/stedi/claim-submission/claim-responses) and also reference the same `Claim` via `request`.
+The submission `ClaimResponse` (solid) is created immediately by the bot. Acknowledgment (277CA) and remittance (835) responses (dashed) are stored **later** by the [claim-response flow](/docs/integration/stedi/claim-submission/claim-responses) as `DocumentReference` resources, and are best-effort linked back to this `ClaimResponse`.
 
 | `ClaimResponse` field | Value |
 |-----------------------|-------|
@@ -619,16 +620,15 @@ X12/NANP forbids both the **area code** and the **exchange** (the 4th digit) fro
 
 To submit a **test** claim end-to-end (including test 277CA and 835 ERA from the Stedi Test Payer):
 
-1. Set project secret `STEDI_CLAIM_TEST_MODE` to `true`, **or** ensure your deployment maps that secret so the bot sends `usageIndicator: T`.
-2. Use payer ID `STEDITEST` on the payer `Organization` (Stedi Test Payer).
-3. Use a **production** Stedi claims API key enrolled for your billing provider.
+1. Set `STEDI_CLAIM_API_KEY` to a Stedi **test** API key (prefix `test_`). Stedi validates the claim and returns a test 277CA without contacting the payer.
+2. Use payer ID `STEDITEST` on the payer `Organization` (Stedi Test Payer). Any other payer ID returns a test 277CA only, with no 835.
 
 See Stedi's [test claims workflow](https://www.stedi.com/docs/healthcare/test-claims-workflow) for enrollment and example payloads.
 
 ## Limitations and roadmap
 
 - Professional (837P) claims only — no institutional (837I) or dental submission yet
-- No built-in claim status polling or 835 ingestion in Medplum (use Stedi webhooks or APIs)
+- Inbound 277CA/835 responses are ingested and stored verbatim as `DocumentReference` (via webhook or poller) — see [Claim Responses (277 / 835)](/docs/integration/stedi/claim-submission/claim-responses) — but are not mapped into `ClaimResponse`/`PaymentReconciliation`
 - Claim attachments (275) are not submitted by this bot
 
 For eligibility checks on the same Stedi account, see [Insurance and Benefits Eligibility Checks](/docs/integration/stedi/insurance-eligibility/eligibility-checks).

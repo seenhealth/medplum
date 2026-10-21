@@ -4,6 +4,7 @@
 import { ReconnectingWebSocket, sleep } from '@medplum/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMedplum } from '../MedplumProvider/MedplumProvider.context';
+import { useStabilizedCallback } from '../useStabilizedCallback/useStabilizedCallback';
 
 export type WhisperStatus =
   | 'idle'
@@ -44,6 +45,8 @@ export type UseWhisperResult = {
   start: () => Promise<void>;
   stop: () => void;
   isListening: boolean;
+  muted: boolean;
+  setMuted: (value: boolean) => void;
 };
 
 export function useWhisper({
@@ -53,10 +56,7 @@ export function useWhisper({
   idleTimeoutMs = DEFAULT_IDLE_TIMEOUT_MS,
 }: UseWhisperOptions): UseWhisperResult {
   const medplum = useMedplum();
-  const onTranscriptRef = useRef(onTranscript);
-  useEffect(() => {
-    onTranscriptRef.current = onTranscript;
-  }, [onTranscript]);
+  const emitTranscript = useStabilizedCallback(onTranscript);
   const [status, setStatus] = useState<WhisperStatus>('idle');
   const [error, setError] = useState<unknown>(undefined);
   const [transcripts, setTranscripts] = useState<TranscriptItem[]>([]);
@@ -68,6 +68,18 @@ export function useWhisper({
   const startingCaptureRef = useRef(false);
   const sessionReadyRef = useRef(false);
   const capturingRef = useRef(false);
+  const [muted, setMutedState] = useState(false);
+  const mutedRef = useRef(false);
+
+  // Mute/unmute by toggling the captured mic track; keeps the warm session and worklet running
+  // (a disabled track emits silence, so the server VAD simply hears nothing).
+  const setMuted = useCallback((value: boolean) => {
+    mutedRef.current = value;
+    setMutedState(value);
+    audioStreamRef.current?.getAudioTracks().forEach((track) => {
+      track.enabled = !value;
+    });
+  }, []);
 
   // Stop capturing audio and release the microphone, but leave the WebSocket + OpenAI
   // session warm so the next start() can reuse them. This is the user-facing `stop`.
@@ -82,6 +94,10 @@ export function useWhisper({
 
     audioStreamRef.current?.getTracks().forEach((track) => track.stop());
     audioStreamRef.current = undefined;
+
+    // Each capture session starts unmuted
+    mutedRef.current = false;
+    setMutedState(false);
 
     setStatus(websocketRef.current ? 'idle' : 'disconnected');
   }, []);
@@ -242,7 +258,7 @@ export function useWhisper({
             };
 
             setTranscripts((prev) => [...prev, item]);
-            onTranscriptRef.current?.(message.transcript);
+            emitTranscript(message.transcript);
           }
           break;
 
@@ -262,7 +278,7 @@ export function useWhisper({
           break;
       }
     },
-    [setupSession, maybeStartAudioCapture]
+    [setupSession, maybeStartAudioCapture, emitTranscript]
   );
 
   const acquireMicrophone = useCallback(async (): Promise<MediaStream> => {
@@ -274,6 +290,11 @@ export function useWhisper({
         echoCancellation: true,
         noiseSuppression: true,
       },
+    });
+    // Honor a mute set while idle: fresh tracks are enabled by default, which would leave the
+    // mic hot while the hook still reports muted.
+    audioStream.getAudioTracks().forEach((track) => {
+      track.enabled = !mutedRef.current;
     });
     audioStreamRef.current = audioStream;
     return audioStream;
@@ -373,6 +394,8 @@ export function useWhisper({
     start,
     stop: stopCapture,
     isListening: status === 'listening' || status === 'speech_started' || status === 'speech_stopped',
+    muted,
+    setMuted,
   };
 }
 
